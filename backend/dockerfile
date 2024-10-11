@@ -1,0 +1,20 @@
+FROM node:alpine
+
+RUN apk update \
+    && apk add --no-cache postgresql \
+    && rm -rf /var/cache/apk/*
+
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm install
+
+COPY . .
+
+RUN cd /app/src/ && chmod +x ./init.sh
+
+EXPOSE 3000
+
+ENTRYPOINT ["sh", "/app/src/init.sh"]
+
+CMD ["npm", "run", "dev"]
