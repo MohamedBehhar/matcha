@@ -1,13 +1,23 @@
-const express = require('express');
+import express, { Request, Response } from 'express';
+import http from 'http';
+import cors from 'cors';
+import bodyParser from 'body-parser';
+import authRoutes from './routers/authRoutes';
 
 
+// server
+const PORT = 3000;
 const app = express();
-const port = 3000
+const server = http.createServer(app);
 
-app.get('/', (req:any, res:any) => {
-  res.send('Express + TypeScript Server');
-});
+app.use(cors());
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 
-app.listen(port, () => {
-  console.log(`[server]: Server is running at http://localhost:${port}`);
+app.use("/api/auth", authRoutes);
+
+
+
+server.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });
