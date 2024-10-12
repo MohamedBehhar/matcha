@@ -1,11 +1,9 @@
-import { Router, Request, Response } from "express";
+import { Router } from "express";
+import authControllers from "../controllers/authControllers";
 
 const router = Router();
 
-const signUp = async (req: Request, res: Response) => {
-	  res.status(200).json({ message: "Sign up route" });
-}
-
-router.get("/signup", signUp);
+// Connect the controller to the route
+router.post("/signup", authControllers.signUp);
 
 export default router;
