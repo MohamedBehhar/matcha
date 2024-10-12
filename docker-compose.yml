@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   front-end:
-    container_name: front-end
+    container_name: matcha-front-end
     build: frontend
     restart: always
     ports:
@@ -16,7 +16,7 @@ services:
       - app-network
 
   back-end:
-    container_name: back-end
+    container_name: matcha-back-end
     build: ./backend
     restart: always
     ports:
@@ -33,7 +33,7 @@ services:
 
   postgres:
     image: postgres:latest
-    container_name: postgres
+    container_name: matcha-postgres
     restart: always
     volumes:
       - postgres:/var/lib/postgresql/data
@@ -46,7 +46,7 @@ services:
 
   pgadmin:
     image: dpage/pgadmin4:latest
-    container_name: pgadmin
+    container_name: matcha-pgadmin
     restart: always
     env_file:
       - .env
