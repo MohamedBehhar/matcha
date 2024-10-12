@@ -1,10 +1,12 @@
+import { Outlet } from "react-router";
+import Header from "@/components/header";
+
 function App() {
   return (
-    <>
-      <h1 className="text-3xl text-red-500 font-bold underline text-center">
-        Matcha
-      </h1>
-    </>
+    <main className=" flex flex-col">
+      <Header />
+      <Outlet />
+    </main>
   );
 }
 
