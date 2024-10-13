@@ -22,4 +22,9 @@ interface User {
   refresh_token: string;
 }
 
-export { SignUpInput, User, signInInput };
+interface tokens {
+  access_token: string;
+  refresh_token: string;
+}
+
+export { SignUpInput, User, signInInput, tokens };
