@@ -64,10 +64,29 @@ const refresh = async (req: Request, res: Response) => {
   }
 };
 
+export const verifyEmail = async (req: Request, res: Response): Promise<Response> => {
+  const token = req.query.token as string;
+  if (!token) {
+    return res.status(400).send("Invalid or missing token.");
+  }
+
+  try {
+    const user = await authServices.verifyEmail(token);
+    if (!user) {
+      return res.status(400).send("User not found.");
+    }
+    return res.status(200).send("Account successfully verified!");
+  } catch (err) {
+    return res.status(400).send("Invalid or expired token.");
+  }
+};
+
+
 const authControllers = {
   signUp,
   signIn,
   refresh,
+  verifyEmail,
 };
 
 export default authControllers;

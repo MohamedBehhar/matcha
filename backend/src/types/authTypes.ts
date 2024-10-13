@@ -20,6 +20,7 @@ interface User {
   last_name: string;
   token: string;
   refresh_token: string;
+  isVerified: boolean;
 }
 
 interface tokens {
