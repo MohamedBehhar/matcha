@@ -2,7 +2,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { Pool } from "pg";
 import { Request, Response } from "express";
-import { SignUpInput, User } from "../types/authTypes";
+import { SignUpInput, User, tokens } from "../types/authTypes";
 
 const db: Pool = require("../db/db");
 // Token expiration times
@@ -29,7 +29,7 @@ export const signUp = async ({
         const user = result.rows[0];
 
         console.log(process.env.JWT_SECRET);
-        const token = jwt.sign(
+        const access_token = jwt.sign(
           { id: user.id },
           process.env.JWT_SECRET as string,
           {
@@ -54,8 +54,8 @@ export const signUp = async ({
             ]);
           });
         }
-
-        return { ...user, token, refresh_token };
+        delete user.password;
+        return { ...user, access_token, refresh_token };
       });
 
     return newUser;
@@ -68,7 +68,7 @@ export const signUp = async ({
 const singIn = async (
   username: string,
   password: string
-): Promise<User | undefined> => {
+): Promise<tokens | undefined> => {
   try {
     const user = await db
       .query("SELECT * FROM users WHERE username = $1", [username])
@@ -86,9 +86,13 @@ const singIn = async (
       return undefined;
     }
 
-    const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET as string, {
-      expiresIn: accessTokenMaxAge,
-    });
+    const access_token = jwt.sign(
+      { id: user.id },
+      process.env.JWT_SECRET as string,
+      {
+        expiresIn: accessTokenMaxAge,
+      }
+    );
 
     const refresh_token = jwt.sign(
       { id: user.id },
@@ -109,7 +113,7 @@ const singIn = async (
       });
     }
 
-    return { ...user, token, refresh_token };
+    return { access_token, refresh_token };
   } catch (err) {
     console.log("Error: ", err);
     throw err;
@@ -117,10 +121,12 @@ const singIn = async (
 };
 
 const refresh = async (refresh_token: string): Promise<User | undefined> => {
+  console.log('------ ',refresh_token);
   try {
     const user = await db
       .query("SELECT * FROM users WHERE refresh_token = $1", [refresh_token])
       .then((result: any) => {
+        console.log("hhhh", result)
         return result.rows[0];
       });
 
@@ -143,7 +149,7 @@ const refresh = async (refresh_token: string): Promise<User | undefined> => {
     console.log("Error: ", err);
     throw err;
   }
-}
+};
 
 const authServices = {
   signUp,
