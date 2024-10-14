@@ -9,6 +9,11 @@ const db: Pool = require("../db/db");
 const accessTokenMaxAge = 1 * 30; // 1 minute
 const refreshTokenMaxAge = 2 * 24 * 60 * 60; // 2 days
 
+const hashString = async (string: string): Promise<string> => {
+  const salt = await bcrypt.genSalt(10);
+  return bcrypt.hash(string, salt);
+}
+
 const createRefreshToken = async (user: User): Promise<string> => {
   const refresh_token = jwt.sign(
     { id: user.id },
@@ -18,10 +23,9 @@ const createRefreshToken = async (user: User): Promise<string> => {
     }
   );
 
-  const salt = await bcrypt.genSalt(10);
-  const hashedRefreshToken = await bcrypt.hash(refresh_token, salt);
 
-  return hashedRefreshToken;
+
+  return refresh_token;
 };
 
 const createAccessToken = async (user: User): Promise<string> => {
@@ -123,10 +127,11 @@ const singIn = async (
     const access_token = await createAccessToken(user);
 
     const refresh_token = await createRefreshToken(user);
+    const hashedRefreshToken = await hashString(refresh_token);
 
     if (!user.refresh_token) {
       await db.query("UPDATE users SET refresh_token = $1 WHERE id = $2", [
-        refresh_token,
+        hashedRefreshToken,
         user.id,
       ]);
     }
@@ -148,9 +153,12 @@ const logout = async (user_id: number): Promise<void> => {
 }
 
 const refresh = async (refresh_token: string): Promise<User | undefined> => {
+  const hashedRefreshToken = await hashString(refresh_token);
+  console.log("refresh_token", refresh_token);
+  console.log("hashedRefreshToken", hashedRefreshToken);
   try {
     const user = await db
-      .query("SELECT * FROM users WHERE refresh_token = $1", [refresh_token])
+      .query("SELECT * FROM users WHERE refresh_token = $1", [hashedRefreshToken])
       .then((result: any) => {
         return result.rows[0];
       });
