@@ -20,7 +20,9 @@ interface User {
   last_name: string;
   token: string;
   refresh_token: string;
-  isVerified: boolean;
+  is_verified: boolean;
+  access_token: string;
+  password ?: string;
 }
 
 interface tokens {

@@ -7,6 +7,6 @@ const router = Router();
 router.post("/signup", authControllers.signUp);
 router.post("/signin", authControllers.signIn);
 router.post("/refresh", authControllers.refresh);
-router.get("/verify", authControllers.verifyEmail);
+router.get("/verify/:token?", authControllers.verifyEmail);
 
 export default router;
