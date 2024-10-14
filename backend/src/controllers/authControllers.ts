@@ -20,7 +20,7 @@ const signUp = async (req: Request, res: Response) => {
       last_name,
     } as SignUpInput);
     if (user) {
-      res.status(201).send(user);
+      res.status(201).send("User created successfully, please verify email");
     } else {
       res.status(400).send("Bad request");
     }
@@ -33,9 +33,17 @@ const signUp = async (req: Request, res: Response) => {
 const signIn = async (req: Request, res: Response) => {
   const { username, password }: signInInput = req.body;
   try {
-    const tokens = await authServices.singIn(username, password);
-    if (tokens) {
-      res.status(200).send(tokens);
+    const user = await authServices.singIn(username, password);
+    console.log(user);
+    if (user) {
+      if (false == user.is_verified) {
+        res.status(400).send("Account not verified");
+        return;
+      }
+      res.status(200).send({
+        access_token: user.access_token,
+        refresh_token: user.refresh_token,
+      });
     } else {
       res.status(400).send("Bad request");
     }
@@ -64,24 +72,29 @@ const refresh = async (req: Request, res: Response) => {
   }
 };
 
-export const verifyEmail = async (req: Request, res: Response): Promise<Response> => {
-  const token = req.query.token as string;
+export const verifyEmail = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  const { token } = req.query as { token: string };
   if (!token) {
-    return res.status(400).send("Invalid or missing token.");
+    res.status(400).send("Invalid or missing token.");
+    return;
   }
 
   try {
     const user = await authServices.verifyEmail(token);
     if (!user) {
-      return res.status(400).send("User not found.");
+      res.status(400).send("User not found.");
+      return;
     }
-    return res.status(200).send("Account successfully verified!");
+    res.status(200).send(
+      user
+    );
   } catch (err) {
-    return res.status(400).send("Invalid or expired token.");
+    res.status(400).send("Invalid or expired token.");
   }
 };
-
-
 const authControllers = {
   signUp,
   signIn,
