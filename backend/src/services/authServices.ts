@@ -3,46 +3,46 @@ import jwt from "jsonwebtoken";
 import { Pool } from "pg";
 import nodemailer from "nodemailer";
 import { SignUpInput, User, tokens } from "../types/authTypes";
+import { deleteKey, setKey } from "../utils/redis";
 
 const db: Pool = require("../db/db");
 
 const accessTokenMaxAge = 1 * 30; // 1 minute
 const refreshTokenMaxAge = 2 * 24 * 60 * 60; // 2 days
 
-const hashString = async (string: string): Promise<string> => {
+const hashString = async (string: string, base:number): Promise<string> => {
   const salt = await bcrypt.genSalt(10);
   return bcrypt.hash(string, salt);
 }
 
-const createRefreshToken = async (user: User): Promise<string> => {
-  const refresh_token = jwt.sign(
-    { id: user.id },
-    process.env.REFRESH_SECRET as string,
-    {
-      expiresIn: refreshTokenMaxAge,
-    }
-  );
-
-
-
-  return refresh_token;
-};
-
-const createAccessToken = async (user: User): Promise<string> => {
-  return jwt.sign({ id: user.id }, process.env.JWT_SECRET as string, {
+const createTokens = async (user: User): Promise<{
+  access_token: string;
+  refresh_token: string;
+}> => {
+  const access_token = jwt.sign({ email:user.email,id:user.id }, process.env.JWT_SECRET as string, {
     expiresIn: accessTokenMaxAge,
   });
+
+  const refresh_token = jwt.sign({ email:user.email, id:user.id }, process.env.REFRESH_SECRET as string, {
+    expiresIn: refreshTokenMaxAge,
+  });
+
+  return { access_token, refresh_token };
 };
 
-const verifyRefreshToken = async (refresh_token: string): Promise<boolean> => {
+
+
+const verifyToken = async (token: string, secret:string): Promise<boolean> => {
   try {
-    jwt.verify(refresh_token, process.env.REFRESH_SECRET as string);
+    jwt.verify(token, secret);
   } catch (error) {
     console.log("error", error);
     return false;
   }
   return true;
-};
+}
+
+
 
 export const signUp = async ({
   username,
@@ -52,24 +52,19 @@ export const signUp = async ({
   last_name,
 }: SignUpInput): Promise<User | undefined> => {
   try {
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
-
-    const verificationToken = jwt.sign(
-      { email },
-      process.env.JWT_SECRET as string,
-      {
-        expiresIn: "1d",
-      }
-    );
-
+   
+    const hashedPassword = await hashString(password, 10);
     const newUser = await db
       .query(
         "INSERT INTO users (username, password, email, first_name, last_name, is_verified) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
         [username, hashedPassword, email, first_name, last_name, false]
       )
       .then((result: any) => {
-        return result.rows[0];
+        const tokens = createTokens(result.rows[0]);
+        return {
+          ...result.rows[0],
+          ...tokens,
+        }
       });
 
     if (newUser) {
@@ -90,7 +85,6 @@ export const signUp = async ({
 
       await transporter.sendMail(mailOptions);
     }
-
     return newUser;
   } catch (err) {
     console.log("Error: ", err);
@@ -98,23 +92,21 @@ export const signUp = async ({
   }
 };
 
+
 const singIn = async (
-  username: string,
+  email: string,
   password: string
 ): Promise<User | undefined> => {
   try {
     const user = await db
-      .query("SELECT * FROM users WHERE username = $1", [username])
+      .query("SELECT * FROM users WHERE email = $1", [email])
       .then((result: any) => {
         return result.rows[0];
       });
-
     if (!user) {
       return undefined;
     }
-
     const isMatch = await bcrypt.compare(password, user.password);
-
     if (!isMatch) {
       return undefined;
     }
@@ -124,65 +116,57 @@ const singIn = async (
       return { ...user };
     }
 
-    const access_token = await createAccessToken(user);
+    const tokens = await createTokens(user);
+    await setKey(`access_token_${user.email}`, tokens.access_token);
+    await setKey(`refresh_token_${user.email}`, tokens.refresh_token);
 
-    const refresh_token = await createRefreshToken(user);
-    const hashedRefreshToken = await hashString(refresh_token);
-
-    if (!user.refresh_token) {
-      await db.query("UPDATE users SET refresh_token = $1 WHERE id = $2", [
-        hashedRefreshToken,
-        user.id,
-      ]);
-    }
-    delete user.password;
-    return { ...user, access_token, refresh_token };
+    return {
+      ...user,
+      ...tokens,
+    };
   } catch (err) {
     console.log("Error: ", err);
     throw err;
   }
 };
 
-const logout = async (user_id: number): Promise<void> => {
+const logout = async (email: string): Promise<void> => {
   try {
-    await db.query("UPDATE users SET refresh_token = $1 WHERE id = $2", [ "", user_id]);
+    await deleteKey(`access_token_${email}`);
+    await deleteKey(`refresh_token_${email}`);
   } catch (err) {
     console.log("Error: ", err);
     throw err;
   }
 }
 
-const refresh = async (refresh_token: string): Promise<User | undefined> => {
-  const hashedRefreshToken = await hashString(refresh_token);
-  console.log("refresh_token", refresh_token);
-  console.log("hashedRefreshToken", hashedRefreshToken);
+const refresh = async (refresh_token: string): Promise<{
+  access_token: string;
+  refresh_token: string;
+} | undefined> => {
   try {
+    const checkToken = await verifyToken(refresh_token, process.env.REFRESH_SECRET as string);
+    if (!checkToken) {
+      throw new Error("Invalid token"); 
+    }
+    const decoded = jwt.verify(refresh_token, process.env.REFRESH_SECRET as string) as {
+      email: string;
+    };
     const user = await db
-      .query("SELECT * FROM users WHERE refresh_token = $1", [hashedRefreshToken])
+      .query("SELECT * FROM users WHERE email = $1", [decoded.email])
       .then((result: any) => {
         return result.rows[0];
       });
-
     if (!user) {
       return undefined;
     }
-
-    console.log("user.refresh_token", user.refresh_token);
-    console.log("refresh_token", refresh_token);
-    console.log("user0000000", user.refresh_token == refresh_token);
-
-    if (false == await verifyRefreshToken(refresh_token)) {
-      return undefined;
+    const tokens = await createTokens(user);
+    await setKey(`access_token_${user.email}`, tokens.access_token);
+    await setKey(`refresh_token_${user.email}`, tokens.refresh_token);
+    return {
+      ...tokens,
     }
 
-
-
-
-    const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET as string, {
-      expiresIn: accessTokenMaxAge,
-    });
-
-    return { ...user, token };
   } catch (err) {
     console.log("Error: ", err);
     throw err;
@@ -205,10 +189,8 @@ export const verifyEmail = async (token: string): Promise<User | null> => {
     if (!user) {
       return null;
     }
-    const refresh_token = await createRefreshToken(user as User);
-    const access_token = await createAccessToken(user as User);
-    delete user.password;
-    return { ...user, access_token, refresh_token };
+    //// hna makayn lach traja3 user
+    return user;
   } catch (err) {
     throw err;
   }
@@ -219,6 +201,7 @@ const authServices = {
   singIn,
   refresh,
   verifyEmail,
+  logout,
 };
 
 export default authServices;

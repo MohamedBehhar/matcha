@@ -61,7 +61,7 @@ const refresh = async (req: Request, res: Response) => {
     console.log(user);
     if (user) {
       res.status(200).send({
-        access_token: user.token,
+        access_token: user.access_token,
       });
     } else {
       res.status(400).send("Bad request");
