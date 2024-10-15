@@ -59,6 +59,72 @@ CREATE TABLE users
 		UNIQUE (user_id, friend_id)
 	);
 
+	CREATE TABLE likes
+	(
+		id SERIAL PRIMARY KEY,
+		user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+		liked_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+		created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+		UNIQUE (user_id, liked_id)
+	);
+
+	CREATE TABLE blocks
+	(
+		id SERIAL PRIMARY KEY,
+		user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+		blocked_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+		created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+		UNIQUE (user_id, blocked_id)
+	);
+
+	CREATE TABLE reports
+	(
+		id SERIAL PRIMARY KEY,
+		user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+		reported_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+		created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+		UNIQUE (user_id, reported_id)
+	);
+
+	CREATE TABLE messages
+	(
+		id SERIAL PRIMARY KEY,
+		sender_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+		recipient_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+		content TEXT NOT NULL,
+		created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+	);
+
+	CREATE TABLE notifications
+	(
+		id SERIAL PRIMARY KEY,
+		user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+		content TEXT NOT NULL,
+		created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+	);
+
+	CREATE TABLE visits
+	(
+		id SERIAL PRIMARY KEY,
+		user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+		visited_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+		created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+		UNIQUE (user_id, visited_id)
+	);
+
+
+
+	CREATE TABLE freinds_requests
+	(
+		id SERIAL PRIMARY KEY,
+		user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+		requested_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+		created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+		UNIQUE (user_id, requested_id)
+	);
+
+
+
 	-- Seed users with specific coordinates for the required distances
 INSERT INTO users (username, email, password, first_name, last_name, location)
 VALUES 
