@@ -1,7 +1,7 @@
 FROM node:alpine
 
 RUN apk update \
-    && apk add --no-cache postgresql \
+    && apk add --no-cache postgresql-client \
     && rm -rf /var/cache/apk/*
 
 WORKDIR /app
@@ -12,6 +12,9 @@ RUN npm install
 COPY . .
 
 RUN cd /app/src/ && chmod +x ./init.sh
+
+# Copy the init.sql file to the container
+COPY ./src/init.sql /app/src/init.sql 
 
 EXPOSE 3000
 

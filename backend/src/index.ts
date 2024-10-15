@@ -3,6 +3,7 @@ import http from 'http';
 import cors from 'cors';
 import bodyParser from 'body-parser';
 import authRoutes from './routers/authRoutes';
+import geolocationRoutes from './routers/geolocationRoutes';
 
 
 // server
@@ -15,7 +16,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use("/api/auth", authRoutes);
-
+app.use("/api/geolocation", geolocationRoutes);
 
 
 server.listen(PORT, () => {
