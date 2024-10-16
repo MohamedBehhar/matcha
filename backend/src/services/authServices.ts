@@ -80,7 +80,7 @@ export const signUp = async ({
         from: process.env.EMAIL_USER,
         to: email,
         subject: "Verify your account",
-        html: `<p>Click <a href="http://localhost:3000/api/auth/verify?token=${verificationToken}">here</a> to verify your account.</p>`,
+        html: `<p>Click <a href="http://localhost:3000/api/auth/verify?token=${"test"}">here</a> to verify your account.</p>`,
       };
 
       await transporter.sendMail(mailOptions);

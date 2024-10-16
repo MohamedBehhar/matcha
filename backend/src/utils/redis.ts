@@ -1,20 +1,29 @@
-import * as redis from 'redis';
+import * as redis from 'ioredis';
+import env from './env';
 
 
 
-const redisClient = redis.createClient({
-    url: "redis://localhost:6379",
-});
+const redisClient = new redis.Redis(env.REDIS_URL);
 
 
 redisClient.on('connect', () => {
-    console.log('Redis client connected');
+    console.log('Connected to Redis');
 });
-
 
 redisClient.on('error', (err) => {
-    console.log('Redis error: ', err);
+    console.log(`Error connecting to Redis: ${err}`);
 });
+
+redisClient.on('end', () => {
+    console.log('Disconnected from Redis');
+});
+
+redisClient.on('reconnecting', () => {
+    console.log('Reconnecting to Redis');
+}
+);
+
+
 
 export const setKey = async (key: string, value: string): Promise<void> => {
     try {
