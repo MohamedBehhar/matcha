@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 
 function index() {
   const [isLoading, setIsLoading] = useState(false);
+  
   const navigate = useNavigate();
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -23,11 +24,11 @@ function index() {
     try {
       const response = await signUp(signUpInput);
       console.log(response);
+      navigate("/verify");
     } catch (error) {
       console.error(error);
     }
     setIsLoading(false);
-    navigate("/verify");
   };
 
   return (
@@ -71,9 +72,7 @@ function index() {
         </form>
       </div>
       <div className="flex items-center gap-5  ">
-        <p
-			
-		>Already have an account?</p>
+        <p>Already have an account?</p>
         <Button
           className=" bg-red-primary text-white"
           onClick={() => navigate("/signin")}
