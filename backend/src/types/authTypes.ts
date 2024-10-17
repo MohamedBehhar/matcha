@@ -7,7 +7,7 @@ interface SignUpInput {
 }
 
 interface signInInput {
-  username: string;
+  email: string;
   password: string;
 }
 

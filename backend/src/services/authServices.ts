@@ -85,7 +85,7 @@ export const signUp = async ({
         from: process.env.EMAIL_USER,
         to: email,
         subject: "Verify your account",
-        html: `<p>Click <a href="http://localhost:3000/api/auth/verify?token=${verificationToken}">here</a> to verify your account.</p>`,
+        html: `<p>Click <a href="http://localhost:5137/verify?token=${verificationToken}">here</a> to verify your account.</p>`,
       };
 
       await transporter.sendMail(mailOptions);
@@ -99,12 +99,12 @@ export const signUp = async ({
 };
 
 const singIn = async (
-  username: string,
+  email: string,
   password: string
 ): Promise<User | undefined> => {
   try {
     const user = await db
-      .query("SELECT * FROM users WHERE username = $1", [username])
+      .query("SELECT * FROM users WHERE email = $1", [email])
       .then((result: any) => {
         return result.rows[0];
       });
@@ -174,10 +174,6 @@ const refresh = async (refresh_token: string): Promise<User | undefined> => {
     if (false == await verifyRefreshToken(refresh_token)) {
       return undefined;
     }
-
-
-
-
     const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET as string, {
       expiresIn: accessTokenMaxAge,
     });
