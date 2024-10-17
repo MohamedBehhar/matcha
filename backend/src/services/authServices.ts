@@ -10,7 +10,7 @@ const db: Pool = require("../db/db");
 const accessTokenMaxAge = 1 * 30; // 1 minute
 const refreshTokenMaxAge = 2 * 24 * 60 * 60; // 2 days
 
-const hashString = async (string: string, base:number): Promise<string> => {
+const hashString = async (string: string, base: number): Promise<string> => {
   const salt = await bcrypt.genSalt(10);
   return bcrypt.hash(string, salt);
 }
@@ -19,11 +19,11 @@ const createTokens = async (user: User): Promise<{
   access_token: string;
   refresh_token: string;
 }> => {
-  const access_token = jwt.sign({ email:user.email,id:user.id }, process.env.JWT_SECRET as string, {
+  const access_token = jwt.sign({ email: user.email, id: user.id }, process.env.JWT_SECRET as string, {
     expiresIn: accessTokenMaxAge,
   });
 
-  const refresh_token = jwt.sign({ email:user.email, id:user.id }, process.env.REFRESH_SECRET as string, {
+  const refresh_token = jwt.sign({ email: user.email, id: user.id }, process.env.REFRESH_SECRET as string, {
     expiresIn: refreshTokenMaxAge,
   });
 
@@ -32,7 +32,7 @@ const createTokens = async (user: User): Promise<{
 
 
 
-const verifyToken = async (token: string, secret:string): Promise<boolean> => {
+const verifyToken = async (token: string, secret: string): Promise<boolean> => {
   try {
     jwt.verify(token, secret);
   } catch (error) {
@@ -52,7 +52,7 @@ export const signUp = async ({
   last_name,
 }: SignUpInput): Promise<User | undefined> => {
   try {
-   
+
     const hashedPassword = await hashString(password, 10);
     const newUser = await db
       .query(
@@ -147,7 +147,7 @@ const refresh = async (refresh_token: string): Promise<{
   try {
     const checkToken = await verifyToken(refresh_token, process.env.REFRESH_SECRET as string);
     if (!checkToken) {
-      throw new Error("Invalid token"); 
+      throw new Error("Invalid token");
     }
     const decoded = jwt.verify(refresh_token, process.env.REFRESH_SECRET as string) as {
       email: string;

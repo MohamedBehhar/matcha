@@ -31,9 +31,9 @@ const signUp = async (req: Request, res: Response) => {
 };
 
 const signIn = async (req: Request, res: Response) => {
-  const { username, password }: signInInput = req.body;
+  const { email, password }: signInInput = req.body;
   try {
-    const user = await authServices.singIn(username, password);
+    const user = await authServices.singIn(email, password);
     console.log(user);
     if (user) {
       if (false == user.is_verified) {
@@ -41,8 +41,7 @@ const signIn = async (req: Request, res: Response) => {
         return;
       }
       res.status(200).send({
-        access_token: user.access_token,
-        refresh_token: user.refresh_token,
+        user,
       });
     } else {
       res.status(400).send("Bad request");

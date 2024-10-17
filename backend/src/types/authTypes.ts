@@ -7,7 +7,7 @@ interface SignUpInput {
 }
 
 interface signInInput {
-  username: string;
+  email: string;
   password: string;
 }
 
@@ -22,7 +22,7 @@ interface User {
   refresh_token: string;
   is_verified: boolean;
   access_token: string;
-  password ?: string;
+  password?: string;
 }
 
 interface tokens {
