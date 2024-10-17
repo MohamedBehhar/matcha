@@ -7,11 +7,11 @@ const signUp = async (req: Request, res: Response) => {
   const { username, email, password, first_name, last_name }: SignUpInput =
     req.body;
   try {
-    const isAlreadyUsed = await checkUserNameAndEmail(username, email);
-    if (isAlreadyUsed) {
-      res.status(400).send("Username or email already in use");
-      return;
-    }
+    // const isAlreadyUsed = await checkUserNameAndEmail(username, email);
+    // if (isAlreadyUsed) {
+    //   res.status(400).send("Username or email already in use");
+    //   return;
+    // }
     const user = await authServices.signUp({
       username,
       email,
@@ -77,7 +77,7 @@ export const verifyEmail = async (
   req: Request,
   res: Response
 ): Promise<void> => {
-  const { token } = req.query as { token: string };
+  const { token } = req.params as { token: string };
   if (!token) {
     res.status(400).send("Invalid or missing token.");
     return;
@@ -85,6 +85,7 @@ export const verifyEmail = async (
 
   try {
     const user = await authServices.verifyEmail(token);
+    console.log('- - - - -',user);
     if (!user) {
       res.status(400).send("User not found.");
       return;

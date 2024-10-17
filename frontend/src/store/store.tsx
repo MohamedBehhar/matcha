@@ -10,7 +10,7 @@ type Actions = {
 }
 
 const useCountStore = create<State & Actions>((set) => ({
-  count: 0,
+  count: 10,
   increment: (qty: number) => set((state) => ({ count: state.count + qty })),
   decrement: (qty: number) => set((state) => ({ count: state.count - qty })),
 }))

@@ -2,9 +2,13 @@ import React, { useEffect } from "react";
 import { verifyEmail } from "@/api/methods/auth";
 import { useParams } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
+import useUserStore from "@/store/userStore";
+
 function index() {
+  const { setUser } = useUserStore();
   const [isLoading, setIsLoading] = React.useState(false);
-  const { token } = useParams();
+  const {token} = useParams();
+  console.log('safadsf ',token);
   const navigate = useNavigate();
   useEffect(() => {
     setIsLoading(true);
@@ -14,6 +18,7 @@ function index() {
         console.log(res);
         localStorage.setItem("access_token", res.access_token);
         localStorage.setItem("refresh_token", res.refresh_token);
+        setUser({...res, is_authenticated: true});
         navigate("/");
       })
       .catch((err) => {
