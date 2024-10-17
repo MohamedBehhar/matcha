@@ -23,6 +23,9 @@ services:
       - app-network
 
   back-end:
+    depends_on: 
+      - postgres
+      - redis
     container_name: matcha-back-end
     build: ./backend
     restart: always

@@ -1,11 +1,11 @@
-import { Pool } from "pg";
-const db: Pool = require("../db/db");
+import pool from "../db/db";
+
 
 export const checkUserNameAndEmail = async (
   username: string,
   email: string
 ) => {
-  const user = await db
+  const user = await pool
     .query("SELECT * FROM users WHERE username = $1 OR email = $2", [
       username,
       email,
