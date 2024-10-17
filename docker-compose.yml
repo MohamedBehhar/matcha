@@ -1,12 +1,10 @@
-version: '3.8'
-
 services:
   front-end:
     container_name: matcha-front-end
     build: frontend
     restart: always
     ports:
-      - '5173:5173'
+      - "5173:5173"
     volumes:
       - ./frontend:/usr/src/app
       - /usr/src/app/node_modules
@@ -15,19 +13,28 @@ services:
     networks:
       - app-network
 
+  redis:
+    image: redis:latest
+    container_name: matcha-redis
+    restart: always
+    ports:
+      - "6379:6379"
+    networks:
+      - app-network
+
   back-end:
     container_name: matcha-back-end
     build: ./backend
     restart: always
     ports:
-      - '3000:3000'
-      - '5555:5555'
+      - "3000:3000"
+      - "5555:5555"
     volumes:
       - ./backend:/app
       - /app/node_modules
       - ./backend/src/images:/app/src/images
     env_file:
-      - .env 
+      - .env
     networks:
       - app-network
 
@@ -40,7 +47,7 @@ services:
     env_file:
       - .env
     ports:
-      - '5432:5432'
+      - "5432:5432"
     networks:
       - app-network
 
@@ -51,10 +58,9 @@ services:
     env_file:
       - .env
     ports:
-      - '5050:80'
+      - "5050:80"
     networks:
       - app-network
-
 
 volumes:
   postgres:

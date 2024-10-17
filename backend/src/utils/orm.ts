@@ -71,6 +71,9 @@ class OrmMatcha {
             WHERE true
         `);
     }
+    async querySql(sql:string){
+        return pool.query(sql).then((result) => result.rows);
+    }
 }
 
 
