@@ -31,9 +31,10 @@ const signUp = async (req: Request, res: Response) => {
 };
 
 const signIn = async (req: Request, res: Response) => {
-  const { username, password }: signInInput = req.body;
+  const { email, password }: signInInput = req.body;
+  console.log('username', req.body);
   try {
-    const user = await authServices.singIn(username, password);
+    const user = await authServices.singIn(email, password);
     console.log(user);
     if (user) {
       if (false == user.is_verified) {
