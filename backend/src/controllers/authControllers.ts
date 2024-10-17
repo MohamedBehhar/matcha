@@ -7,11 +7,11 @@ const signUp = async (req: Request, res: Response) => {
   const { username, email, password, first_name, last_name }: SignUpInput =
     req.body;
   try {
-    // const isAlreadyUsed = await checkUserNameAndEmail(username, email);
-    // if (isAlreadyUsed) {
-    //   res.status(400).send("Username or email already in use");
-    //   return;
-    // }
+    const isAlreadyUsed = await checkUserNameAndEmail(username, email);
+    if (isAlreadyUsed) {
+      res.status(400).send("Username or email already in use");
+      return;
+    }
     const user = await authServices.signUp({
       username,
       email,
