@@ -1,38 +1,44 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { Pool } from "pg";
 import nodemailer from "nodemailer";
 import { SignUpInput, User, tokens } from "../types/authTypes";
 import { deleteKey, setKey } from "../utils/redis";
-
-const db: Pool = require("../db/db");
+import pool from "../db/db";
 
 const accessTokenMaxAge = 1 * 30; // 1 minute
 const refreshTokenMaxAge = 2 * 24 * 60 * 60; // 2 days
 
-const hashString = async (string: string, base:number): Promise<string> => {
+const hashString = async (string: string, base: number): Promise<string> => {
   const salt = await bcrypt.genSalt(10);
   return bcrypt.hash(string, salt);
-}
+};
 
-const createTokens = async (user: User): Promise<{
+const createTokens = async (
+  user: User
+): Promise<{
   access_token: string;
   refresh_token: string;
 }> => {
-  const access_token = jwt.sign({ email:user.email,id:user.id }, process.env.JWT_SECRET as string, {
-    expiresIn: accessTokenMaxAge,
-  });
+  const access_token = jwt.sign(
+    { email: user.email, id: user.id },
+    process.env.JWT_SECRET as string,
+    {
+      expiresIn: accessTokenMaxAge,
+    }
+  );
 
-  const refresh_token = jwt.sign({ email:user.email, id:user.id }, process.env.REFRESH_SECRET as string, {
-    expiresIn: refreshTokenMaxAge,
-  });
+  const refresh_token = jwt.sign(
+    { email: user.email, id: user.id },
+    process.env.REFRESH_SECRET as string,
+    {
+      expiresIn: refreshTokenMaxAge,
+    }
+  );
 
   return { access_token, refresh_token };
 };
 
-
-
-const verifyToken = async (token: string, secret:string): Promise<boolean> => {
+const verifyToken = async (token: string, secret: string): Promise<boolean> => {
   try {
     jwt.verify(token, secret);
   } catch (error) {
@@ -40,9 +46,7 @@ const verifyToken = async (token: string, secret:string): Promise<boolean> => {
     return false;
   }
   return true;
-}
-
-
+};
 
 export const signUp = async ({
   username,
@@ -52,9 +56,8 @@ export const signUp = async ({
   last_name,
 }: SignUpInput): Promise<User | undefined> => {
   try {
-   
     const hashedPassword = await hashString(password, 10);
-    const newUser = await db
+    const newUser = await pool
       .query(
         "INSERT INTO users (username, password, email, first_name, last_name, is_verified) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
         [username, hashedPassword, email, first_name, last_name, false]
@@ -64,7 +67,7 @@ export const signUp = async ({
         return {
           ...result.rows[0],
           ...tokens,
-        }
+        };
       });
 
     if (newUser) {
@@ -92,13 +95,12 @@ export const signUp = async ({
   }
 };
 
-
 const singIn = async (
   email: string,
   password: string
 ): Promise<User | undefined> => {
   try {
-    const user = await db
+    const user = await pool
       .query("SELECT * FROM users WHERE email = $1", [email])
       .then((result: any) => {
         return result.rows[0];
@@ -138,21 +140,32 @@ const logout = async (email: string): Promise<void> => {
     console.log("Error: ", err);
     throw err;
   }
-}
+};
 
-const refresh = async (refresh_token: string): Promise<{
-  access_token: string;
-  refresh_token: string;
-} | undefined> => {
-  try {
-    const checkToken = await verifyToken(refresh_token, process.env.REFRESH_SECRET as string);
-    if (!checkToken) {
-      throw new Error("Invalid token"); 
+const refresh = async (
+  refresh_token: string
+): Promise<
+  | {
+      access_token: string;
+      refresh_token: string;
     }
-    const decoded = jwt.verify(refresh_token, process.env.REFRESH_SECRET as string) as {
+  | undefined
+> => {
+  try {
+    const checkToken = await verifyToken(
+      refresh_token,
+      process.env.REFRESH_SECRET as string
+    );
+    if (!checkToken) {
+      throw new Error("Invalid token");
+    }
+    const decoded = jwt.verify(
+      refresh_token,
+      process.env.REFRESH_SECRET as string
+    ) as {
       email: string;
     };
-    const user = await db
+    const user = await pool
       .query("SELECT * FROM users WHERE email = $1", [decoded.email])
       .then((result: any) => {
         return result.rows[0];
@@ -165,8 +178,7 @@ const refresh = async (refresh_token: string): Promise<{
     await setKey(`refresh_token_${user.email}`, tokens.refresh_token);
     return {
       ...tokens,
-    }
-
+    };
   } catch (err) {
     console.log("Error: ", err);
     throw err;
@@ -179,7 +191,7 @@ export const verifyEmail = async (token: string): Promise<User | null> => {
       email: string;
     };
 
-    const user: User | null = await db
+    const user: User | null = await pool
       .query("UPDATE users SET is_verified = $1 WHERE email = $2 RETURNING *", [
         true,
         decoded.email,
