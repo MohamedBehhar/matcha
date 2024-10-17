@@ -56,6 +56,7 @@ export const signUp = async ({
   last_name,
 }: SignUpInput): Promise<User | undefined> => {
   try {
+    console.log("username", username);
     const hashedPassword = await hashString(password, 10);
     const newUser = await pool
       .query(
@@ -91,7 +92,7 @@ export const signUp = async ({
         from: process.env.EMAIL_USER,
         to: email,
         subject: "Verify your account",
-        html: `<p>Click <a href="http://localhost:5137/verify?token=${verificationToken}">here</a> to verify your account.</p>`,
+        html: `<p>Click <a href="http://localhost:5173/verify/${verificationToken}">here</a> to verify your account.</p>`,
       };
 
       await transporter.sendMail(mailOptions);
@@ -127,8 +128,8 @@ const singIn = async (
     }
 
     const tokens = await createTokens(user);
-    await setKey(`access_token_${user.email}`, tokens.access_token);
-    await setKey(`refresh_token_${user.email}`, tokens.refresh_token);
+    await setKey(`access_token_${user.email}`, tokens.access_token, 60);
+    await setKey(`refresh_token_${user.email}`, tokens.refresh_token, 180);
 
     return {
       ...user,
@@ -182,8 +183,8 @@ const refresh = async (
       return undefined;
     }
     const tokens = await createTokens(user);
-    await setKey(`access_token_${user.email}`, tokens.access_token);
-    await setKey(`refresh_token_${user.email}`, tokens.refresh_token);
+    await setKey(`access_token_${user.email}`, tokens.access_token, 60);
+    await setKey(`refresh_token_${user.email}`, tokens.refresh_token, 180);
     return {
       ...tokens,
     };
