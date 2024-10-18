@@ -8,7 +8,7 @@ import { useNavigate } from "react-router-dom";
 
 function index() {
   const [isLoading, setIsLoading] = useState(false);
-  
+
   const navigate = useNavigate();
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -35,7 +35,7 @@ function index() {
     <div className="container flex flex-col items-center justify-center h-screen ">
       <div className="flex items-center w-full p-4  rounded-md">
         <SignupImg className="flex-1 fill-red-primary" />
-        <form onSubmit={handleSubmit} className="flex-1">
+        <form onSubmit={handleSubmit} className="flex-1 flex flex-col items-center max-w-[400px]">
           <Input
             type="text"
             name="first_name"
@@ -66,19 +66,19 @@ function index() {
             placeholder="Password"
             className="mb-4"
           />
-          <Button type="submit" className="w-full bg-red-primary text-white">
+          <Button type="submit" className="w-full bg-red-primary text-white max-w-[200px] ">
             {isLoading ? "Loading..." : "Sign Up"}
           </Button>
         </form>
       </div>
-      <div className="flex items-center gap-5  ">
+      <div className="flex gap-2 mt-4 text-center ">
         <p>Already have an account?</p>
-        <Button
-          className=" bg-red-primary text-white"
+        <p
           onClick={() => navigate("/signin")}
+          className="text-red-primary cursor-pointer"
         >
           Sign In
-        </Button>
+        </p>
       </div>
     </div>
   );

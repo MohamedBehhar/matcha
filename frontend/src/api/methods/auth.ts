@@ -30,4 +30,14 @@ const verifyEmail = async (token: string) => {
   }
 };
 
-export { signUp, signIn, verifyEmail };
+const checkToken = async (token: string) => {
+  try {
+    const response = await instance.post("/auth/check-token", { token });
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+}
+
+
+export { signUp, signIn, verifyEmail, checkToken };

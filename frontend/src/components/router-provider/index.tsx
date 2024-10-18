@@ -8,6 +8,7 @@ import ProtectedRoutes from "../protectedRoutes";
 import SignInPage from "@/pages/signin";
 import VerifyEmailPage from "@/pages/verifyEmail";
 import VerifyEmailRedirectPage from "@/pages/VerifyEmailRedirectPage";
+import ProfileSettings from "@/pages/profileSettings";
 import {
   createBrowserRouter,
   RouteObject,
@@ -51,6 +52,10 @@ const routes: RouteObject[] = [
             path: "contact",
             element: <ContactPage />,
           },
+          {
+            path: "profile-settings",
+            element: <ProfileSettings />,
+          }
         ],
       },
     ],
