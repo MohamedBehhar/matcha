@@ -1,7 +1,7 @@
-import Schema from "./validation";
+import Schema from "../lib/validation";
 
 
-const schema =Schema.object({
+const schema = Schema.object({
     PORT: Schema.number().default(3000),
     POSTGRES_URL: Schema.string().default("postgres://postgres:postgres@192.168.1.132:5432/matcha?schema=public"),
     REDIS_URL: Schema.string().default("redis://localhost:6379"),
