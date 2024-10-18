@@ -5,6 +5,7 @@ import { SignUpInput, User, tokens } from "../types/authTypes";
 import { deleteKey, setKey } from "../utils/redis";
 import pool from "../db/db";
 import orm from "../lib/orm";
+import { ForbiddenError, NotFoundError, UnauthorizedError } from "../lib/customError";
 
 
 // const accessTokenMaxAge = 1 * 30; // 1 minute
@@ -215,71 +216,70 @@ class AuthServices {
     password,
     first_name,
     last_name,
-  }: SignUpInput): Promise<User | undefined> {
+  }: SignUpInput): Promise<{
+    status: number;
+    data: User | undefined;
+  } | undefined> {
     try {
-      // const isAlreadyUsed = orm.
-      // const hashedPassword = await bcrypt.hash(password, 10);
-      // const newUser = await pool
-      //   .query(
-      //     "INSERT INTO users (username, password, email, first_name, last_name, is_verified) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
-      //     [username, hashedPassword, email, first_name, last_name, false]
-      //   )
-      //   .then((result: any) => {
-      //     return result.rows[0];
-      //   });
+      const isAlreadyUsed = await orm.findOne("users", { where: { email } });
+      if (isAlreadyUsed) {
+        throw new NotFoundError("Email already used");
+      }
+      const hashedPassword = await bcrypt.hash(password, 10);
+      const newUser = await orm.create("users", {
+        username,
+        email,
+        password: hashedPassword,
+        first_name,
+        last_name,
+        is_verified: false,
+      });
+      if (newUser.data) {
+        const transporter = nodemailer.createTransport({
+          service: "Gmail", // or another email service
+          auth: {
+            user: process.env.EMAIL_USER,
+            pass: process.env.EMAIL_PASS,
+          },
+        });
 
-      //   if (newUser) {
-      //     const transporter = nodemailer.createTransport({
-      //       service: "Gmail", // or another email service
-      //       auth: {
-      //         user: process.env.EMAIL_USER,
-      //         pass: process.env.EMAIL_PASS,
-      //       },
-      //     });
+        const mailOptions = {
+          from: process.env.EMAIL_USER,
+          to: email,
+          subject: "Verify your account",
+          html: `<p>Click <a href="http://localhost:3000/api/auth/verify?token=${"test"}">here</a> to verify your account.</p>`,
+        };
 
-      //     const mailOptions = {
-      //       from: process.env.EMAIL_USER,
-      //       to: email,
-      //       subject: "Verify your account",
-      //       html: `<p>Click <a href="http://localhost:3000/api/auth/verify?token=${"test"}">here</a> to verify your account.</p>`,
-      //     };
-
-      //     await transporter.sendMail(mailOptions);
-      //   }
-      //   return newUser;
+        await transporter.sendMail(mailOptions);
+      }
+      return newUser;
     } catch (err) {
       console.log("Error: ", err);
       throw err;
     }
   }
 
-
   public async singIn(
     email: string,
     password: string
-  ): Promise<User | undefined> {
+  ): Promise<{
+    status: number;
+    data: User | undefined;
+  } | undefined> {
     try {
-      const user = await pool
-        .query("SELECT * FROM users WHERE email = $1", [email])
-        .then((result: any) => {
-          return result.rows[0];
-        });
+      const user = await orm.findOne("users", { where: { email } });
       if (!user) {
         return undefined;
       }
-      const isMatch = await bcrypt.compare(password, user.password);
+      const isMatch = await bcrypt.compare(password, user.data.password);
       if (!isMatch) {
-        return undefined;
+        throw new UnauthorizedError("Invalid password");
       }
-      console.log("user", user.is_verified);
-
-      if (false == user.is_verified) {
-        return { ...user };
+      if (false == user.data.is_verified) {
+        return user;
       }
-
-      return {
-        ...user,
-      };
+      else
+        throw new ForbiddenError("Account not verified");
     } catch (err) {
       console.log("Error: ", err);
       throw err;
