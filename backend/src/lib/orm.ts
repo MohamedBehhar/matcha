@@ -10,6 +10,11 @@ type QueryFindMany = {
     limit?: number;
     offset?: number;
 }
+
+
+type QueryFindOne = {
+    where?: Record<string, string | number>;
+}
 class OrmMatcha {
     async finMany(table: string, query: QueryFindMany) {
         try {
@@ -82,6 +87,9 @@ class OrmMatcha {
     async update(table: string, id: number, data: Record<string, any>) {
         try {
             const reccord = await this.findById(table, id);
+            if (!reccord) {
+                throw new NotFoundError(`No record found with id ${id} in ${table}`);
+            }
             const keys = Object.keys(data);
             const values = Object.values(data);
             const placeholders = keys.map((key, index) => `${key} = $${index + 1}`);
@@ -108,6 +116,30 @@ class OrmMatcha {
         }
         catch (err) {
             throw new Error(`Error deleting in ${table}: ${err}`);
+        }
+    }
+    async findOne(table: string, query: QueryFindMany) {
+        try {
+            let sql = `SELECT * FROM ${table}`;
+            let values: any[] = [];
+            if (query.where) {
+                const where = Object.keys(query.where).map((key, index) => {
+                    values.push(query.where![key]);
+                    return `${key} = $${index + 1}`;
+                });
+                sql += ` WHERE ${where.join(" AND ")}`;
+            }
+            const data = await pool.query(sql, values).then((result) => result.rows[0]);
+            if (!data) {
+                throw new NotFoundError(`No record found in ${table}`);
+            }
+            return {
+                status: 200,
+                data: data
+            }
+        }
+        catch (err) {
+            throw new Error(`Error finding one in ${table}: ${err}`);
         }
     }
 
