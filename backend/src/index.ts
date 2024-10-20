@@ -5,6 +5,7 @@ import bodyParser from "body-parser";
 import authRoutes from "./routers/authRoutes";
 import pool from "./db/db";
 import geolocationRoutes from "./routers/geolocationRoutes";
+import interestRoutes from "./routers/interestsRoutes";
 
 // server
 const PORT = 3000;
@@ -26,6 +27,7 @@ pool
 
 app.use("/api/auth", authRoutes);
 app.use("/api/geolocation", geolocationRoutes);
+app.use("/api/interests", interestRoutes);
 
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
