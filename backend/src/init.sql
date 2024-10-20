@@ -132,3 +132,5 @@ VALUES
   ('user3', 'user3@example.com', 'password3', 'Alice', 'Brown', ST_SetSRID(ST_MakePoint(-118.2440, 34.0523), 4326)), -- Nearby user (within 5 km)
   ('user4', 'user4@example.com', 'password4', 'Bob', 'Johnson', ST_SetSRID(ST_MakePoint(-118.2937, 34.0525), 4326)), -- Farther user (within 10 km)
   ('user5', 'user5@example.com', 'password5', 'Charlie', 'Davis', ST_SetSRID(ST_MakePoint(-118.2938, 34.0530), 4326)); -- Farther user (within 10 km)
+
+INSERT INTO interests (name) VALUES ('Music'), ('Movies'), ('Sports'), ('Travel'), ('Food'), ('Photography'), ('Reading'), ('Gaming'), ('Art'), ('Fashion'), ('Fitness'), ('Cooking'), ('Dancing'), ('Hiking'), ('Camping'), ('Yoga'), ('Meditation'), ('Writing'), ('Crafts'), ('Gardening');
