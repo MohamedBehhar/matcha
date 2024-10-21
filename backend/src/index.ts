@@ -3,6 +3,7 @@ import http from 'http';
 import cors from 'cors';
 import bodyParser from 'body-parser';
 import authRoutes from './routers/authRoutes';
+import userRoutes from './routers/userRoutes';
 import pool from './db/db';
 
 // server
@@ -25,6 +26,7 @@ pool.connect().then(() => {
 );
 
 app.use('/api/auth', authRoutes);
+app.use('/api/user', userRoutes);
 
 
 

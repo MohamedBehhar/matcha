@@ -1,7 +1,7 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import nodemailer from "nodemailer";
-import { signInType, SignUpInput, signUpType, Tokens, TokenType, User } from "../types/authTypes";
+import {  SignUpInput, signUpType, Tokens, User } from "../types/authTypes";
 import { deleteKey, getKey, setKey } from "../utils/redis";
 import pool from "../db/db";
 import orm from "../lib/orm";
@@ -19,7 +19,7 @@ class AuthServices {
   private accessTokenMaxAge = 1 * 30 * 15; // 1 minute
   private refreshTokenMaxAge = 2 * 24 * 60 * 60; 
 
-  private async createTokens(user: User): Promise<Tokens> {
+  public async createTokens(user: User): Promise<Tokens> {
     const access_token = jwt.sign({ email: user.email, id: user.id }, process.env.JWT_SECRET as string, {
       expiresIn: this.accessTokenMaxAge,
     });
@@ -29,20 +29,21 @@ class AuthServices {
     return { access_token, refresh_token };
   }
 
-  private async verifyToken(token: string, secret: string): Promise<string | null> {
+  public async verifyToken(token: string, secret: string): Promise<string | null> {
     try {
       jwt.verify(token, secret);
-      const checkToken = await getKey(token);
-      if (!checkToken) {
-        return null;
-      }
       const decoded = jwt.verify(token, secret) as {
         email: string;
       };
+
       if (!decoded.email) {
         return null;
       }
-      return decoded.email; 
+      const checkRedis = await getKey(`access_token_${decoded.email}`);
+      if (!checkRedis) {
+        return null;
+      }
+      return decoded.email;
     } catch (error) {
       return null;
     }
@@ -142,7 +143,6 @@ class AuthServices {
   }> {
     try {
       const email = await this.verifyToken(refresh_token, process.env.REFRESH_SECRET as string);
-      console.log({email});
       const user = await pool
         .query("SELECT * FROM users WHERE email = $1", [email])
         .then((result: any) => {
