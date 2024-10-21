@@ -1,11 +1,10 @@
 
-
 function isSQLInjection(input: string): boolean {
     const regex = /\b(SELECT|INSERT|DELETE|UPDATE|DROP|UNION|ALTER|CREATE|EXEC|SHOW|GRANT|REVOKE|TRUNCATE)\b|--|;|#|'|"|\bOR\b|\bAND\b|\/\*|\*\//i;
     return regex.test(input);
 }
 
-class CustomError extends Error {
+class ValidationError extends Error {
     constructor(message: string) {
       super(message);
       this.name = this.constructor.name;
@@ -61,13 +60,13 @@ class CustomError extends Error {
     constructor() {
       super((data) => {
         if (!data && !this.defaultData && this.requiredData) {
-         throw new CustomError(this.messageError || "Value is required");
+         throw new ValidationError(this.messageError || "Value is required");
         }
         if (!data && this.defaultData) {
           data = this.defaultData;
         }
         if (typeof data !== "boolean") {
-          throw new CustomError("Value must be a boolean");
+          throw new ValidationError("Value must be a boolean");
         }
         return data;
       });
@@ -83,7 +82,7 @@ class CustomError extends Error {
   
     optional(): this {
       if (this.requiredData === true)
-        throw new Error("Cannot set optional to true after setting it to false");
+        throw new ValidationError("Cannot set optional to true after setting it to false");
       this.requiredData = false;
       return this;
     }
@@ -103,19 +102,19 @@ class CustomError extends Error {
     constructor() {
       super((data) => {
        if (!data && !this.defaultData && this.requiredData) {
-          throw new CustomError(this.messageError || "Value is required");
+          throw new ValidationError(this.messageError || "Value is required");
         }
         if (!data && this.defaultData) {
          data = this.defaultData;
         }
         if (typeof data !== "number") {
-          throw new CustomError("Value must be a number");
+          throw new ValidationError("Value must be a number");
         }
         if (this.minData && data < this.minData) {
-          throw new CustomError(this.messageError || `Value must be at least ${this.minData}`);
+          throw new ValidationError(this.messageError || `Value must be at least ${this.minData}`);
         }
         if (this.maxData && data > this.maxData) {
-          throw new CustomError(this.messageError || `Value must be at most ${this.maxData}`);
+          throw new ValidationError(this.messageError || `Value must be at most ${this.maxData}`);
         }
         return data;
   
@@ -170,7 +169,7 @@ class CustomError extends Error {
         }
   
         if ((!data && !this.defaultData && this.requiredData) || typeof data !== "object") {
-          throw new CustomError(this.messageError || "Value must be an object");
+          throw new ValidationError(this.messageError || "Value must be an object");
         }
   
         const resultObj: Record<string, any> = {};
@@ -179,9 +178,7 @@ class CustomError extends Error {
           const value = (data as any)[key];
           const schema = this.schema[key];
           const result = schema.validate(value);
-        //   if (result instanceof Error) {
-        //     throw new CustomError(`${key}: ${result.message}`);
-        //   }
+       
           resultObj[key] = result;
         }
   
@@ -216,7 +213,7 @@ class CustomError extends Error {
           data = this.defaultData;
         }
         if ((!data && !this.defaultData && this.requiredData) || !this.enumData?.includes(data as T)) {
-          throw new CustomError(this.messageError || `Value must be one of ${this.enumData}`);
+          throw new ValidationError(this.messageError || `Value must be one of ${this.enumData}`);
         }
         return data as T;
       });
@@ -246,12 +243,12 @@ class CustomError extends Error {
           data = this.defaultData;
         }
         if ((!data && !this.defaultData && this.requiredData) || !Array.isArray(data)) {
-          throw new CustomError("Value must be an array");
+          throw new ValidationError("Value must be an array");
         }
         if (this.elementValidator) {
           for (const item of data) {
             if (!this.elementValidator(item)) {
-              throw new CustomError(this.messageError || "Array contains invalid elements");
+              throw new ValidationError(this.messageError || "Array contains invalid elements");
             }
           }
         }
@@ -283,22 +280,22 @@ class CustomError extends Error {
     constructor() {
       super((data) => {
         if (typeof data !== "string" ) {
-          throw new CustomError("Value must be a string");
+          throw new ValidationError("Value must be a string");
         }
         if (this.requiredData && !data) {
-          throw new CustomError(this.messageError || "Value is required");
+          throw new ValidationError(this.messageError || "Value is required");
         }
         if (this.minLength && data.length < this.minLength) {
-          throw new CustomError(this.messageError || `Value must be at least ${this.minLength} characters`);
+          throw new ValidationError(this.messageError || `Value must be at least ${this.minLength} characters`);
         }
         if (this.maxLength && data.length > this.maxLength) {
-          throw new CustomError(this.messageError || `Value must be at most ${this.maxLength} characters`);
+          throw new ValidationError(this.messageError || `Value must be at most ${this.maxLength} characters`);
         }
         if (this.regexData && !this.regexData.test(data)) {
-          throw new CustomError(this.messageError || `Value must match regex ${this.regexData}`);
+          throw new ValidationError(this.messageError || `Value must match regex ${this.regexData}`);
         }
         if (isSQLInjection(data)) {
-          throw new CustomError("Value must not contain SQL injection");
+          throw new ValidationError("Value must not contain SQL injection");
         }
         return data;
       }
