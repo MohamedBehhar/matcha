@@ -181,7 +181,7 @@ class AuthServices {
       throw err;
     }
   }
-}
+};
 
 
 export default new AuthServices;
