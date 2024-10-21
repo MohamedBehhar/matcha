@@ -25,9 +25,11 @@ redisClient.on('reconnecting', () => {
 
 
 
-export const setKey = async (key: string, value: string): Promise<void> => {
+export const setKey = async (key: string, value: string, time:number): Promise<void> => {
     try {
-        await redisClient?.set(key, value);  // No need for callback
+        await redisClient?.set(key, value, 
+            'EX', time
+        );  // No need for callback
     } catch (err) {
         throw new Error(`Error setting key in Redis: ${err}`);
     }

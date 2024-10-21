@@ -14,6 +14,8 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
+
+
 pool.connect().then(() => {
   console.log("connected to the Database");
 }
@@ -22,7 +24,8 @@ pool.connect().then(() => {
 }
 );
 
-app.use("/api/auth", authRoutes);
+app.use('/api/auth', authRoutes);
+
 
 
 

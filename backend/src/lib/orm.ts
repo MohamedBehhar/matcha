@@ -40,10 +40,7 @@ class OrmMatcha {
                 sql += ` OFFSET ${query.offset}`;
             }
             const data = await pool.query(sql, values).then((result) => result.rows);
-            return {
-                status: 200,
-                data: data
-            }
+           return data;
         }
         catch (err) {
             throw new Error(`Error finding many in ${table}: ${err
@@ -54,13 +51,7 @@ class OrmMatcha {
     async findById(table: string, id: number) {
         try {
             const data = await pool.query(`SELECT * FROM ${table} WHERE id = $1 limit 1`, [id]).then((result) => result.rows[0]);
-            if (!data) {
-                throw new NotFoundError(`No record found with id ${id} in ${table}`);
-            }
-            return {
-                status: 200,
-                data: data
-            }
+            return data;
         }
         catch (err) {
             throw new Error(`Error finding by id in ${table}: ${err}`);
@@ -74,10 +65,7 @@ class OrmMatcha {
             const placeholders = keys.map((_, index) => `$${index + 1}`);
             const sql = `INSERT INTO ${table} (${keys.join(", ")}) VALUES (${placeholders.join(", ")}) RETURNING *`;
             const res = await pool.query(sql, values).then((result) => result.rows[0]);
-            return {
-                status: 201,
-                data: res
-            }
+           return res;
         }
         catch (err) {
             throw new BadRequestError(`Error creating in ${table}: ${err}`);
@@ -95,10 +83,7 @@ class OrmMatcha {
             const placeholders = keys.map((key, index) => `${key} = $${index + 1}`);
             const sql = `UPDATE ${table} SET ${placeholders.join(", ")} WHERE id = $${values.length + 1} RETURNING *`;
             const res = await pool.query(sql, [...values, id]).then((result) => result.rows[0]);
-            return {
-                status: 200,
-                data: res
-            }
+            return res;
         }
         catch (err) {
             throw new Error(`Error updating in ${table}: ${err}`);
@@ -108,18 +93,18 @@ class OrmMatcha {
     async delete(table: string, id: number) {
         try {
             const reccord = await this.findById(table, id);
-            await pool.query(`DELETE FROM ${table} WHERE id = $1`, [id]);
-            return {
-                status: 204,
-                data: reccord
+            if (!reccord) {
+                throw new NotFoundError(`No record found with id ${id} in ${table}`);
             }
+            await pool.query(`DELETE FROM ${table} WHERE id = $1`, [id]);
+            return reccord;
         }
         catch (err) {
             throw new Error(`Error deleting in ${table}: ${err}`);
         }
     }
-    async findOne(table: string, query: QueryFindMany) {
-        try {
+    async findOne(table: string, query: QueryFindOne) {
+        try{
             let sql = `SELECT * FROM ${table}`;
             let values: any[] = [];
             if (query.where) {
@@ -130,17 +115,13 @@ class OrmMatcha {
                 sql += ` WHERE ${where.join(" AND ")}`;
             }
             const data = await pool.query(sql, values).then((result) => result.rows[0]);
-            if (!data) {
-                throw new NotFoundError(`No record found in ${table}`);
-            }
-            return {
-                status: 200,
-                data: data
-            }
+            return data;
+        }catch(err){
+            throw new Error(`Error finding one in ${table}: ${
+                err
+            }`);
         }
-        catch (err) {
-            throw new Error(`Error finding one in ${table}: ${err}`);
-        }
+        
     }
 
     async deleteAll(table: string) {
@@ -155,11 +136,8 @@ class OrmMatcha {
             throw new Error(`Error deleting all in ${table}: ${err}`);
         }
     }
-
-
     async querySql(sql: string) {
         try {
-
             return pool.query(sql).then((result) => result.rows);
         }
         catch (err) {
