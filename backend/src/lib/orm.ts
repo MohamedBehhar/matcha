@@ -39,7 +39,7 @@ class OrmMatcha {
             if (query.offset) {
                 sql += ` OFFSET ${query.offset}`;
             }
-            const data = await pool.query(sql, values).then((result) => result.rows);
+            const data = await pool.query(sql, values).then((result) => result.rows) || []; 
            return data;
         }
         catch (err) {
@@ -48,7 +48,7 @@ class OrmMatcha {
         }
     }
 
-    async findById(table: string, id: number) {
+    async findById(table: string, id: number | string) {
         try {
             const data = await pool.query(`SELECT * FROM ${table} WHERE id = $1 limit 1`, [id]).then((result) => result.rows[0]);
             return data;
@@ -72,7 +72,7 @@ class OrmMatcha {
         }
     }
 
-    async update(table: string, id: number, data: Record<string, any>) {
+    async update(table: string, id: string | number, data: Record<string, any>) {
         try {
             const reccord = await this.findById(table, id);
             if (!reccord) {
@@ -90,7 +90,7 @@ class OrmMatcha {
         }
     }
 
-    async delete(table: string, id: number) {
+    async delete(table: string, id: number | string) {
         try {
             const reccord = await this.findById(table, id);
             if (!reccord) {
