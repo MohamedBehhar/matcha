@@ -3,7 +3,7 @@ const theme = localStorage.getItem("theme") || "system";
 export function ThemeSwithcer() {
   return (
     <select
-      defaultValue={theme}
+      defaultValue={'light'}
       className="bg-card px-3 py-1.5 rounded"
       onChange={(e) => {
         const value = e.target.value;

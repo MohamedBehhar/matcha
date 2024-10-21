@@ -23,6 +23,9 @@ services:
       - app-network
 
   back-end:
+    depends_on: 
+      - postgres
+      - redis
     container_name: matcha-back-end
     build: ./backend
     restart: always
@@ -39,7 +42,7 @@ services:
       - app-network
 
   postgres:
-    image: postgres:latest
+    image: postgis/postgis:13-3.1  # Use PostGIS-enabled PostgreSQL image
     container_name: matcha-postgres
     restart: always
     volumes:

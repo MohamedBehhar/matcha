@@ -11,7 +11,6 @@ CREATE TABLE users (
 	last_name VARCHAR(50) NOT NULL,
 	refresh_token VARCHAR(255),
 	is_verified BOOLEAN DEFAULT FALSE,
-	is_authenticated BOOLEAN DEFAULT FALSE,
 	bio TEXT,
 	rating INTEGER DEFAULT 0,
 	gender gender_type DEFAULT NULL,
@@ -90,6 +89,7 @@ CREATE TABLE freinds_requests (
 	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 	UNIQUE (user_id, requested_id)
 );
+-- Seed users with specific coordinates for the required distances
 INSERT INTO users (
 		username,
 		email,
@@ -143,24 +143,3 @@ VALUES (
 		ST_SetSRID(ST_MakePoint(-118.2938, 34.0530), 4326)
 	);
 -- Farther user (within 10 km)
-INSERT INTO interests (name)
-VALUES ('Music'),
-	('Movies'),
-	('Sports'),
-	('Travel'),
-	('Food'),
-	('Photography'),
-	('Reading'),
-	('Gaming'),
-	('Art'),
-	('Fashion'),
-	('Fitness'),
-	('Cooking'),
-	('Dancing'),
-	('Hiking'),
-	('Camping'),
-	('Yoga'),
-	('Meditation'),
-	('Writing'),
-	('Crafts'),
-	('Gardening');

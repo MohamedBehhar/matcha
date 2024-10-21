@@ -3,6 +3,11 @@ import AboutPage from "@/pages/about";
 import ContactPage from "@/pages/contact";
 import HomePage from "@/pages/home";
 import NotfoundPage from "@/pages/notfound";
+import SignUpPage from "@/pages/signup";
+import ProtectedRoutes from "../protectedRoutes";
+import SignInPage from "@/pages/signin";
+import VerifyEmailPage from "@/pages/verifyEmail";
+import VerifyEmailRedirectPage from "@/pages/VerifyEmailRedirectPage";
 import {
   createBrowserRouter,
   RouteObject,
@@ -11,20 +16,42 @@ import {
 
 const routes: RouteObject[] = [
   {
+    path: "/signup",
+    element: <SignUpPage />,
+  },
+  {
+    path: "/signin",
+    element: <SignInPage />,
+  },
+  {
+    path: "/verify",
+    element : <VerifyEmailPage />
+  },
+  {
+    path: "/verify/:token?",
+    element : <VerifyEmailRedirectPage />
+  },
+  {
     path: "/",
     element: <App />,
     children: [
       {
-        path: "",
-        element: <HomePage />,
-      },
-      {
-        path: "about",
-        element: <AboutPage />,
-      },
-      {
-        path: "contact",
-        element: <ContactPage />,
+        path: "/",
+        element: <ProtectedRoutes />,
+        children: [
+          {
+            path: "",
+            element: <HomePage />,
+          },
+          {
+            path: "about",
+            element: <AboutPage />,
+          },
+          {
+            path: "contact",
+            element: <ContactPage />,
+          },
+        ],
       },
     ],
   },
@@ -33,6 +60,7 @@ const routes: RouteObject[] = [
     element: <NotfoundPage />,
   },
 ];
+
 
 const router = createBrowserRouter(routes);
 
