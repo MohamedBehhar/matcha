@@ -28,7 +28,6 @@ interface SignUpInput {
   password: string;
   first_name: string;
   last_name: string;
-  phone_number: string;
   username: string;
 }
 
@@ -46,7 +45,6 @@ const signUpType = Schema.object({
   password: Schema.string().min(6).required(),
   first_name: Schema.string().required(),
   last_name: Schema.string().required(),
-  phone_number: Schema.string().required(),
   username: Schema.string().required(),
 });
 
