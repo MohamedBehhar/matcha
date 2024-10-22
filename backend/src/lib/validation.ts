@@ -1,15 +1,10 @@
+import { ValidationError } from "./customError";
 
 function isSQLInjection(input: string): boolean {
     const regex = /\b(SELECT|INSERT|DELETE|UPDATE|DROP|UNION|ALTER|CREATE|EXEC|SHOW|GRANT|REVOKE|TRUNCATE)\b|--|;|#|'|"|\bOR\b|\bAND\b|\/\*|\*\//i;
     return regex.test(input);
 }
 
-class ValidationError extends Error {
-    constructor(message: string) {
-      super(message);
-      this.name = this.constructor.name;
-    }
-  }
   
   class Schema<T> {
     protected defaultValue?: T;
@@ -279,8 +274,13 @@ class ValidationError extends Error {
     private messageError: string | undefined;
     constructor() {
       super((data) => {
+
+       
         if (typeof data !== "string" ) {
           throw new ValidationError("Value must be a string");
+        }
+        if (isSQLInjection(data)) {
+          throw new ValidationError("Hackers are not allowed here! :)💀💀");
         }
         if (this.requiredData && !data) {
           throw new ValidationError(this.messageError || "Value is required");
@@ -294,9 +294,7 @@ class ValidationError extends Error {
         if (this.regexData && !this.regexData.test(data)) {
           throw new ValidationError(this.messageError || `Value must match regex ${this.regexData}`);
         }
-        if (isSQLInjection(data)) {
-          throw new ValidationError("Value must not contain SQL injection");
-        }
+       
         return data;
       }
     );
