@@ -1,6 +1,6 @@
 import { Request, Response } from "express"; // Ensure proper typing
 import authServices from "../services/authServices";
-import { RefreshTYPE, SignUpInput, TokenType, signInInput, signInType, signUpType } from "../types/authTypes";
+import { RefreshTYPE, SignUpInput, TokenType, signInInput, signInType, signUpType, verifyTokenType } from "../types/authTypes";
 import { handleResponse } from "../utils/decorators";
 
 
@@ -42,11 +42,12 @@ class AuthControllers {
 
   @handleResponse()
   public async verifyEmail(req: Request, res: Response){
+    console.log('- - - - - ',req.params);
     const body : {
-      access_token: string;
-    } = TokenType.validate(req.params);
-      if (!body.access_token) throw new Error("Invalid token");
-      const user = await authServices.verifyEmail(body.access_token);
+      token: string;
+    } = verifyTokenType.validate(req.params);
+      if (!body.token) throw new Error("Invalid token");
+      const user = await authServices.verifyEmail(body.token);
       return user as unknown as void;
   }
 }

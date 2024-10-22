@@ -10,6 +10,8 @@ interface User {
   last_name: string;
   phone_number: string;
   username: string;
+  is_verified: boolean;
+  is_authenticated: boolean;
 }
 
 
@@ -32,6 +34,17 @@ interface SignUpInput {
 }
 
 
+interface verifyEmailReturn {
+  id: number;
+  email: string;
+  first_name: string;
+  last_name: string;
+  username: string;
+  is_verified: boolean;
+  is_authenticated: boolean;
+  access_token: string;
+  refresh_token: string;
+}
 
 
 
@@ -48,6 +61,10 @@ const signUpType = Schema.object({
   username: Schema.string().required(),
 });
 
+const verifyTokenType = Schema.object({
+  token: Schema.string().required(),
+});
+
 const TokenType  = Schema.object({
   access_token: Schema.string().required(),
 });
@@ -56,4 +73,4 @@ const RefreshTYPE = Schema.object({
 });
 
 
-export { User, signInInput, SignUpInput, signInType, signUpType, TokenType, Tokens, RefreshTYPE };
+export { User, signInInput, SignUpInput, signInType, signUpType, TokenType, Tokens, RefreshTYPE, verifyTokenType, verifyEmailReturn };

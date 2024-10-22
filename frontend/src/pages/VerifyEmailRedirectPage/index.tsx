@@ -12,9 +12,9 @@ function index() {
     verifyEmail(token || "")
       .then((res) => {
         console.log(res);
-        localStorage.setItem("access_token", res.access_token);
-        localStorage.setItem("refresh_token", res.refresh_token);
+        alert("Email verified successfully");
         navigate("/");
+        // navigate("/");
       })
       .catch((err) => {
         console.error(err);

@@ -2,6 +2,19 @@ import axios from "axios";
 import instance from "../axios";
 import { SignUpInput, signInInput } from "@/types/authTypes";
 
+const hadelTokens = (
+  { access_token, refresh_token }: { access_token: string; refresh_token: string },
+) => {
+  localStorage.setItem('accessToken', access_token);
+  cookie('refreshToken', refresh_token, {
+    httpOnly: true,
+    secure: true, // Set to true for HTTPS
+    sameSite: 'Strict', // Adjust based on your needs
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+  });
+  
+}
+
 const signUp = async (signUpInput: SignUpInput) => {
   try {
     console.log(signUpInput);
