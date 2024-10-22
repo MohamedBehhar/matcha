@@ -1,17 +1,17 @@
 services:
-  # front-end:
-  #   container_name: matcha-front-end
-  #   build: frontend
-  #   restart: always
-  #   ports:
-  #     - "5173:5173"
-  #   volumes:
-  #     - ./frontend:/usr/src/app
-  #     - /usr/src/app/node_modules
-  #   env_file:
-  #     - .env
-  #   networks:
-  #     - app-network
+  front-end:
+    container_name: matcha-front-end
+    build: frontend
+    restart: always
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/usr/src/app
+      - /usr/src/app/node_modules
+    env_file:
+      - .env
+    networks:
+      - app-network
 
   redis:
     image: redis:latest
