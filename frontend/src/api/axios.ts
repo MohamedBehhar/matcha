@@ -1,6 +1,6 @@
 import axios from "axios";
 
-export const getToken = () => localStorage.getItem("token");
+export const getToken = () => localStorage.getItem("access_token");
 export const getrefresh_token = () => localStorage.getItem("refresh_token");
 
 const instance = axios.create({
@@ -22,17 +22,18 @@ instance.interceptors.response.use(
 		return response;
 	},
 	async (error:any) => {
+		alert("Error");
 		const originalRequest = error.config;
 		if (error?.response?.status === 403) {
-			localStorage.removeItem("token");
+			localStorage.removeItem("access_token");
 			localStorage.removeItem("refresh_token");
-			window.location.href = "/login";
+			window.location.href = "/";
 		}
 		if (error?.response?.status === 401 && !originalRequest._retry) {
 			try {
 
 
-				const response = await instance.post("/auth/refresh-token",
+				const response = await instance.post("/auth/refresh",
 					{
 
 						refresh_token: getrefresh_token(),
