@@ -25,7 +25,6 @@ function index() {
       localStorage.setItem("refresh_token", response.refresh_token);
       navigate("/");
     } catch (error) {
-      console.error("889889", error.response.data);
       setError(error.response.data);
     }
     setIsLoading(false);
