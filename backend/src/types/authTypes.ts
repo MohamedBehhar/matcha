@@ -59,6 +59,7 @@ const signUpType = Schema.object({
   first_name: Schema.string().required(),
   last_name: Schema.string().required(),
   username: Schema.string().required(),
+  phone_number: Schema.string().required(),
 });
 
 const verifyTokenType = Schema.object({

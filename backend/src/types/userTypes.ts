@@ -6,7 +6,7 @@ const createUserDto =  Schema.object({
     password: Schema.string().min(6).required(),
     first_name: Schema.string().required(),
     last_name: Schema.string().required(),
-    phone_number: Schema.string().required(),
+    // phone_number: Schema.string().required(),
     username: Schema.string().required(),
 });
 

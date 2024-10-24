@@ -4,8 +4,10 @@ import orm from "../lib/orm";
 import { ConflictError, UnauthorizedError } from "../lib/customError";
 import authServices from "./authServices";
 import env from "../utils/env";
+import { Server } from "socket.io";
 
 class UserService {
+    private socket :Server | undefined;
 
     constructor() {
         this.me = this.me.bind(this);
@@ -13,12 +15,17 @@ class UserService {
         this.update = this.update.bind(this);
         this.delete = this.delete.bind(this);
     }
+    public initSocket(io: Server) {
+        this.socket = io;
+    }
+
 
     public async me( token: string | undefined) {
         const email = await authServices.verifyToken(token as string, env.JWT_SECRET as string);
         if (!email) {
             throw new UnauthorizedError("Unauthorized");
         }
+        this.socket?.emit("me", email);
         const user = await orm.findOne("users", { where: { email } });
         return user;
     }
@@ -29,8 +36,8 @@ class UserService {
         if (isAlreadyUsed) {
             throw new ConflictError("Email already used");
         }
-        const hashedPassword = await bcrypt.hash(body.password, 10);
-        const user = await orm.create("users", { ...body, password: hashedPassword });
+        const password = await bcrypt.hash(body.password, 10);
+        const user = await orm.create("users", { ...body, password });
         const tokens = await authServices.createTokens(user);
         return {
             ...user,
