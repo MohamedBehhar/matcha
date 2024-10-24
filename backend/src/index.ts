@@ -5,6 +5,7 @@ import bodyParser from 'body-parser';
 import authRoutes from './routers/authRoutes';
 import userRoutes from './routers/userRoutes';
 import pool from './db/db';
+import authMiddleware from './lib/middleware/authMiddleware';
 
 // server
 const PORT = 3000;
@@ -25,6 +26,7 @@ pool.connect().then(() => {
 );
 
 app.use('/api/auth', authRoutes);
+app.use(authMiddleware);
 app.use('/api/user', userRoutes);
 
 
