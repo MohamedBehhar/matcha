@@ -2,6 +2,8 @@ import axios from "axios";
 import instance from "../axios";
 import { SignUpInput, signInInput } from "@/types/authTypes";
 
+
+
 const signUp = async (signUpInput: SignUpInput) => {
   try {
     console.log(signUpInput);
@@ -30,4 +32,16 @@ const verifyEmail = async (token: string) => {
   }
 };
 
-export { signUp, signIn, verifyEmail };
+const refreshToken = async () => {
+  const refreshToken = localStorage.getItem("refresh_token");
+  try {
+    const response = await instance.post("/auth/refresh", {
+      refresh_token: refreshToken,
+    });
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export { signUp, signIn, verifyEmail, refreshToken };

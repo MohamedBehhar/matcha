@@ -11,6 +11,7 @@ CREATE TABLE users (
 	last_name VARCHAR(50) NOT NULL,
 	refresh_token VARCHAR(255),
 	is_verified BOOLEAN DEFAULT FALSE,
+	is_authenticated BOOLEAN DEFAULT FALSE,
 	bio TEXT,
 	rating INTEGER DEFAULT 0,
 	gender gender_type DEFAULT NULL,
