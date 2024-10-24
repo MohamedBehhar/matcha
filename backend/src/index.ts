@@ -16,7 +16,6 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 
-
 pool.connect().then(() => {
   console.log("connected to the Database");
 }
