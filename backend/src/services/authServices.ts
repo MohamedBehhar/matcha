@@ -65,11 +65,6 @@ class AuthServices {
   public async signUp(data: SignUpInput): Promise<Record<string, unknown>> {
     try {
       const body = signUpType.validate(data);
-
-      // const isAlreadyUsed = await orm.findOne("users", { where: { email: body.email} });
-      // if (isAlreadyUsed) {
-      //   throw new ConflictError("Email already used");
-      // }
       const hashedPassword = await bcrypt.hash(body.password, 10);
       const newUser = await orm.create("users", {
         ...body,
