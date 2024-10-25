@@ -8,6 +8,8 @@ import ProtectedRoutes from "../protectedRoutes";
 import SignInPage from "@/pages/signin";
 import VerifyEmailPage from "@/pages/verifyEmail";
 import VerifyEmailRedirectPage from "@/pages/VerifyEmailRedirectPage";
+import ProfileSettings from "@/pages/profileSettings";
+import MatchMaking from "@/pages/matchMaking";
 import {
   createBrowserRouter,
   RouteObject,
@@ -25,11 +27,11 @@ const routes: RouteObject[] = [
   },
   {
     path: "/verify",
-    element : <VerifyEmailPage />
+    element: <VerifyEmailPage />,
   },
   {
     path: "/verify/:token?",
-    element : <VerifyEmailRedirectPage />
+    element: <VerifyEmailRedirectPage />,
   },
   {
     path: "/",
@@ -51,6 +53,14 @@ const routes: RouteObject[] = [
             path: "contact",
             element: <ContactPage />,
           },
+          {
+            path: "profile-settings",
+            element: <ProfileSettings />,
+          },
+          {
+            path: "match-making",
+            element: <MatchMaking />,
+          }
         ],
       },
     ],
@@ -60,7 +70,6 @@ const routes: RouteObject[] = [
     element: <NotfoundPage />,
   },
 ];
-
 
 const router = createBrowserRouter(routes);
 
