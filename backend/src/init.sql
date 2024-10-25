@@ -145,3 +145,8 @@ VALUES (
 		ST_SetSRID(ST_MakePoint(-118.2938, 34.0530), 4326)
 	);
 -- Farther user (within 10 km)
+
+INSERT INTO interests (name)
+VALUES ('Music'), ('Movies'), ('Sports'), ('Travel'), ('Reading'), 
+       ('Cooking'), ('Gaming'), ('Photography'), ('Art'), 
+       ('Fashion'), ('Fitness');

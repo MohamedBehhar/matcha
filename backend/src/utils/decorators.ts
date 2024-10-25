@@ -25,9 +25,7 @@ export function handleResponse() {
                          status =  req.method == "POST" ? 201 : 200;
                     }
                     if (!result.data && result){
-                        result.data= {
-                            ...result
-                        }
+                        result.data= result;
                     }
                     else if (!result.data && !result){
                         result.data = "";

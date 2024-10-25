@@ -37,34 +37,29 @@ const Index = () => {
 
   return (
     <div className="flex items-center justify-center flex-col h-screen relative">
-      {/* Card Container */}
-      <div className="absolute flex items-center justify-center z-10 space-x-4">
-        {/* {users.map((user, index) => (
-          <div
-            key={index}
-            className={`transition-transform duration-300 ease-in-out ${
-              index === 0 ? "translate-x-0" : "translate-x-[-100%]"
-            }`}
-          >
-            <UserCard user={user} />
-          </div>
-        ))} */}
+      <div className="flex items-center relative  p-5">
+        <div className=" top-0 left-0 right-0 bottom-0 bg-white bg-opacity-50 z-20 absolute ">
+          <UserCard user={users[0]} />
+        </div>
+        <div className="absolute top-0 left-10 right-0 bottom-0 bg-white bg-opacity-50 z-10">
+          <UserCard user={users[1]} />
+        </div>
+        <div className="absolute top-0 left-0 right-10 bottom-0 bg-white bg-opacity-50 z-10">
+          <UserCard user={users[2]} />
+        </div>
       </div>
-		<UserCard user={users[0]} />
-		<UserCard user={users[1]} />
-		<UserCard user={users[2]} />
 
       {/* Action Buttons */}
       <div className="flex gap-4 mt-4 z-20">
         <Button
           className="bg-blue-900 text-white p-4 rounded-md"
-          onClick={() => handleSwipe('left')}
+          onClick={() => handleSwipe("left")}
         >
           <RiDislikeLine />
         </Button>
         <Button
           className="bg-red-500 text-white p-4 rounded-md"
-          onClick={() => handleSwipe('right')}
+          onClick={() => handleSwipe("right")}
         >
           <AiOutlineHeart />
         </Button>

@@ -1,49 +1,87 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import MySelect from "@/components/ui/MySelect";
 import { getInterests } from "@/api/methods/interest";
+import { MdOutlineDeleteForever } from "react-icons/md";
+import { FaRegEdit } from "react-icons/fa";
+function ProfileSetting() {
+  const [interests, setInterests] = useState([]);
+  const [selectedInterests, setSelectedInterests] = useState([]);
+  const [selectedImages, setSelectedImages] = useState([]);
 
-function index() {
-  const [interests, setInterests] = React.useState([]);
-  React.useEffect(() => {
+  useEffect(() => {
     getInterests()
       .then((data) => {
-        console.log(data[0]);
+        console.log(data);
         setInterests(data);
       })
       .catch((error) => {
         console.log(error);
       });
   }, []);
-  const [selectedInterests, setSelectedInterests] = React.useState([]);
 
   const selectInterest = (name: string) => {
-    if (selectedInterests.includes(name)) {
-      setSelectedInterests(
-        selectedInterests.filter((interest) => interest !== name)
-      );
-    } else {
-      setSelectedInterests([...selectedInterests, name]);
-    }
+    setSelectedInterests((prevSelected: any) =>
+      prevSelected.includes(name)
+        ? prevSelected.filter((interest: any) => interest !== name)
+        : [...prevSelected, name]
+    );
+  };
+
+  const handleImageChange = (event: any) => {
+    const files = Array.from(event.target.files);
+    const newImages = files.map((file) => URL.createObjectURL(file));
+    setSelectedImages((prevImages) => [...prevImages, ...newImages]);
+  };
+
+  const handleRemoveImage = (image: any) => {
+    setSelectedImages((prevImages) =>
+      prevImages.filter((img) => img !== image)
+    );
+  };
+  const [profilePicture, setProfilePicture] = useState("");
+  const handelProfilePicture = (event: any) => {
+    const file = event.target.files[0];
+    setProfilePicture(URL.createObjectURL(file));
   };
 
   return (
-    <div className="container flex flex-col items-center justify-center h-screen ">
+    <div className="container flex flex-col items-center justify-center h-screen">
       <h1 className="text-3xl font-bold text-center my-5">Profile Setting</h1>
-      <div className="flex items-center justify-center w-full p-4  rounded-md">
-        <img
+      <div className="flex items-center justify-center  p-4 rounded-full w-[300px]">
+        {profilePicture ? (
+          <div className=" relative ">
+            <img
+              src={profilePicture}
+              alt="profile"
+              className="flex-1 max-w-[200px] rounded-full"
+            />
+            <FaRegEdit className="absolute top-0 right-0" 
+            onClick={() => setProfilePicture("")}
+            />
+          </div>
+        ) : (
+          <label className="cursor-pointer flex flex-col items-center justify-center aspect-square rounded-full border p-1">
+            <span className="text-gray-500 text-center text-xs">
+              Click to upload an image
+            </span>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handelProfilePicture}
+              className="hidden"
+            />
+          </label>
+        )}
+        {/* <img
           src="https://randomuser.me/api/portraits/men/75.jpg"
           alt="profile"
-          className="flex-1 max-w-[200px] rounded-full "
-
-        />
+          className="flex-1 max-w-[200px] rounded-full"
+        /> */}
       </div>
-      <form
-        action="w-[800px]  border debug"
-        style={{ width: "800px", maxWidth: "100%" }}
-      >
-        <div className="  grid md:grid-cols-3 sm:grid-cols-2  gap-5 w-full mb-4">
+      <form className="w-full max-w-[800px] border p-4 rounded-md">
+        <div className="grid md:grid-cols-3 sm:grid-cols-2 gap-5 w-full mb-4">
           <Input type="text" name="first_name" placeholder="First Name" />
           <Input name="last_name" type="text" placeholder="Last Name" />
           <Input name="email" type="email" placeholder="Email" />
@@ -54,39 +92,69 @@ function index() {
             placeholder="Sexual preferences"
           />
         </div>
-
-        <Input id="picture" type="file" className="mb-4" />
+        <Input name="bio" type="text" placeholder="Bio" className="mb-4" />
+        <div className="images grid grid-cols-4 gap-4 mb-4">
+          {selectedImages.map((image, index) => (
+            <div className="flex flex-col items-center relative" key={index}>
+              <img
+                src={image}
+                alt={`Preview ${index}`}
+                className="rounded-md mb-4 w-full aspect-square object-cover "
+              />
+              <MdOutlineDeleteForever
+                className="text-red-primary text-xl mt-1 absolute right-1 bg-gray-100 rounded-sm opacity-70 cursor-pointer"
+                onClick={() => handleRemoveImage(image)}
+              />
+            </div>
+          ))}
+          {selectedImages.length < 4 && (
+            <label className="cursor-pointer flex flex-col items-center justify-center aspect-square rounded-md border p-1">
+              <span className="text-gray-500 text-center">
+                Click to upload an image
+              </span>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleImageChange}
+                className="hidden"
+                multiple
+              />
+            </label>
+          )}
+        </div>
         <div>
           <h2 className="text-xl font-bold">Select your interests</h2>
-          <div className="flex gap-2 items-center ">
-            <h2 className="text-xl font-bold">Interests</h2>
-            {selectedInterests.length > 0 &&
-              selectedInterests.map((interest) => (
-                <Button
-                  key={interest.id}
-                  type="button"
-                  className="bg-gray-200 p-1 m-1"
-                >
-                  #{interest}
-                </Button>
-              ))}
-          </div>
-          {interests.length > 0 &&
-            interests.map((interest) => (
+          <div className="flex gap-2 items-center flex-wrap">
+            {selectedInterests.map((interest, index) => (
               <Button
-                key={interest.id}
+                key={index}
                 type="button"
-                className="bg-gray-200 m-1"
-                onClick={selectInterest(interest.name)}
-                size="sm"
+                className="bg-red-tertiary text-white"
               >
-                #{interest.name}
+                #{interest}
               </Button>
             ))}
+          </div>
+          {interests.map((interest, index) => (
+            <button
+              key={index}
+              type="button"
+              className="bg-gray-300 m-1 text-gray-800 px-2 py-1 rounded-md text-xs"
+              onClick={() => selectInterest(interest.name)}
+            >
+              #{interest.name}
+            </button>
+          ))}
         </div>
+        <Button
+          type="submit"
+          className="w-full bg-blue-primary text-white bg-red-primary text-xl max-w-[300px] "
+        >
+          Save
+        </Button>
       </form>
     </div>
   );
 }
 
-export default index;
+export default ProfileSetting;
