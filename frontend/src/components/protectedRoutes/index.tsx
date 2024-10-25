@@ -3,6 +3,7 @@ import { jwtDecode } from "jwt-decode";
 import { getUser } from "@/api/methods/user";
 
 const ProtectedRoutes = () => {
+  return <Outlet />;
   const token = localStorage.getItem("access_token");
   if (token === null) {
     return <Navigate to="/signin" />;

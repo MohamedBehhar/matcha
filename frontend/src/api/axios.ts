@@ -22,7 +22,6 @@ instance.interceptors.response.use(
 		return response;
 	},
 	async (error:any) => {
-		alert("Error");
 		const originalRequest = error.config;
 		if (error?.response?.status === 403) {
 			localStorage.removeItem("access_token");

@@ -12,7 +12,6 @@ function index() {
     verifyEmail(token || "")
       .then((res) => {
         console.log(res);
-        alert("Email verified successfully");
         localStorage.setItem("access_token", res.access_token);
         localStorage.setItem("refresh_token", res.refresh_token);
         navigate("/");
