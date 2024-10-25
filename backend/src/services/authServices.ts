@@ -19,8 +19,8 @@ class AuthServices {
     this.refresh = this.refresh.bind(this);
     this.verifyEmail = this.verifyEmail.bind(this);
   }
-  private accessTokenMaxAge = 10
-  private refreshTokenMaxAge = 120
+  private accessTokenMaxAge = 3600;
+  private refreshTokenMaxAge = 3600 * 24;
 
   public async createTokens(user: User): Promise<Tokens> {
     const access_token = jwt.sign(

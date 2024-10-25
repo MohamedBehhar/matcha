@@ -4,6 +4,7 @@ import cors from 'cors';
 import bodyParser from 'body-parser';
 import authRoutes from './routers/authRoutes';
 import userRoutes from './routers/userRoutes';
+import interstsRoutes from './routers/interestsRoutes';
 import pool from './db/db';
 import authMiddleware from './lib/middleware/authMiddleware';
 import { Server, Socket } from 'socket.io';
@@ -29,6 +30,7 @@ pool.connect().then(() => {
 app.use('/api/auth', authRoutes);
 // app.use(authMiddleware);
 app.use('/api/user', userRoutes);
+app.use('/api/interests', interstsRoutes);
 
 
 
