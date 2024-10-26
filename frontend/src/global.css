@@ -121,12 +121,25 @@ body {
   max-width: 1200px;
 }
 
-.user-card {
+.card {
   transition: transform 0.3s ease, opacity 0.3s ease;
-  opacity: 1;
 }
 
-.user-card.exiting {
-  transform: scale(0.9);
-  opacity: 0.5;
+@keyframes swipe-left {
+  0% { transform: translateX(0); opacity: 1; }
+  100% { transform: translateX(-100%) rotate(-15deg); opacity: 0; }
 }
+
+@keyframes swipe-right {
+  0% { transform: translateX(0); opacity: 1; }
+  100% { transform: translateX(100%) rotate(15deg); opacity: 0; }
+}
+
+.swipe-left {
+  animation: swipe-left 0.3s ease-out forwards;
+}
+
+.swipe-right {
+  animation: swipe-right 0.3s ease-out forwards;
+}
+
