@@ -46,6 +46,18 @@ function ProfileSetting() {
     setProfilePicture(URL.createObjectURL(file));
   };
 
+  const handleSubmit = (event: any) => {
+    event.preventDefault();
+    const formData = new FormData();
+    formData.append("profile_picture", profilePicture);
+    formData.append("first_name", event.target.first_name.value);
+    formData.append("last_name", event.target.last_name.value);
+    formData.append("email", event.target.email.value);
+    formData.append("username", event.target.username.value);
+    formData.append("bio", event.target.bio.value);
+    console.log("formData", formData);
+  };
+
   return (
     <div className="container flex flex-col items-center justify-center h-screen">
       <h1 className="text-3xl font-bold text-center my-5">Profile Setting</h1>
@@ -80,7 +92,9 @@ function ProfileSetting() {
           className="flex-1 max-w-[200px] rounded-full"
         /> */}
       </div>
-      <form className="w-full max-w-[800px] border p-4 rounded-md">
+      <form className="w-full max-w-[800px] border p-4 rounded-md"
+        onSubmit={handleSubmit}
+      >
         <div className="grid md:grid-cols-3 sm:grid-cols-2 gap-5 w-full mb-4">
           <Input type="text" name="first_name" placeholder="First Name" />
           <Input name="last_name" type="text" placeholder="Last Name" />
