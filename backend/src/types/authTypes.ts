@@ -1,7 +1,5 @@
 import Schema from "../lib/validation";
 
-
-
 interface User {
   id: number;
   email: string;
@@ -13,8 +11,7 @@ interface User {
   is_authenticated: boolean;
 }
 
-
-interface Tokens{
+interface Tokens {
   access_token: string;
   refresh_token: string;
 }
@@ -32,7 +29,6 @@ interface SignUpInput {
   username: string;
 }
 
-
 interface verifyEmailReturn {
   id: number;
   email: string;
@@ -45,31 +41,41 @@ interface verifyEmailReturn {
   refresh_token: string;
 }
 
-
-
 const signInType = Schema.object({
   email: Schema.string().email().required(),
   password: Schema.string().min(6).required(),
-}); 
+});
 
 const signUpType = Schema.object({
   email: Schema.string().email().required(),
   password: Schema.string().min(6).required(),
   first_name: Schema.string().required(),
   last_name: Schema.string().required(),
-  username: Schema.string().required()
+  username: Schema.string().required(),
 });
+
+
 
 const verifyTokenType = Schema.object({
   token: Schema.string().required(),
 });
 
-const TokenType  = Schema.object({
+const TokenType = Schema.object({
   access_token: Schema.string().required(),
 });
 const RefreshTYPE = Schema.object({
   refresh_token: Schema.string().required(),
 });
 
-
-export { User, signInInput, SignUpInput, signInType, signUpType, TokenType, Tokens, RefreshTYPE, verifyTokenType, verifyEmailReturn };
+export {
+  User,
+  signInInput,
+  SignUpInput,
+  signInType,
+  signUpType,
+  TokenType,
+  Tokens,
+  RefreshTYPE,
+  verifyTokenType,
+  verifyEmailReturn,
+};
