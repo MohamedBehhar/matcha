@@ -32,15 +32,16 @@ class AuthControllers {
   @handleResponse()
   public async logout(req: Request, res: Response) {
     const body: {
-      refresh_token: string;
+      refresh_token: string | undefined;
     } = RefreshTYPE.validate(req.body);
+    if (!body.refresh_token) throw new Error("Invalid token");
     await authServices.logout(body.refresh_token);
     return { message: "Logout successful" } as unknown as void;
   }
   @handleResponse()
   public async refresh(req: Request, res: Response) {
     const body: {
-      refresh_token: string;
+      refresh_token: string | undefined;
     } = RefreshTYPE.validate(req.body);
     if (!body.refresh_token) throw new Error("Invalid token");
     const user = await authServices.refresh(body.refresh_token);
@@ -50,7 +51,7 @@ class AuthControllers {
   @handleResponse()
   public async verifyEmail(req: Request, res: Response) {
     const body: {
-      token: string;
+      token: string | undefined;
     } = verifyTokenType.validate(req.params);
     if (!body.token) throw new Error("Invalid token");
     const user = await authServices.verifyEmail(body.token);

@@ -47,15 +47,16 @@ function isSQLInjection(input: string): boolean {
   
   
   
-  class IsBoolean extends Schema<boolean> {
+
+  class IsBoolean<T = boolean> extends Schema<T> {
     private requiredData: boolean | undefined;
-    private defaultData: boolean | undefined;
+    private defaultData: T | undefined;
     private messageError: string | undefined;
   
     constructor() {
       super((data) => {
         if (!data && !this.defaultData && this.requiredData) {
-         throw new ValidationError(this.messageError || "Value is required");
+          throw new ValidationError(this.messageError || "Value is required");
         }
         if (!data && this.defaultData) {
           data = this.defaultData;
@@ -63,7 +64,7 @@ function isSQLInjection(input: string): boolean {
         if (typeof data !== "boolean") {
           throw new ValidationError("Value must be a boolean");
         }
-        return data;
+        return data as T;
       });
     }
   
@@ -77,30 +78,35 @@ function isSQLInjection(input: string): boolean {
   
     optional(): this {
       if (this.requiredData === true)
-        throw new ValidationError("Cannot set optional to true after setting it to false");
+        throw new Error("Cannot set optional to true after setting it to false");
       this.requiredData = false;
       return this;
     }
   
-    default(defaultValue: boolean): this {
+    default(defaultValue: T): this {
       this.defaultData = defaultValue;
       return this;
     }
   }
-  class IsNumber extends Schema<number> {
+  
+
+  class IsNumber<T = number> extends Schema<T> {
     private requiredData: boolean | undefined;
-    private defaultData: number | undefined;
+    private defaultData: T | undefined;
     private messageError: string | undefined;
     private minData: number | undefined;
     private maxData: number | undefined;
   
     constructor() {
       super((data) => {
-       if (!data && !this.defaultData && this.requiredData) {
+        if (!data && !this.defaultData && this.requiredData) {
           throw new ValidationError(this.messageError || "Value is required");
         }
         if (!data && this.defaultData) {
-         data = this.defaultData;
+          data = this.defaultData;
+        }
+        if (!data && this.requiredData === false) {
+          return undefined as T;
         }
         if (typeof data !== "number") {
           throw new ValidationError("Value must be a number");
@@ -111,8 +117,7 @@ function isSQLInjection(input: string): boolean {
         if (this.maxData && data > this.maxData) {
           throw new ValidationError(this.messageError || `Value must be at most ${this.maxData}`);
         }
-        return data;
-  
+        return data as T;
       });
     }
   
@@ -129,7 +134,7 @@ function isSQLInjection(input: string): boolean {
       if (message) this.messageError = message;
       return this;
     }
-   
+  
     required(message?: string): this {
       if (this.requiredData === false)
         throw new Error("Cannot set required to false after setting it to true");
@@ -145,7 +150,7 @@ function isSQLInjection(input: string): boolean {
       return this;
     }
   
-    default(defaultValue: number): this {
+    default(defaultValue: T): this {
       this.defaultData = defaultValue;
       return this;
     }
@@ -170,12 +175,18 @@ function isSQLInjection(input: string): boolean {
         const resultObj: Record<string, any> = {};
   
         for (const key in this.schema) {
+          try{
           const value = (data as any)[key];
           const schema = this.schema[key];
           const result = schema.validate(value);
-       
-          resultObj[key] = result;
+
+          if (result !== undefined)
+            resultObj[key] = result;
         }
+        catch (error:any) {
+          throw new ValidationError(`${key}: ${error?.message}`);
+          
+        }}
   
         return resultObj as T;
       });
@@ -266,24 +277,27 @@ function isSQLInjection(input: string): boolean {
       return this;
     }
   }
-  class IsString extends Schema<string> {
+
+  class IsString<T = string> extends Schema<T> {
     private maxLength: number | undefined;
     private minLength: number | undefined;
     private requiredData: boolean | undefined;
     private regexData: RegExp | undefined;
     private messageError: string | undefined;
+    
     constructor() {
       super((data) => {
-
-       
-        if (typeof data !== "string" ) {
+        if (!data && this.requiredData === false) {
+          return undefined as T;
+        }
+        if (this.requiredData && !data) {
+          throw new ValidationError(this.messageError || "Value is required");
+        }
+        if (typeof data !== "string") {
           throw new ValidationError("Value must be a string");
         }
         if (isSQLInjection(data)) {
           throw new ValidationError("Hackers are not allowed here! :)💀💀");
-        }
-        if (this.requiredData && !data) {
-          throw new ValidationError(this.messageError || "Value is required");
         }
         if (this.minLength && data.length < this.minLength) {
           throw new ValidationError(this.messageError || `Value must be at least ${this.minLength} characters`);
@@ -294,50 +308,48 @@ function isSQLInjection(input: string): boolean {
         if (this.regexData && !this.regexData.test(data)) {
           throw new ValidationError(this.messageError || `Value must match regex ${this.regexData}`);
         }
-       
-        return data;
-      }
-    );
+        return data as T;
+      });
     }
   
-    min(min: number, message?:string): this {
-      if (this.requiredData === false)
-        return this;
+    min(min: number, message?: string): this {
+      if (this.requiredData === false) return this;
       this.minLength = min;
-      if (message)
-        this.messageError = message;
+      if (message) this.messageError = message;
       return this;
     }
-    max(max: number, message?:string): this {
-      if (this.requiredData === false)
-        return this;
+  
+    max(max: number, message?: string): this {
+      if (this.requiredData === false) return this;
       this.maxLength = max;
-      if (message)
-        this.messageError = message;
+      if (message) this.messageError = message;
       return this;
     }
-    required(message?:string): this {
+  
+    required(message?: string): this {
       if (this.requiredData === false)
         throw new Error("Cannot set required to false after setting it to true");
       this.requiredData = true;
-      if (message)
-        this.messageError = message;
+      if (message) this.messageError = message;
       return this;
     }
+  
     regex(regex: RegExp, message: string): this {
       this.regexData = regex;
+      this.messageError = message;
       return this;
     }
+  
     optional(): this {
       if (this.requiredData === true)
         throw new Error("Cannot set optional to true after setting it to false");
       this.requiredData = false;
       return this;
     }
+  
     email(): this {
       this.regexData = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       return this;
     }
   }
-  
 export default  Schema;
