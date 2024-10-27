@@ -5,6 +5,9 @@ import MySelect from "@/components/ui/MySelect";
 import { getInterests } from "@/api/methods/interest";
 import { MdOutlineDeleteForever } from "react-icons/md";
 import { FaRegEdit } from "react-icons/fa";
+import { updateUser } from "@/api/methods/user";
+
+
 function ProfileSetting() {
   const [interests, setInterests] = useState([]);
   const [selectedInterests, setSelectedInterests] = useState([]);
@@ -43,10 +46,14 @@ function ProfileSetting() {
   const [profilePicture, setProfilePicture] = useState("");
   const handelProfilePicture = (event: any) => {
     const file = event.target.files[0];
-    setProfilePicture(URL.createObjectURL(file));
+    console.log(file);
+    setProfilePicture(
+      file
+    );
   };
 
   const handleSubmit = (event: any) => {
+    const id = 1;
     event.preventDefault();
     const formData = new FormData();
     formData.append("profile_picture", profilePicture);
@@ -55,7 +62,16 @@ function ProfileSetting() {
     formData.append("email", event.target.email.value);
     formData.append("username", event.target.username.value);
     formData.append("bio", event.target.bio.value);
+    formData.append("gender", event.target.gender.value);
+    formData.append("sexual_preference", event.target.sexual_preference.value);
     console.log("formData", formData);
+    updateUser(formData, id)
+      .then((data) => {
+        console.log(data);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
   };
 
   return (
@@ -65,12 +81,16 @@ function ProfileSetting() {
         {profilePicture ? (
           <div className=" relative ">
             <img
-              src={profilePicture}
+              src={
+                profilePicture
+                  ? URL.createObjectURL(profilePicture)
+                  : "https://randomuser.me/api/portrait"
+              }
               alt="profile"
               className="flex-1 max-w-[200px] rounded-full"
             />
             <FaRegEdit className="absolute top-0 right-0" 
-            onClick={() => setProfilePicture("")}
+            onClick={() => setProfilePicture('')}
             />
           </div>
         ) : (
@@ -100,10 +120,11 @@ function ProfileSetting() {
           <Input name="last_name" type="text" placeholder="Last Name" />
           <Input name="email" type="email" placeholder="Email" />
           <Input name="username" type="text" placeholder="Username" />
-          <MySelect options={["male", "female"]} placeholder="Gender" />
+          <MySelect options={["male", "female"]} placeholder="Gender" name="gender"/>
           <MySelect
             options={["male", "female"]}
             placeholder="Sexual preferences"
+            name="sexual_preference"
           />
         </div>
         <Input name="bio" type="text" placeholder="Bio" className="mb-4" />

@@ -3,6 +3,7 @@ CREATE DATABASE MATCHA_DB;
 CREATE EXTENSION IF NOT EXISTS postgis;
 ALTER DATABASE MATCHA_DB OWNER TO matcha;
 CREATE TYPE gender_type AS ENUM ('male', 'female');
+CREATE TYPE  sexual_preference_type AS ENUM ('male', 'female', 'bi');
 CREATE TABLE users (
 	id SERIAL PRIMARY KEY,
 	username VARCHAR(50) NOT NULL,
@@ -16,6 +17,7 @@ CREATE TABLE users (
 	bio TEXT,
 	rating INTEGER DEFAULT 0,
 	gender gender_type DEFAULT NULL,
+	sexual_preference sexual_preference_type DEFAULT 'bi',
 	latitude DOUBLE PRECISION,
 	longitude DOUBLE PRECISION,
 	location GEOMETRY(POINT, 4326),
