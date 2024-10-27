@@ -5,7 +5,7 @@ import SignupImg from "@/assets/images/signupImg.svg?react";
 import { signIn } from "@/api/methods/auth";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-
+import { Link } from "react-router-dom";
 function index() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
@@ -53,6 +53,14 @@ function index() {
             {isLoading ? "Loading..." : "Sign In"}
           </Button>
         </form>
+      </div>
+      <div>
+        <p>
+          Don't have an account?{" "}
+          <Link to="/signup" className="text-red-primary">
+            Sign Up
+          </Link>
+        </p>
       </div>
     </div>
   );

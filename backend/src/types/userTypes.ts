@@ -15,7 +15,6 @@ const updateUserDto = Schema.object({
     last_name: Schema.string().optional(),
     username: Schema.string().optional(),
     bio: Schema.string().optional(),
-    profile_picture: Schema.string().optional(),
     gender : Schema.string().optional(),
     sexual_preference: Schema.string().optional(),
 });
