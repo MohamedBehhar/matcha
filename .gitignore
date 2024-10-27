@@ -1,5 +1,4 @@
 backend/src/public
 .env
-./*/node_modules
-
-frontend/node_modules	
+*/.env
+*/node_modules
