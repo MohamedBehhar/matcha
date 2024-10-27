@@ -5,8 +5,8 @@ import upload from "../lib/middleware/uploadMidelware"; // Assumes `uploadMiddle
 const router = Router();
 
 router.get("/me", userControllers.me);
-router.post("/", upload.single("image"), userControllers.create); // Image upload on create
-router.patch("/:id", upload.single("image"), userControllers.update); // Image upload on update
+router.post("/", userControllers.create); // Image upload on create
+router.patch("/:id", upload.single("profile_picture"), userControllers.update);
 router.delete("/:id", userControllers.delete);
 
 export default router;

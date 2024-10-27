@@ -8,18 +8,25 @@ import {
   function MySelect({
 	options,
 	placeholder,
+	name,
   }: {
 	options: string[];
 	placeholder: string;
+	name: string;
   }) {
 	return (
-	  <Select className="">
-		<SelectTrigger className="">
-		  <SelectValue placeholder={placeholder} />
+	  <Select
+		name={name}
+	  >
+		<SelectTrigger >
+		  <SelectValue placeholder={placeholder}  />
 		</SelectTrigger>
-		<SelectContent>
+		<SelectContent
+
+		>
 		  {options.map((option) => (
-			<SelectItem key={option} value={option}>
+			<SelectItem key={option} value={option} 
+			>
 			  {option}
 			</SelectItem>
 		  ))}
