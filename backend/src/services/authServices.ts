@@ -96,9 +96,8 @@ class AuthServices {
 
         await transporter.sendMail(mailOptions);
       }
-      return {
-        ...newUser,
-      };
+
+      return newUser;
     } catch (err) {
       throw err;
     }

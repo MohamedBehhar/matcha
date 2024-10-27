@@ -8,7 +8,6 @@ interface User {
   password: string;
   first_name: string;
   last_name: string;
-  phone_number: string;
   username: string;
   is_verified: boolean;
   is_authenticated: boolean;
@@ -58,8 +57,7 @@ const signUpType = Schema.object({
   password: Schema.string().min(6).required(),
   first_name: Schema.string().required(),
   last_name: Schema.string().required(),
-  username: Schema.string().required(),
-  phone_number: Schema.string().required(),
+  username: Schema.string().required()
 });
 
 const verifyTokenType = Schema.object({
