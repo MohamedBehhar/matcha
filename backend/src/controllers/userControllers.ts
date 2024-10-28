@@ -33,14 +33,17 @@ class UserControllers {
   @handleResponse()
   public async update(req: Request, res: Response) {
     const body = updateUserDto.validate(req.body);
+    body.profile_picture = req.file?.path || "";
     const user = await userServices.update(body, req.params.id);
-
-    // Handle image if uploaded
     if (req.file) {
       await userServices.addUserImage(req.params.id, req.file);
     }
-
     return user as unknown as void;
+  }
+
+  @handleResponse()
+  public async addUserInterests(req: Request, res: Response) {
+    return await userServices.addUserInterests(req.params.id, req.body.interests) as unknown as void;
   }
 
   @handleResponse()
