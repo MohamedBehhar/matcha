@@ -47,6 +47,11 @@ class UserControllers {
   }
 
   @handleResponse()
+  public async getUsersById(req: Request, res: Response) {
+    return await userServices.getUsersById(req.params.id) as unknown as void;
+  }
+
+  @handleResponse()
   public async delete(req: Request, res: Response) {
     return await userServices.delete(req.params.id) as unknown as void;
   }

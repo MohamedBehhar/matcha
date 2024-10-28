@@ -26,6 +26,7 @@ function index() {
       navigate("/");
     } catch (error) {
       setError(error.response.data);
+
     }
     setIsLoading(false);
   };
