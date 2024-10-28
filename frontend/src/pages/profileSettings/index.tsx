@@ -162,16 +162,18 @@ function ProfileSetting() {
             options={["male", "female"]}
             placeholder="Gender"
             name="gender"
-            defaultValue={userInfo.gender}
+            defaultValue={userInfo.gender || ''}
           />
           <MySelect
             options={["male", "female"]}
             placeholder="Sexual preferences"
             name="sexual_preference"
-            defaultValue={userInfo.sexual_preference}
+            defaultValue={userInfo.sexual_preference || ''}
           />
         </div>
-        <Input name="bio" type="text" placeholder="Bio" className="mb-4" />
+        <Input name="bio" type="text" placeholder="Bio" className="mb-4" 
+        defaultValue={userInfo.bio}
+        />
         <div className="images grid grid-cols-4 gap-4 mb-4">
           {selectedImages.map((image, index) => (
             <div className="flex flex-col items-center relative" key={index}>

@@ -10,7 +10,7 @@ const createUserDto =  Schema.object({
 });
 
 const updateUserDto = Schema.object({
-    profile_picture: Schema.string(),
+    profile_picture: Schema.string().optional(),
     email: Schema.string().email().optional(),
     first_name: Schema.string().optional(),
     last_name: Schema.string().optional(),

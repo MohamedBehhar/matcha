@@ -66,6 +66,17 @@ class UserService {
     return await orm.create("user_interests", userInterests);
   }
 
+  public async getUsersById(id: string) {
+    const interests = await orm.querySql(`
+      SELECT * FROM interests
+      JOIN user_interests
+      ON interests.id = user_interests.interest_id
+      WHERE user_interests.user_id = '${id}'
+    `)
+    const user =  await orm.findOne("users", { where: { id } });
+    return { ...user, interests };
+  }
+
   public async delete(id: string) {
     return await orm.delete("users", id);
   }

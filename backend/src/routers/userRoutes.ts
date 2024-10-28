@@ -9,5 +9,6 @@ router.post("/", userControllers.create); // Image upload on create
 router.patch("/:id", upload.single("profile_picture"), userControllers.update);
 router.patch("/:id/interests", userControllers.addUserInterests);
 router.delete("/:id", userControllers.delete);
+router.get("/:id", userControllers.getUsersById);
 
 export default router;

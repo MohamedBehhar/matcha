@@ -24,6 +24,7 @@ instance.interceptors.response.use(
 	async (error:any) => {
 		const originalRequest = error.config;
 		if (error?.response?.status === 403) {
+			alert("You are not authorized to access this resource");
 			localStorage.removeItem("access_token");
 			localStorage.removeItem("refresh_token");
 			window.location.href = "/";
