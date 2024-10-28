@@ -40,11 +40,9 @@ instance.interceptors.response.use(
 					}
 				);
 				if (!response.data.accessToken) {
-
-
 					throw new Error("No access token provided");
 				}
-				localStorage.setItem("token", response.data.accessToken);
+				localStorage.setItem("access_token", response.data.accessToken);
 
 
 				originalRequest.headers.Authorization = `Bearer ${response.data.accessToken}`;
