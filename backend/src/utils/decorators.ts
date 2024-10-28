@@ -24,7 +24,7 @@ export function handleResponse() {
         }
         let result: {
           status?: number;
-          data?: any | any[] | Record<string, unknown> | string;
+          data?: any;
         } = await original.call(this, req, res, next);
         if (result instanceof Error) {
           return next(result);
