@@ -24,22 +24,29 @@ function ProfileSetting() {
       });
   }, []);
 
-  const selectInterest = (name: string) => {
-    setSelectedInterests((prevSelected: any) =>
-      prevSelected.includes(name)
-        ? prevSelected.filter((interest: any) => interest !== name)
-        : [...prevSelected, name]
-    );
+  interface Interest {
+    id: number;
+    name: string;
+  }
+
+  const selectInterest = (interest: Interest) => {
+    if (selectedInterests.some((item) => item.id === interest.id)) {
+      setSelectedInterests((prevInterests : any) =>
+        prevInterests.filter((item : any) => item.id !== interest.id)
+      );
+      return;
+    }
+    setSelectedInterests((prevInterests : any) => [...prevInterests, interest]);
   };
 
   const handleImageChange = (event: any) => {
     const files = Array.from(event.target.files);
-    const newImages = files.map((file) => URL.createObjectURL(file));
-    setSelectedImages((prevImages) => [...prevImages, ...newImages]);
+    const newImages = files.map((file) => URL.createObjectURL(file as Blob));
+    setSelectedImages((prevImages : any) => [...prevImages, ...newImages]);
   };
 
   const handleRemoveImage = (image: any) => {
-    setSelectedImages((prevImages) =>
+    setSelectedImages((prevImages : any) =>
       prevImages.filter((img) => img !== image)
     );
   };
@@ -64,6 +71,9 @@ function ProfileSetting() {
     formData.append("bio", event.target.bio.value);
     formData.append("gender", event.target.gender.value);
     formData.append("sexual_preference", event.target.sexual_preference.value);
+    formData.append("interests", JSON.stringify(
+      selectedInterests.map((interest : any) => interest.id)
+    ));
     console.log("formData", formData);
     updateUser(formData, id)
       .then((data) => {
@@ -160,22 +170,22 @@ function ProfileSetting() {
         <div>
           <h2 className="text-xl font-bold">Select your interests</h2>
           <div className="flex gap-2 items-center flex-wrap">
-            {selectedInterests.map((interest, index) => (
+            {selectedInterests.map((interest : Interest) => (
               <Button
-                key={index}
+                key={interest.id}
                 type="button"
                 className="bg-red-tertiary text-white"
               >
-                #{interest}
+                #{interest.name}
               </Button>
             ))}
           </div>
-          {interests.map((interest, index) => (
+          {interests.map((interest) => (
             <button
-              key={index}
+              key={interest.id}
               type="button"
               className="bg-gray-300 m-1 text-gray-800 px-2 py-1 rounded-md text-xs"
-              onClick={() => selectInterest(interest.name)}
+              onClick={() => selectInterest(interest)}
             >
               #{interest.name}
             </button>

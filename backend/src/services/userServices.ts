@@ -49,13 +49,21 @@ class UserService {
   }
 
   public async addUserImage(userId: string, file: any) {
-    // Save the image URL and set it as the profile picture if necessary
     console.log("file", file);
     return await orm.create("images", {
       user_id: userId,
       url: file.path,
-      is_profile: true, // or manage the logic to set `is_profile` accordingly
+      is_profile: true, 
     });
+  }
+
+  public async addUserInterests(userId: string, interests: string[]) {
+    const user = await orm.findOne("users", { where: { id: userId } });
+    if (!user) {
+      throw new UnauthorizedError("Unauthorized");
+    }
+    const userInterests = interests.map((interest) => ({ user_id: userId, interest }));
+    return await orm.create("user_interests", userInterests);
   }
 
   public async delete(id: string) {

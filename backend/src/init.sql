@@ -7,6 +7,7 @@ CREATE TYPE  sexual_preference_type AS ENUM ('male', 'female', 'bi');
 CREATE TABLE users (
 	id SERIAL PRIMARY KEY,
 	username VARCHAR(50) NOT NULL,
+	profile_picture VARCHAR(255),
 	email VARCHAR(255) NOT NULL,
 	password VARCHAR(255) NOT NULL,
 	first_name VARCHAR(50) NOT NULL,
@@ -30,8 +31,9 @@ CREATE TABLE interests (
 CREATE TABLE user_interests (
 	user_id INTEGER REFERENCES users(id),
 	interest_id INTEGER REFERENCES interests(id),
-	PRIMARY KEY (user_id, interest_id) -- Ensure uniqueness of user-interest combinations
+	PRIMARY KEY (user_id, interest_id)
 );
+
 CREATE TABLE images (
 	id SERIAL PRIMARY KEY,
 	user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
