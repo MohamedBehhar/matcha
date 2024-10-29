@@ -1,7 +1,7 @@
 CREATE DATABASE MATCHA_DB;
 \ c MATCHA_DB;
 CREATE EXTENSION IF NOT EXISTS postgis;
-ALTER DATABASE MATCHA_DB OWNER TO matcha;
+ALTER DATABASE MATCHA_DB OWNER TO postgres;
 CREATE TYPE gender_type AS ENUM ('male', 'female');
 CREATE TYPE sexual_preference_type AS ENUM ('male', 'female', 'bi');
 CREATE TABLE users (
@@ -96,7 +96,7 @@ CREATE TABLE freinds_requests (
 );
 CREATE TABLE chanel (
 	id SERIAL PRIMARY KEY,
-	name VARCHAR(255) NOT NULL,
+	name VARCHAR(255) NOT NULL UNIQUE,
 	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 CREATE TABLE chanel_users (
@@ -106,8 +106,6 @@ CREATE TABLE chanel_users (
 	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 	UNIQUE (user_id, chanel_id)
 );
-
-
 -- Seed users with specific coordinates for the required distances
 INSERT INTO users (
 		username,

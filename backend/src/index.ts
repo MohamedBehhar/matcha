@@ -11,6 +11,8 @@ import { Server, Socket } from 'socket.io';
 import userServices from './services/userServices';
 import multer from "multer";
 import path from 'path';
+import authServices from './services/authServices';
+import orm from './lib/orm';
 
 const PORT = 3000;
 const app = express();
@@ -45,15 +47,45 @@ const socket = new Server(server, {
 });
 
 
+socket.use(async (socket:any, next) => {
+  const token = socket.handshake.auth.token;
+  if (!token ||  !token.startsWith('Bearer ')) {
+    return next(new Error('Authentication error'));
+  }
+  const authToken = token.split(' ')[1];
+  const email = await authServices.verifyToken(authToken, process.env.JWT_SECRET as string);
+  if (email) {
+    socket.email = email;
+    return next();
+  } 
+  return next(new Error('Authentication error'));
+}
+);
 
-socket.on('connection', (socket) => {
-  console.log('User connected');
+socket.on('connection', async(socket:any) => {
+const email = socket.email; 
+const user = await orm.findOne("users", {
+  where: {
+    email: email,
+  },
+});
+if (!user){
+  socket.disconnect();
+}
+  const chanels = await orm.findMany("chanel_users", {
+    select: ['chanel_id'],
+    where: {
+      user_id: user.id,
+    },
+  });
+
+  if (chanels) {
+    chanels.forEach(async (chanel:any) => {
+      socket.join(chanel.chanel_id);
+    });
+  }
   socket.on('disconnect', () => {
     console.log('User disconnected');
-  });
-  socket.on('chat message', (msg) => {
-    console.log('message: ' + msg);
-    // socket.broadcast.emit('chat message', msg);
   });
   userServices.initSocket(socket as unknown as any);
 });
@@ -62,7 +94,6 @@ socket.on('error', (err) => {
   console.log(err);
 }
 );
-
 
 
 server.listen(PORT, () => {

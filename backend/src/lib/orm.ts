@@ -9,6 +9,7 @@ type QueryFindMany = {
   };
   limit?: number;
   offset?: number;
+  select?: string[];
 };
 
 type QueryFindOne = {
@@ -17,7 +18,10 @@ type QueryFindOne = {
 class OrmMatcha {
   async findMany(table: string, query: QueryFindMany) {
     try {
-      let sql = `SELECT * FROM ${table}`;
+      if (!query.select) {
+        query.select = ["*"];
+      }
+      let sql = `SELECT ${query.select.join(", ")} FROM ${table}`;
       let values: any[] = [];
       if (query.where) {
         const where = Object.keys(query.where).map((key, index) => {

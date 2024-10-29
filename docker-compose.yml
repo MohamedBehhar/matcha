@@ -31,7 +31,6 @@ services:
     restart: always
     ports:
       - "3000:3000"
-      - "5555:5555"
     volumes:
       - ./backend:/app
       - /app/node_modules
@@ -47,7 +46,7 @@ services:
     container_name: matcha-postgres
     restart: always
     volumes:
-      - postgres:/var/lib/postgresql/data
+      - ./backend/db/postgres:/var/lib/postgresql/data
     env_file:
       - .env
     ports:
