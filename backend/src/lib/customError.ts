@@ -10,8 +10,6 @@ export class CustomError extends Error {
     }
 }
 
-
-
 export class NotFoundError extends CustomError {
   constructor(message: string) {
     super(message, 404);

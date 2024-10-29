@@ -34,8 +34,6 @@ class UserControllers {
   public async update(req: Request, res: Response) {
     const body = updateUserDto.validate(req.body);
     const user = await userServices.update(body, req.params.id);
-
-    // Handle image if uploaded
     if (req.file) {
       await userServices.addUserImage(req.params.id, req.file);
     }

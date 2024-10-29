@@ -3,7 +3,7 @@ CREATE DATABASE MATCHA_DB;
 CREATE EXTENSION IF NOT EXISTS postgis;
 ALTER DATABASE MATCHA_DB OWNER TO matcha;
 CREATE TYPE gender_type AS ENUM ('male', 'female');
-CREATE TYPE  sexual_preference_type AS ENUM ('male', 'female', 'bi');
+CREATE TYPE sexual_preference_type AS ENUM ('male', 'female', 'bi');
 CREATE TABLE users (
 	id SERIAL PRIMARY KEY,
 	username VARCHAR(50) NOT NULL,
@@ -71,6 +71,7 @@ CREATE TABLE messages (
 	sender_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
 	recipient_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
 	content TEXT NOT NULL,
+	chanel_id VARCHAR(255) NOT NULL,
 	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 CREATE TABLE notifications (
@@ -93,6 +94,20 @@ CREATE TABLE freinds_requests (
 	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 	UNIQUE (user_id, requested_id)
 );
+CREATE TABLE chanel (
+	id SERIAL PRIMARY KEY,
+	name VARCHAR(255) NOT NULL,
+	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+CREATE TABLE chanel_users (
+	id SERIAL PRIMARY KEY,
+	user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+	chanel_id INTEGER NOT NULL REFERENCES chanel(id) ON DELETE CASCADE,
+	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	UNIQUE (user_id, chanel_id)
+);
+
+
 -- Seed users with specific coordinates for the required distances
 INSERT INTO users (
 		username,
@@ -147,8 +162,15 @@ VALUES (
 		ST_SetSRID(ST_MakePoint(-118.2938, 34.0530), 4326)
 	);
 -- Farther user (within 10 km)
-
 INSERT INTO interests (name)
-VALUES ('Music'), ('Movies'), ('Sports'), ('Travel'), ('Reading'), 
-       ('Cooking'), ('Gaming'), ('Photography'), ('Art'), 
-       ('Fashion'), ('Fitness');
+VALUES ('Music'),
+	('Movies'),
+	('Sports'),
+	('Travel'),
+	('Reading'),
+	('Cooking'),
+	('Gaming'),
+	('Photography'),
+	('Art'),
+	('Fashion'),
+	('Fitness');
