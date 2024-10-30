@@ -3,7 +3,6 @@ import { jwtDecode } from "jwt-decode";
 import { getUser } from "@/api/methods/user";
 
 const ProtectedRoutes = () => {
-  // return <Outlet />;
   const token = localStorage.getItem("access_token");
   if (token === null) {
     return <Navigate to="/signin" />;
@@ -12,6 +11,7 @@ const ProtectedRoutes = () => {
   const isExpired = decoded.exp * 1000 < Date.now();
 
   if (isExpired) {
+    alert("Session expired, please sign in again");
     getUser();
   }
 

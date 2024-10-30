@@ -22,7 +22,7 @@ class UserService {
   }
 
   public async me(token: string | undefined) {
-    const email = await authServices.verifyToken(token as string, env.JWT_SECRET as string);
+    const email = await authServices.verifyToken(token as string, env.JWT_SECRET as string, "access");
     if (!email) {
       throw new UnauthorizedError("Unauthorized");
     }
@@ -49,7 +49,6 @@ class UserService {
   }
 
   public async addUserImage(userId: string, file: any) {
-    console.log("file", file);
     return await orm.create("images", {
       user_id: userId,
       url: file.path,

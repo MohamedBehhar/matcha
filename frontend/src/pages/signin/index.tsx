@@ -20,9 +20,9 @@ function index() {
     };
     try {
       const response = await signIn(signInInput);
-      console.log(response);
       localStorage.setItem("access_token", response.access_token);
       localStorage.setItem("refresh_token", response.refresh_token);
+      localStorage.setItem("id", response.id);
       navigate("/");
     } catch (error) {
       setError(error.response.data);

@@ -19,8 +19,8 @@ class AuthServices {
     this.refresh = this.refresh.bind(this);
     this.verifyEmail = this.verifyEmail.bind(this);
   }
-  private accessTokenMaxAge = 3600;
-  private refreshTokenMaxAge = 3600 * 24;
+  private accessTokenMaxAge = 60 * 30;
+  private refreshTokenMaxAge = 60 * 60 ;
 
   public async createTokens(user: User): Promise<Tokens> {
     const access_token = jwt.sign(
@@ -37,12 +37,16 @@ class AuthServices {
         expiresIn: this.refreshTokenMaxAge,
       }
     );
+
+    await this.setTokensInRedis({ access_token, refresh_token }, user.email);  
+
     return { access_token, refresh_token };
   }
 
   public async verifyToken(
     token: string,
-    secret: string
+    secret: string,
+    type: string
   ): Promise<string | null> {
     try {
       jwt.verify(token, secret);
@@ -52,7 +56,13 @@ class AuthServices {
       if (!decoded.email) {
         return null;
       }
-      const checkRedis = await getKey(`access_token_${decoded.email}`);
+      let checkRedis = null;
+      if (type === "access") {
+         checkRedis = await getKey(`access_token_${decoded.email}`);
+      }
+      if (type === "refresh") {
+         checkRedis = await getKey(`refresh_token_${decoded.email}`);
+      }
       if (!checkRedis) {
         return null;
       }
@@ -111,7 +121,8 @@ class AuthServices {
     if (!user) {
       throw new ForbiddenError("User not found");
     }
-    if (!user.is_verified) {
+
+    if (false == user.is_verified) {
       throw new ForbiddenError("Account not verified");
     }
     const isMatch = await bcrypt.compare(data.password, user.password);
@@ -121,8 +132,8 @@ class AuthServices {
     await orm.update("users", user.id, { is_authenticated: true });
 
     const tokens = await this.createTokens(user);
-    await this.setTokensInRedis(tokens, user.email);
-    if (false == user.is_verified) {
+
+    if (true == user.is_verified) {
       delete (user as { password?: string }).password;
       return {
         ...user,
@@ -135,7 +146,8 @@ class AuthServices {
     try {
       const email = await this.verifyToken(
         access_token,
-        process.env.JWT_SECRET as string
+        process.env.JWT_SECRET as string,
+        "access"
       );
       if (!email) {
         throw new UnauthorizedError("Invalid token");
@@ -149,16 +161,21 @@ class AuthServices {
 
 
   public async setTokensInRedis(tokens: Tokens, email: string): Promise<void> {
-    await setKey(
-      `access_token_${email}`,
-      tokens.access_token,
-      this.accessTokenMaxAge
-    );
-    await setKey(
-      `refresh_token_${email}`,
-      tokens.refresh_token,
-      this.refreshTokenMaxAge
-    );
+    try {
+      await setKey(
+        `access_token_${email}`,
+        tokens.access_token,
+        this.accessTokenMaxAge
+      );
+      await setKey(
+        `refresh_token_${email}`,
+        tokens.refresh_token,
+        this.refreshTokenMaxAge
+      );
+    } catch (err) {
+      throw err;
+    }
+
   }
 
   public async refresh(refresh_token: string): Promise<{
@@ -168,19 +185,12 @@ class AuthServices {
     try {
       const email = await this.verifyToken(
         refresh_token,
-        process.env.REFRESH_SECRET as string
+        process.env.REFRESH_SECRET as string,
+        "refresh"
       );
       if (!email) {
         throw new ForbiddenError("Invalid token");
       }
-      const decoded = await jwt.verify(
-        refresh_token,
-        process.env.REFRESH_SECRET as string
-      ) as {
-        email: string;
-      };
-      console.log('decoded ',decoded);
-      console.log('90909090 9009 ',email);
       if (!email) {
         throw new UnauthorizedError("Invalid token");
       }
