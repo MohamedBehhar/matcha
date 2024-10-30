@@ -6,6 +6,7 @@ import { getInterests } from "@/api/methods/interest";
 import { MdOutlineDeleteForever } from "react-icons/md";
 import { FaRegEdit } from "react-icons/fa";
 import { updateUser, getUserById } from "@/api/methods/user";
+import userImg from "@/assets/images/user.png";
 
 function ProfileSetting() {
   const [interests, setInterests] = useState([]);
@@ -63,6 +64,32 @@ function ProfileSetting() {
     setProfilePicture(file);
   };
 
+  const [location, setLocation] = useState(null);
+  const [error, setError] = useState(null);
+
+  const handleGetLocation = () => {
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setLocation({
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+          });
+          setError(null);
+        },
+        (error) => {
+          setError("Unable to retrieve location.");
+        }
+      );
+    } else {
+      setError("Geolocation is not supported by this browser.");
+    }
+  };
+
+  useEffect(() => {
+    handleGetLocation();
+  }, []);
+
   const handleSubmit = (event: any) => {
     event.preventDefault();
     const formData = new FormData();
@@ -91,6 +118,12 @@ function ProfileSetting() {
   return (
     <div className="container flex flex-col items-center justify-center h-screen">
       <h1 className="text-3xl font-bold text-center my-5">Profile Setting</h1>
+      {error && <div className="text-red-500 text-sm">{error}</div>}
+      <p>
+        {location
+          ? `Latitude: ${location.latitude}, Longitude: ${location.longitude}`
+          : "Retrieving location ..."}
+      </p>
       <div className="flex items-center justify-center  p-4 rounded-full w-[300px]">
         {profilePicture ? (
           <div className=" relative ">
@@ -101,7 +134,11 @@ function ProfileSetting() {
                   : `http://localhost:3000${userInfo.profile_picture}`
               }
               alt="profile"
-              className="flex-1 max-w-[200px] rounded-full"
+              className="flex-1 w-[200px] aspect-square object-cover  rounded-full"
+              onError={(e: any) => {
+                e.target.onerror = null;
+                e.target.src = userImg;
+              }}
             />
             <FaRegEdit
               className="absolute top-0 right-0"
@@ -121,11 +158,6 @@ function ProfileSetting() {
             />
           </label>
         )}
-        {/* <img
-          src="https://randomuser.me/api/portraits/men/75.jpg"
-          alt="profile"
-          className="flex-1 max-w-[200px] rounded-full"
-        /> */}
       </div>
       <form
         className="w-full max-w-[800px] border p-4 rounded-md"
@@ -160,17 +192,21 @@ function ProfileSetting() {
             options={["male", "female"]}
             placeholder="Gender"
             name="gender"
-            defaultValue={userInfo.gender || ''}
+            defaultValue={userInfo.gender || ""}
           />
           <MySelect
             options={["male", "female"]}
-            placeholder="Sexual preferences"
+            placeholder="Sexual"
             name="sexual_preference"
-            defaultValue={userInfo.sexual_preference || ''}
+            defaultValue={userInfo.sexual_preference || ""}
           />
         </div>
-        <Input name="bio" type="text" placeholder="Bio" className="mb-4" 
-        defaultValue={userInfo.bio}
+        <Input
+          name="bio"
+          type="text"
+          placeholder="Bio"
+          className="mb-4"
+          defaultValue={userInfo.bio}
         />
         <div className="images grid grid-cols-4 gap-4 mb-4">
           {selectedImages.map((image, index) => (

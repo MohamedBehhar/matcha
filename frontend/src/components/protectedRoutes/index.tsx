@@ -11,7 +11,6 @@ const ProtectedRoutes = () => {
   const isExpired = decoded.exp * 1000 < Date.now();
 
   if (isExpired) {
-    alert("Session expired, please sign in again");
     getUser();
   }
 
