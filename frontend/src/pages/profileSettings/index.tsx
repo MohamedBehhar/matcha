@@ -60,7 +60,6 @@ function ProfileSetting() {
   const [profilePicture, setProfilePicture] = useState("");
   const handelProfilePicture = (event: any) => {
     const file = event.target.files[0];
-    console.log(file);
     setProfilePicture(file);
   };
 
@@ -79,7 +78,6 @@ function ProfileSetting() {
       "interests",
       JSON.stringify(selectedInterests.map((interest) => interest.id))
     );
-    console.log("formData", formData);
     if (!id) return;
     updateUser(formData, id)
       .then((data) => {

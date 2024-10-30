@@ -27,11 +27,11 @@ instance.interceptors.response.use(
 			alert("You are not authorized to access this resource");
 			localStorage.removeItem("access_token");
 			localStorage.removeItem("refresh_token");
+			localStorage.removeItem("id");
 			window.location.href = "/";
 		}
 		if (error?.response?.status === 401 && !originalRequest._retry) {
 			try {
-
 
 				const response = await instance.post("/auth/refresh",
 					{
@@ -41,6 +41,7 @@ instance.interceptors.response.use(
 					}
 				);
 				if (!response.data.accessToken) {
+					alert("No access token provided");
 					throw new Error("No access token provided");
 				}
 				localStorage.setItem("access_token", response.data.accessToken);
@@ -52,9 +53,6 @@ instance.interceptors.response.use(
 				originalRequest._retry = true;
 				return axios(originalRequest);
 			} catch (refreshError) {
-
-				console.log("Error refreshing token:", refreshError);
-
 				throw refreshError;
 			}
 		}

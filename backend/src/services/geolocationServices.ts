@@ -16,7 +16,6 @@ const getUsersUnderRadius = async (
 	  );
 	`;
   
-	console.log("service", latitude, longitude, radius);
 	try {
 	  const { rows } = await db.query(query, [latitude, longitude, radius]);
 	  return rows;
