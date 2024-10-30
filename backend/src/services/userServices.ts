@@ -56,28 +56,51 @@ class UserService {
     });
   }
 
-  public async addUserInterests(userId: string, interests: string[]) {
+  public async addUserInterests(userId: string, interestsIds: string[]) {
     const user = await orm.findOne("users", { where: { id: userId } });
     if (!user) {
-      throw new UnauthorizedError("Unauthorized");
+      throw new Error("User not found");
     }
-    const userInterests = interests.map((interest) => ({ user_id: userId, interest }));
-    return await orm.create("user_interests", userInterests);
+    const userInterests = await orm.querySql(`
+      SELECT * FROM user_interests WHERE user_id = $1
+    `, [userId]);
+    if (userInterests.length) {
+      await orm.querySql(`
+        DELETE FROM user_interests WHERE user_id = $1
+      `, [userId]);
+    }
+    for (const interestId of interestsIds) {
+      await orm.create("user_interests", {
+        user_id: userId,
+        interest_id: interestId,
+      });
+    }
+
+  
+    return [];
   }
+
+  
 
   public async getUsersById(id: string) {
     const interests = await orm.querySql(`
-      SELECT * FROM interests
-      JOIN user_interests
-      ON interests.id = user_interests.interest_id
-      WHERE user_interests.user_id = '${id}'
-    `)
+    SELECT interests.*
+    FROM interests
+    JOIN user_interests ON interests.id = user_interests.interest_id
+    WHERE user_interests.user_id = $1
+  `, [id]);
     const user =  await orm.findOne("users", { where: { id } });
     return { ...user, interests };
   }
 
   public async delete(id: string) {
     return await orm.delete("users", id);
+  }
+
+  public async updateUserLocation(id: string, data: any) {
+    return await orm.querySql(
+    `UPDATE users SET location = ST_SetSRID(ST_MakePoint($1, $2), 4326) WHERE id = $3`,
+    [data.longitude, data.latitude, data.userId])
   }
 }
 

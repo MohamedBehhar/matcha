@@ -38,12 +38,19 @@ class UserControllers {
     if (req.file) {
       await userServices.addUserImage(req.params.id, req.file);
     }
+    if (req.body.interests) {
+      const interests = JSON.parse(req.body.interests);
+      console.log('toto => ',typeof interests);
+      await userServices.addUserInterests(req.params.id, interests);
+    }
     return user as unknown as void;
   }
 
   @handleResponse()
   public async addUserInterests(req: Request, res: Response) {
-    return await userServices.addUserInterests(req.params.id, req.body.interests) as unknown as void;
+    const interests = JSON.parse(req.body.interests);
+    console.log('toto => ',interests);
+    return await userServices.addUserInterests(req.params.id, interests) as unknown as void;
   }
 
   @handleResponse()
@@ -54,6 +61,11 @@ class UserControllers {
   @handleResponse()
   public async delete(req: Request, res: Response) {
     return await userServices.delete(req.params.id) as unknown as void;
+  }
+
+  @handleResponse()
+  public async updateUserLocation(req: Request, res: Response) {
+    return await userServices.updateUserLocation(req.params.id, req.body) as unknown as void;
   }
 }
 
