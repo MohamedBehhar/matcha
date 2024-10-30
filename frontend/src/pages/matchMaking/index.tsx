@@ -1,37 +1,26 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { AiOutlineHeart } from "react-icons/ai";
 import { RiDislikeLine } from "react-icons/ri";
 import { Slider } from "@/components/ui/Slider";
 import { Input } from "@/components/ui/input";
+import { getUsersUnderRadius } from "@/api/methods/geolocation";
 
 const Index = () => {
-  const [users, setUsers] = useState([
-    {
-      id: 1,
-      profilePicture: "https://randomuser.me/api/portraits/men/47.jpg",
-      name: "John Doe",
-      age: 25,
-      distance: 10,
-      bio: "Hello, I am a software engineer.",
-    },
-    {
-      id: 2,
-      profilePicture: "https://randomuser.me/api/portraits/men/76.jpg",
-      name: "Jane Smith",
-      age: 28,
-      distance: 8,
-      bio: "Avid traveler and foodie.",
-    },
-    {
-      id: 3,
-      profilePicture: "https://randomuser.me/api/portraits/men/77.jpg",
-      name: "Mike Johnson",
-      age: 30,
-      distance: 5,
-      bio: "Tech enthusiast and gamer.",
-    },
-  ]);
+  const [users, setUsers] = useState([]);
+
+  const handelGetUsers = async () => {
+    try {
+      const response = await getUsersUnderRadius(37.7749, -122.4194, 100);
+      setUsers(response);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    handelGetUsers();
+  }, []);
 
   const [swiping, setSwiping] = useState(false);
   const [swipeDirection, setSwipeDirection] = useState("");

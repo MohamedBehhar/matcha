@@ -5,8 +5,14 @@ import MySelect from "@/components/ui/MySelect";
 import { getInterests } from "@/api/methods/interest";
 import { MdOutlineDeleteForever } from "react-icons/md";
 import { FaRegEdit } from "react-icons/fa";
-import { updateUser, getUserById } from "@/api/methods/user";
+import {
+  updateUser,
+  getUserById,
+  updateUserLocation,
+} from "@/api/methods/user";
 import userImg from "@/assets/images/user.png";
+import { FaStar } from "react-icons/fa6";
+import { FaRegStar } from "react-icons/fa6";
 
 function ProfileSetting() {
   const [interests, setInterests] = useState([]);
@@ -67,6 +73,15 @@ function ProfileSetting() {
   const [location, setLocation] = useState(null);
   const [error, setError] = useState(null);
 
+  const updateLocation = async (id: string, data: any) => {
+    try {
+      const response = await updateUserLocation(id, data);
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  };
+
   const handleGetLocation = () => {
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
@@ -74,6 +89,11 @@ function ProfileSetting() {
           setLocation({
             latitude: position.coords.latitude,
             longitude: position.coords.longitude,
+          });
+          updateLocation(id || "", {
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+            userId: id,
           });
           setError(null);
         },
@@ -116,15 +136,10 @@ function ProfileSetting() {
   };
 
   return (
-    <div className="container flex flex-col items-center justify-center h-screen">
+    <div className="container flex flex-col items-center justify-center">
       <h1 className="text-3xl font-bold text-center my-5">Profile Setting</h1>
       {error && <div className="text-red-500 text-sm">{error}</div>}
-      <p>
-        {location
-          ? `Latitude: ${location.latitude}, Longitude: ${location.longitude}`
-          : "Retrieving location ..."}
-      </p>
-      <div className="flex items-center justify-center  p-4 rounded-full w-[300px]">
+      <div className="flex items-center justify-center  mb-2 rounded-full w-[300px]">
         {profilePicture ? (
           <div className=" relative ">
             <img
@@ -159,6 +174,13 @@ function ProfileSetting() {
           </label>
         )}
       </div>
+      <div className="rating mb-4 flex gap-1 items-center">
+        <FaRegStar />
+        <FaRegStar />
+        <FaRegStar />
+        <FaRegStar />
+        <FaRegStar />
+      </div>
       <form
         className="w-full max-w-[800px] border p-4 rounded-md"
         onSubmit={handleSubmit}
@@ -186,19 +208,17 @@ function ProfileSetting() {
             name="username"
             type="text"
             placeholder="Username"
-            defaultValue={userInfo.username}
+            defaultValue={userInfo.username || ""}
           />
           <MySelect
             options={["male", "female"]}
             placeholder="Gender"
             name="gender"
-            defaultValue={userInfo.gender || ""}
           />
           <MySelect
-            options={["male", "female"]}
+            options={["male", "female", "bi"]}
             placeholder="Sexual"
             name="sexual_preference"
-            defaultValue={userInfo.sexual_preference || ""}
           />
         </div>
         <Input
