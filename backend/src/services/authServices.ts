@@ -209,10 +209,10 @@ class AuthServices {
         throw new UnauthorizedError("Invalid token");
       }
       const user: User | null = await pool
-        .query(
-          "UPDATE users SET is_verified = $1 AND is_authenticated = $2 WHERE email = $3 RETURNING *",
-          [true, true, email]
-        )
+      .query(
+        "UPDATE users SET is_verified = $1, is_authenticated = $2 WHERE email = $3 RETURNING *",
+        [true, true, email]
+      )      
         .then((result: { rows: User[] }) => result.rows[0]);
 
       if (!user) {
@@ -221,6 +221,7 @@ class AuthServices {
       delete (user as { password?: string }).password;
       const tokens = await this.createTokens(user);
       await this.setTokensInRedis(tokens, email);
+
       return {
         id: user.id,
         email: user.email,
