@@ -7,8 +7,8 @@ const router = Router();
 router.get("/me", userControllers.me);
 router.post("/", userControllers.create); // Image upload on create
 router.patch("/:id", upload.single("profile_picture"), userControllers.update);
-router.patch("/:id/interests", userControllers.addUserInterests);
 router.delete("/:id", userControllers.delete);
 router.get("/:id", userControllers.getUsersById);
+router.patch("/:id/location", userControllers.updateUserLocation);
 
 export default router;

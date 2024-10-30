@@ -20,4 +20,10 @@ const updateUserDto = Schema.object({
     sexual_preference: Schema.string().optional(),
 });
 
-export { createUserDto, updateUserDto };
+const updateUserLocationDto = Schema.object({
+    latitude: Schema.number().required(),
+    longitude: Schema.number().required(),
+    userId: Schema.string().required(),
+});
+
+export { createUserDto, updateUserDto, updateUserLocationDto };

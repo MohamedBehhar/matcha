@@ -11,6 +11,7 @@ import { Server, Socket } from 'socket.io';
 import userServices from './services/userServices';
 import multer from "multer";
 import path from 'path';
+import geolocationRoutes from './routers/geolocationRoutes';
 
 const PORT = 3000;
 const app = express();
@@ -22,6 +23,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 
+app.use("/public", express.static(path.join(__dirname, "public")));
 
 pool.connect().then(() => {
   console.log("connected to the Database");
@@ -34,7 +36,7 @@ app.use('/api/auth', authRoutes);
 // app.use(authMiddleware);
 app.use('/api/user', userRoutes);
 app.use('/api/interests', interstsRoutes);
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+app.use('/api/geolocation', geolocationRoutes);
 
 
 

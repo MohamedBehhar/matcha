@@ -22,7 +22,11 @@ class UserService {
   }
 
   public async me(token: string | undefined) {
-    const email = await authServices.verifyToken(token as string, env.JWT_SECRET as string, "access");
+    const email = await authServices.verifyToken(
+      token as string,
+      env.JWT_SECRET as string,
+      "access"
+    );
     if (!email) {
       throw new UnauthorizedError("Unauthorized");
     }
@@ -33,7 +37,9 @@ class UserService {
 
   public async create(data: SignUpInput) {
     const body = signUpType.validate(data);
-    const isAlreadyUsed = await orm.findOne("users", { where: { email: body.email } });
+    const isAlreadyUsed = await orm.findOne("users", {
+      where: { email: body.email },
+    });
     if (isAlreadyUsed) {
       throw new ConflictError("Email already used");
     }
@@ -52,7 +58,7 @@ class UserService {
     return await orm.create("images", {
       user_id: userId,
       url: file.path,
-      is_profile: true, 
+      is_profile: true,
     });
   }
 
@@ -61,13 +67,19 @@ class UserService {
     if (!user) {
       throw new Error("User not found");
     }
-    const userInterests = await orm.querySql(`
+    const userInterests = await orm.querySql(
+      `
       SELECT * FROM user_interests WHERE user_id = $1
-    `, [userId]);
+    `,
+      [userId]
+    );
     if (userInterests.length) {
-      await orm.querySql(`
+      await orm.querySql(
+        `
         DELETE FROM user_interests WHERE user_id = $1
-      `, [userId]);
+      `,
+        [userId]
+      );
     }
     for (const interestId of interestsIds) {
       await orm.create("user_interests", {
@@ -76,20 +88,20 @@ class UserService {
       });
     }
 
-  
     return [];
   }
 
-  
-
   public async getUsersById(id: string) {
-    const interests = await orm.querySql(`
+    const interests = await orm.querySql(
+      `
     SELECT interests.*
     FROM interests
     JOIN user_interests ON interests.id = user_interests.interest_id
     WHERE user_interests.user_id = $1
-  `, [id]);
-    const user =  await orm.findOne("users", { where: { id } });
+  `,
+      [id]
+    );
+    const user = await orm.findOne("users", { where: { id } });
     return { ...user, interests };
   }
 
@@ -99,8 +111,9 @@ class UserService {
 
   public async updateUserLocation(id: string, data: any) {
     return await orm.querySql(
-    `UPDATE users SET location = ST_SetSRID(ST_MakePoint($1, $2), 4326) WHERE id = $3`,
-    [data.longitude, data.latitude, data.userId])
+      `UPDATE users SET location = ST_SetSRID(ST_MakePoint($1, $2), 4326), longitude = $1, latitude = $2 WHERE id = $3 RETURNING *`,
+      [data.longitude, data.latitude, data.userId]
+    );
   }
 }
 

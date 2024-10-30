@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { handleResponse } from "../utils/decorators";
 import userServices from "../services/userServices";
-import { createUserDto, updateUserDto } from "../types/userTypes";
+import { createUserDto, updateUserDto, updateUserLocationDto } from "../types/userTypes";
 
 class UserControllers {
   constructor() {
@@ -40,18 +40,12 @@ class UserControllers {
     }
     if (req.body.interests) {
       const interests = JSON.parse(req.body.interests);
-      console.log('toto => ',typeof interests);
       await userServices.addUserInterests(req.params.id, interests);
     }
     return user as unknown as void;
   }
 
-  @handleResponse()
-  public async addUserInterests(req: Request, res: Response) {
-    const interests = JSON.parse(req.body.interests);
-    console.log('toto => ',interests);
-    return await userServices.addUserInterests(req.params.id, interests) as unknown as void;
-  }
+
 
   @handleResponse()
   public async getUsersById(req: Request, res: Response) {
@@ -65,7 +59,9 @@ class UserControllers {
 
   @handleResponse()
   public async updateUserLocation(req: Request, res: Response) {
-    return await userServices.updateUserLocation(req.params.id, req.body) as unknown as void;
+    const body = updateUserLocationDto.validate(req.body);
+    console.log(body);
+    return await userServices.updateUserLocation(req.params.id, body) as unknown as void;
   }
 }
 
