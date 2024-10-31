@@ -1,6 +1,9 @@
+// geolocationRoutes.js
 import { Router } from "express";
 import geolocationControllers from "../controllers/geolocationControllers";
 const router = Router();
 
-router.get("/get-users-under-radius?latitude=${latitude}&longitude=${longitude}&radius=${radius}", geolocationControllers.getUsersUnderRadius);
+// Define the route without template literals for query parameters
+router.get("/get-users-under-radius", geolocationControllers.getUsersUnderRadius);
+
 export default router;

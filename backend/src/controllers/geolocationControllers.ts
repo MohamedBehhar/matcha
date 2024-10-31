@@ -9,7 +9,6 @@ const getUsersUnderRadius = async (req: Request, res: Response) => {
 	  Number(longitude),
 	  Number(radius)
 	);
-	console.log('09458903485349058340958340958349058349085340958');
 	res.status(200).send(users);
   } catch (error) {
 	console.error(error);
