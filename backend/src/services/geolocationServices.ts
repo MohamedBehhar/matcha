@@ -1,6 +1,6 @@
 import { User } from "../types/authTypes";
-import { Pool } from "pg";
-const db: Pool = require("../db/db");
+import pool from "../db/db";
+
 
 const getUsersUnderRadius = async (
 	latitude: number,
@@ -8,7 +8,8 @@ const getUsersUnderRadius = async (
 	radius: number
   ): Promise<User[]> => {
 	const query = `
-	  SELECT id, username, email, location FROM users
+	  SELECT id, username, email, location, bio, first_name, last_name, rating, gender, sexual_preference
+	   FROM users
 	  WHERE ST_DWithin(
 		ST_GeogFromText('SRID=4326;POINT(' || $2 || ' ' || $1 || ')'),
 		location,
@@ -17,7 +18,7 @@ const getUsersUnderRadius = async (
 	`;
   
 	try {
-	  const { rows } = await db.query(query, [latitude, longitude, radius]);
+	  const { rows } = await pool.query(query, [latitude, longitude, radius]);
 	  return rows;
 	} catch (error) {
 	  console.error("Error fetching users:", error);

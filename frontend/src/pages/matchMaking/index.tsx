@@ -11,7 +11,7 @@ const Index = () => {
 
   const handelGetUsers = async () => {
     try {
-      const response = await getUsersUnderRadius(37.7749, -122.4194, 100);
+      const response = await getUsersUnderRadius(32.8781073, -6.8894012, 10000);
       setUsers(response);
     } catch (error) {
       console.log(error);
@@ -87,7 +87,7 @@ const Index = () => {
               />
               <div className="info p-1">
                 <h1 className="text-xl font-semibold text-center">
-                  {user.name}, {user.age}
+                  {user.username}, {user.age}
                 </h1>
                 <p className="text-sm text-center">{user.bio}</p>
                 <p className="text-sm text-center">

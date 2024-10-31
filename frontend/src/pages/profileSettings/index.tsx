@@ -27,6 +27,7 @@ function ProfileSetting() {
       const user = await getUserById(id);
       const interests = await getInterests();
       setUserInfo(user);
+      setProfilePicture(user.profile_picture);
       setInterests(interests);
       setSelectedInterests(user.interests);
     } catch (error) {
