@@ -13,6 +13,7 @@ import {
 import userImg from "@/assets/images/user.png";
 import { FaStar } from "react-icons/fa6";
 import { FaRegStar } from "react-icons/fa6";
+import { DatePickerDemo } from "@/components/ui/datePicker";
 
 function ProfileSetting() {
   const [interests, setInterests] = useState([]);
@@ -220,6 +221,12 @@ function ProfileSetting() {
             options={["male", "female", "bi"]}
             placeholder="Sexual"
             name="sexual_preference"
+          />
+          <DatePickerDemo
+            name="date_of_birth"
+            placeholder="Date of birth"
+            defaultValue={userInfo.date_of_birth}
+            onChange={(date) => console.log(date)}
           />
         </div>
         <Input
