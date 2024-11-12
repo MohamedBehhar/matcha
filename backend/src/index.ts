@@ -12,7 +12,7 @@ import userServices from './services/userServices';
 import multer from "multer";
 import path from 'path';
 import geolocationRoutes from './routers/geolocationRoutes';
-
+import matchMakingRoutes from './routers/matchMakingRoutes';
 const PORT = 3000;
 const app = express();
 const server = http.createServer(app);
@@ -37,6 +37,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/interests', interstsRoutes);
 app.use('/api/geolocation', geolocationRoutes);
+app.use('/api/matchmaking', matchMakingRoutes);
 
 
 
