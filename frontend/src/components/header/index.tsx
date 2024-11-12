@@ -18,6 +18,11 @@ export default function Header() {
               Settings
             </Link>
           </li>
+          <li>
+            <Link to="/match-making">
+              Match Making
+            </Link>
+          </li>
         </ul>
         <ThemeSwithcer />
         <Button className="bg-red-primary text-white"

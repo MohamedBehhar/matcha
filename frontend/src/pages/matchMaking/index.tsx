@@ -5,14 +5,34 @@ import { RiDislikeLine } from "react-icons/ri";
 import { Slider } from "@/components/ui/Slider";
 import { Input } from "@/components/ui/input";
 import { getUsersUnderRadius } from "@/api/methods/geolocation";
+import userImg from "@/assets/images/user.png";
+import { likeAUser } from "@/api/methods/matchMaking";
 
 const Index = () => {
   const [users, setUsers] = useState([]);
+  const user_id = localStorage.getItem("id");
 
   const handelGetUsers = async () => {
     try {
-      const response = await getUsersUnderRadius(32.8781073, -6.8894012, 10000);
+      const response = await getUsersUnderRadius(
+        32.8781073,
+        -6.8894012,
+        10000,
+        user_id
+      );
       setUsers(response);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handelLikeAUser = async (user_id: string, liked_id: string) => {
+    try {
+      const body = {
+        user_id,
+        liked_id,
+      };
+      await likeAUser(body);
     } catch (error) {
       console.log(error);
     }
@@ -84,6 +104,10 @@ const Index = () => {
                 className={`w-full h-[80%] object-cover rounded-t-md ${
                   index !== 0 ? "blur-sm" : ""
                 }`} // Apply blur directly to the front card
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.src = userImg;
+                }}
               />
               <div className="info p-1">
                 <h1 className="text-xl font-semibold text-center">
@@ -110,7 +134,10 @@ const Index = () => {
         </Button>
         <Button
           className="bg-red-500 text-white p-4 rounded-md"
-          onClick={() => handleSwipe("right")}
+          onClick={() => {
+            handleSwipe("right");
+            handelLikeAUser(user_id, users[0].id);
+          }}
         >
           <AiOutlineHeart />
         </Button>
