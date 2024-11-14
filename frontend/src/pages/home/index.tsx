@@ -1,14 +1,11 @@
 import useCountStore from "@/store/store";
 import { getUser } from "@/api/methods/user";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { updateUserLocation } from "@/api/methods/user";
 import { DatePickerDemo } from "@/components/ui/datePicker";
 export default function HomePage() {
   const id = localStorage.getItem("id");
-  useEffect(() => {
-    getUser().then((data) => console.log(data));
-    handleGetLocation();
-  }, []);
+  const [errro, setError] = useState()
   const updateLocation = async (id: string, data: any) => {
     try {
       const response = await updateUserLocation(id, data);
@@ -22,10 +19,7 @@ export default function HomePage() {
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
-          setLocation({
-            latitude: position.coords.latitude,
-            longitude: position.coords.longitude,
-          });
+
           updateLocation(id || "", {
             latitude: position.coords.latitude,
             longitude: position.coords.longitude,
@@ -41,6 +35,11 @@ export default function HomePage() {
       setError("Geolocation is not supported by this browser.");
     }
   };
+
+  useEffect(() => {
+    getUser().then((data) => console.log(data));
+    handleGetLocation();
+  }, []);
 
   const count = useCountStore((state) => state.count);
   return (
