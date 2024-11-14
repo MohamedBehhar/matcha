@@ -1,4 +1,5 @@
 import React from "react";
+import userImg from "@/assets/images/user.png";
 
 interface User {
   profilePicture: string;
@@ -10,15 +11,27 @@ interface User {
 
 const UserCard = ({ user }: { user: User }) => {
   return (
-<div className="bg-white shadow-lg rounded-lg p-4  min-w-[400px]">
-      <img 
-        src={user.profilePicture} 
-        alt={`${user.name}'s Profile`} 
-        className="w-full h-48 rounded-t-lg object-cover"
+    <div
+      key={user.id}
+      className="card w-[300px] h-[400px] border border-white rounded-md bg-white text-gray-700 shadow-md absolute"
+    >
+
+      <img
+        src={`localhost:3000/${user.profilePicture}`}
+        alt="profile"
+        className={`w-full h-[80%] object-cover rounded-t-md `} // Apply blur directly to the front card
+        onError={(e: any) => {
+          e.target.onerror = null;
+          e.target.src = userImg;
+        }}
       />
-      <h2 className="text-xl font-semibold mt-2">{user.name}, {user.age}</h2>
-      <p className="text-gray-500">{user.distance} miles away</p>
-      <p className="mt-1">{user.bio}</p>
+      <div className="info p-1">
+        <h1 className="text-xl font-semibold text-center">
+          {user.username}, {user.age}
+        </h1>
+        <p className="text-sm text-center">{user.bio}</p>
+        <p className="text-sm text-center">Distance: {user.distance} km</p>
+      </div>
     </div>
   );
 };

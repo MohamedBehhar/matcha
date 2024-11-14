@@ -143,3 +143,7 @@ body {
   animation: swipe-right 0.3s ease-out forwards;
 }
 
+.swiper{
+  max-width: 600px;
+  width: 100%;
+}
