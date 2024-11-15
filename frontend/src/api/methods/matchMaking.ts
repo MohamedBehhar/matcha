@@ -9,5 +9,14 @@ const likeAUser = async (body: any) => {
   }
 };
 
+const unlikeAUser = async (body: any) => {
+  try {
+    const response = await instance.post("/matchmaking/unlike", body);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+}
 
-export { likeAUser };
+
+export { likeAUser, unlikeAUser };
