@@ -1,25 +1,13 @@
-import { Swiper, SwiperSlide } from "swiper/react";
-import "swiper/css";
-import "swiper/css/effect-cards"
-import { EffectCards } from 'swiper/modules';
+import userImg from "@/assets/images/user.png";
+import UserCard from "../userCard";
 
-function index({ slides }: { slides: any[] }) {
+function index({ data }: { data: [] }) {
   return (
-    <Swiper
-      spaceBetween={50}
-      slidesPerView={1}
-      onSlideChange={() => console.log("slide change")}
-      onSwiper={(swiper) => console.log(swiper)}
-      effect="cards"
-      grabCursor={true}
-      modules={[EffectCards]}
-    >
-      {slides.map((slide: any, index: number) => {
-        return <SwiperSlide
-          key={index}
-        >hello {index}</SwiperSlide>;
-      })}
-    </Swiper>
+    <div className="grid min-h-screen   place-items-center ">
+      {data.map((item) => (
+        <UserCard user={item} />
+      ))}
+    </div>
   );
 }
 

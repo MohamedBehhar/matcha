@@ -9,6 +9,15 @@ class MatchMakingServices {
     });
     return like;
   }
+
+  public async unlikeAUser(body: any) {
+    const { user_id, disliked_id } = body;
+    const like = await orm.create("dislikes", {
+      user_id,
+      disliked_id,
+    });
+    return like;
+  }
 }
 
 export default new MatchMakingServices();

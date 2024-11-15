@@ -5,9 +5,7 @@ import { RiDislikeLine } from "react-icons/ri";
 import { Slider } from "@/components/ui/Slider";
 import { Input } from "@/components/ui/input";
 import { getUsersUnderRadius } from "@/api/methods/geolocation";
-import { likeAUser } from "@/api/methods/matchMaking";
-import UserCard from "@/components/userCard";
-import TinderCard from "react-tinder-card";
+import MySwiper from "@/components/MySwiper";
 
 const Index = () => {
   const [users, setUsers] = useState([]);
@@ -23,30 +21,7 @@ const Index = () => {
     }
   };
 
-  const handelLikeAUser = async (user_id, liked_id) => {
-    try {
-      const body = { user_id, liked_id };
-      await likeAUser(body);
-      console.log(`User ${liked_id} liked!`);
-    } catch (error) {
-      console.log(error);
-    }
-  };
 
-  const handleSwipe = (direction: string, userIndex: number) => {
-    const swipedUser = users[userIndex];
-    if (direction === "right") {
-      console.log(`User ${swipedUser.id} liked!`);
-      handelLikeAUser(user_id, swipedUser.id);
-    } else if (direction === "left") {
-      console.log(`User ${swipedUser.id} disliked!`);
-    }
-  };
-
-  const handleCardLeftScreen = (userName: string, userIndex: number) => {
-    console.log(`${userName} left the screen`);
-    setCurrentIndex(userIndex + 1); // Move to the next user
-  };
 
   useEffect(() => {
     handelGetUsers();
@@ -67,27 +42,10 @@ const Index = () => {
           <Input type="text" id="interests" placeholder="Enter interests" />
         </div>
       </div>
+      <MySwiper data={users} />
 
-      <div className="users relative h-[400px] w-[300px] flex justify-center mx-auto">
-        {users.length ? (
-          <div className="card-container">
-            {users.map((user, index) => (
-              <TinderCard
-                key={index}
-                onSwipe={(direction) => handleSwipe(direction, index)}
-                onCardLeftScreen={() => handleCardLeftScreen(user.name, index)}
-                preventSwipe={["up", "down"]} // Optional
-              >
-                <UserCard user={user} />
-              </TinderCard>
-            ))}
-          </div>
-        ) : (
-          <p>No user found</p>
-        )}
-      </div>
 
-      <div className="flex gap-4 mt-4 z-20 mx-auto">
+      {/* <div className="flex gap-4 mt-4 z-20 mx-auto">
         <Button
           className="bg-blue-900 text-white p-4 rounded-md"
           onClick={() => {
@@ -108,7 +66,7 @@ const Index = () => {
         >
           <AiOutlineHeart />
         </Button>
-      </div>
+      </div> */}
     </div>
   );
 };
