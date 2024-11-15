@@ -7,10 +7,7 @@ import { Input } from "@/components/ui/input";
 import { getUsersUnderRadius } from "@/api/methods/geolocation";
 import { likeAUser } from "@/api/methods/matchMaking";
 import UserCard from "@/components/userCard";
-import { Swiper, SwiperSlide } from "swiper/react";
-import "swiper/css";
-import "swiper/css/effect-cards";
-import { EffectCards } from "swiper/modules";
+import TinderCard from "react-tinder-card";
 
 const Index = () => {
   const [users, setUsers] = useState([]);
@@ -36,19 +33,19 @@ const Index = () => {
     }
   };
 
-  const handleSlideChange = (swiper) => {
-    const direction = swiper.activeIndex > currentIndex ? "right" : "left";
-    const swipedUser = users[currentIndex]; // Capture user at current index before the swipe
-
-    if (swipedUser) {
-      if (direction === "right") {
-        console.log('swiper right ')
-        handelLikeAUser(user_id, swipedUser.id); // Like action
-      } else {
-        console.log(`User ${swipedUser.id} disliked!`); // Dislike action
-      }
+  const handleSwipe = (direction: string, userIndex: number) => {
+    const swipedUser = users[userIndex];
+    if (direction === "right") {
+      console.log(`User ${swipedUser.id} liked!`);
+      handelLikeAUser(user_id, swipedUser.id);
+    } else if (direction === "left") {
+      console.log(`User ${swipedUser.id} disliked!`);
     }
-    setCurrentIndex(swiper.activeIndex); // Update index to reflect the new active slide
+  };
+
+  const handleCardLeftScreen = (userName: string, userIndex: number) => {
+    console.log(`${userName} left the screen`);
+    setCurrentIndex(userIndex + 1); // Move to the next user
   };
 
   useEffect(() => {
@@ -73,20 +70,18 @@ const Index = () => {
 
       <div className="users relative h-[400px] w-[300px] flex justify-center mx-auto">
         {users.length ? (
-          <Swiper
-            spaceBetween={50}
-            slidesPerView={1}
-            effect="cards"
-            grabCursor={true}
-            modules={[EffectCards]}
-            onSlideChange={handleSlideChange} // Capture swipe change event
-          >
+          <div className="card-container">
             {users.map((user, index) => (
-              <SwiperSlide key={index}>
+              <TinderCard
+                key={index}
+                onSwipe={(direction) => handleSwipe(direction, index)}
+                onCardLeftScreen={() => handleCardLeftScreen(user.name, index)}
+                preventSwipe={["up", "down"]} // Optional
+              >
                 <UserCard user={user} />
-              </SwiperSlide>
+              </TinderCard>
             ))}
-          </Swiper>
+          </div>
         ) : (
           <p>No user found</p>
         )}
