@@ -5,7 +5,10 @@ const getUsersUnderRadius = async (
   latitude: number,
   longitude: number,
   radius: number,
-  user_id: string | null
+  user_id: string | null,
+  age: number,
+  distance: number,
+  interests: string
 ) => {
   if (!user_id) {
     throw new Error("User id is required");
