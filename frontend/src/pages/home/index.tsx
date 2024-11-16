@@ -11,7 +11,7 @@ export default function HomePage() {
       const response = await updateUserLocation(id, data);
       return response.data;
     } catch (error) {
-      throw error;
+      throw error; 
     }
   };
 
@@ -25,6 +25,8 @@ export default function HomePage() {
             longitude: position.coords.longitude,
             userId: id,
           });
+          localStorage.setItem("latitude", position.coords.latitude);
+          localStorage.setItem("longitude", position.coords.longitude);
           setError(null);
         },
         (error) => {
