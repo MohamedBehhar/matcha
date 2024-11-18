@@ -48,20 +48,16 @@ CREATE TABLE friendships (
 	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 	UNIQUE (user_id, friend_id)
 );
-CREATE TABLE likes (
-	id SERIAL PRIMARY KEY,
-	user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-	liked_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-	UNIQUE (user_id, liked_id)
-);
-CREATE TABLE dislikes (
+
+CREATE TABLE user_interactions (
     id SERIAL PRIMARY KEY,
     user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    disliked_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    target_user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    interaction_type VARCHAR(10) NOT NULL CHECK (interaction_type IN ('like', 'dislike')),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE (user_id, disliked_id)
+    UNIQUE (user_id, target_user_id)
 );
+
 CREATE TABLE blocks (
 	id SERIAL PRIMARY KEY,
 	user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
