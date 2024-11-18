@@ -18,7 +18,13 @@ const getUsersUnderRadius = async (
   u.last_name, 
   u.rating, 
   u.gender, 
-  u.sexual_preference
+  u.sexual_preference,
+  CEIL(
+    ST_Distance(
+      ST_GeogFromText('SRID=4326;POINT(' || $2 || ' ' || $1 || ')'),
+      u.location
+    ) / 1000
+  ) AS distance
 FROM users u
 WHERE 
   ST_DWithin(
@@ -29,14 +35,14 @@ WHERE
   AND u.id != $4
   AND NOT EXISTS (
     SELECT 1
-    FROM likes l
-    WHERE l.user_id = $4 AND l.liked_id = u.id
-  )
-  AND NOT EXISTS (
-    SELECT 1
-    FROM dislikes d
-    WHERE d.user_id = $4 AND d.disliked_id = u.id
-  )
+    FROM user_interactions ui
+    WHERE ui.user_id = $4
+    AND ui.target_user_id = u.id
+    AND ui.interaction_type IN ('like', 'dislike')
+)
+
+
+
 	`;
 
   try {
