@@ -5,22 +5,25 @@ import useUserStore from "@/store/userStore";
 import { socket } from "@/utils/socket";
 import { useEffect } from "react";
 
+import toast, { Toaster } from 'react-hot-toast';
+
+
 export default function Header() {
   const user = useUserStore((state) => state.user);
   const logout = useUserStore((state) => state.logout);
   const id = localStorage.getItem("id");
 
+
   useEffect(() => {
     socket.emit("join", id);
-    alert("User connected");
   }, [id]);
 
   useEffect(() => {
     socket.on("disconnect", () => {
-      alert("User disconnected");
+      
     });
     socket.on("like", (userId: string) => {
-      alert(`User ${userId} liked you`);
+      toast("User liked you: " + userId);
     });
     socket.on("match", (userId: string) => {
       alert(`User ${userId} matched with you`);
@@ -42,6 +45,7 @@ export default function Header() {
           </li>
         </ul>
         <ThemeSwithcer />
+        <Toaster />
         <Button
           className="bg-red-primary text-white"
           onClick={() => {
