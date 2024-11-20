@@ -18,14 +18,20 @@ class MatchMakingServices {
   public async likeAUser(body: any) {
     const { user_id, liked_id } = body;
 
-    // Insert the "like" interaction
     await orm.create("user_interactions", {
       user_id,
       target_user_id: liked_id,
       interaction_type: "like",
     });
 
-    // Check if the liked user has already liked the current user
+    const user = await orm.findOne("users", { where: { id: user_id } });
+
+    await orm.create("notifications", {
+      user_id: liked_id,
+      content: `${user?.first_name} ${user?.last_name} liked you!`,
+      sender_id: user_id,
+    });
+
     const mutualLike = await orm.findOne("user_interactions", {
       where: {
         user_id: liked_id,
@@ -33,11 +39,8 @@ class MatchMakingServices {
         interaction_type: "like",
       },
     });
-    console.log("-------------- liked_id", liked_id, "u_id: ", user_id);
-    console.log("-------------- mutualLike", mutualLike);
-    console.log("-------------- userMap", this.userMap);
+
     const receiver_id = this.userMap.get(liked_id + '');
-    console.log("-------------- receiver_id", receiver_id + '');
     if (receiver_id) this.socket?.to(receiver_id).emit("like", user_id);
 
     if (mutualLike) {
@@ -46,9 +49,6 @@ class MatchMakingServices {
         user_id,
         friend_id: liked_id,
       });
-
-      // Emit a "match" event to both users
-      console.log("-------------- match", mutualLike);
       this.socket?.to(user_id).emit("match", liked_id);
       this.socket?.to(liked_id).emit("match", user_id);
 

@@ -14,6 +14,8 @@ import path from "path";
 import geolocationRoutes from "./routers/geolocationRoutes";
 import matchMakingRoutes from "./routers/matchMakingRoutes";
 import matchMakingServices from "./services/matchMakingServices";
+import notificationsRoutes from "./routers/notificationsRoutes";
+
 const PORT = 3000;
 const app = express();
 const server = http.createServer(app);
@@ -41,6 +43,7 @@ app.use("/api/user", userRoutes);
 app.use("/api/interests", interstsRoutes);
 app.use("/api/geolocation", geolocationRoutes);
 app.use("/api/matchmaking", matchMakingRoutes);
+app.use("/api/notifications", notificationsRoutes);
 
 const socket = new Server(server, {
   cors: {
