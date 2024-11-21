@@ -31,21 +31,21 @@ class NotificationsServices {
     } catch (error) {
       console.log("error", error);
     }
-	return [];
+    return [];
   }
 
   public async getNotificationsCount(user_id: string): Promise<number> {
     try {
-	  const notifications = await orm.findMany("notifications", {
-		where: { user_id  },
-	  });
+        const notifications = await orm.findMany("notifications", {
+            where: { user_id },
+        });
+        return notifications.length;
+    } catch (error) {
+        console.error("Error in getNotificationsCount:", error);
+        throw new Error("Failed to fetch notifications count");
+    }
+}
 
-	  return notifications.length;
-	} catch (error) {
-	  console.log("error", error);
-	}
-	return 0;
-  }
 
   public async markAsRead(user_id: string): Promise<void> {
     await orm.update("notifications", user_id, { isRead: true });
