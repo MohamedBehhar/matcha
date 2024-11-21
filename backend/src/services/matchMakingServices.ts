@@ -41,7 +41,11 @@ class MatchMakingServices {
     });
 
     const receiver_id = this.userMap.get(liked_id + '');
-    if (receiver_id) this.socket?.to(receiver_id).emit("like", user_id);
+    if (receiver_id)
+      {
+        this.socket?.to(receiver_id).emit("like", user_id);
+        this.socket?.to(receiver_id).emit("notification");
+      } 
 
     if (mutualLike) {
       // Create a friendship

@@ -30,7 +30,7 @@ export default function Header() {
 
   const fetchNotificationsCount = async () => {
     const count = await getNotificationsCount(id);
-    setNotificationsCount(count);
+    setNotificationsCount(count.count);
   };
 
   useEffect(() => {
@@ -48,6 +48,7 @@ export default function Header() {
     });
 
     socket.on("notification", () => {
+      alert("New notification");
       fetchNotifications();
       fetchNotificationsCount();
     });
@@ -77,7 +78,7 @@ export default function Header() {
         <ThemeSwithcer />
         <Toaster />
         <div className="flex items-center justify-center cursor-pointer  relative">
-          {notifications.length > 0 && (
+          {notificationsCount > 0 && (
             <div className="circle bg-red-500 w-4 absolute top-1 left-4 aspect-square rounded-[50%]">
               <p className=" text-xs flex justify-center items-center h-full">
                 {notificationsCount}
