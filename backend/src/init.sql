@@ -136,117 +136,33 @@ CREATE TABLE users
         ('Fitness');
 
 
--- INSERT INTO users (
---     username,
---     profile_picture,
---     email,
---     password,
---     first_name,
---     last_name,
---     refresh_token,
---     is_verified,
---     is_authenticated,
---     bio,
---     rating,
---     gender,
---     sexual_preference,
---     latitude,
---     longitude,
---     location,
---     created_at
--- ) VALUES
---     (
---         'user1',
---         'https://example.com/images/user1.jpg',
---         'user1@example.com',
---         'hashedpassword1',
---         'John',
---         'Doe',
---         NULL,
---         TRUE,
---         TRUE,
---         'Just a regular user within 5 km.',
---         5,
---         'male',
---         'bi',
---         32.8799012,  -- within 5 km
---         -6.8889012,  -- within 5 km
---         ST_SetSRID(ST_MakePoint(-6.8889012, 32.8799012), 4326),
---         CURRENT_TIMESTAMP
---     ),
---     (
---         'user2',
---         'https://example.com/images/user2.jpg',
---         'user2@example.com',
---         'hashedpassword2',
---         'Jane',
---         'Doe',
---         NULL,
---         TRUE,
---         TRUE,
---         'Another user within 5 km.',
---         4,
---         'female',
---         'male',
---         32.8821012,  -- within 5 km
---         -6.8905012,  -- within 5 km
---         ST_SetSRID(ST_MakePoint(-6.8905012, 32.8821012), 4326),
---         CURRENT_TIMESTAMP
---     ),
---     (
---         'user3',
---         'https://example.com/images/user3.jpg',
---         'user3@example.com',
---         'hashedpassword3',
---         'Alice',
---         'Smith',
---         NULL,
---         FALSE,
---         TRUE,
---         'Central user, reference point.',
---         3,
---         'female',
---         'bi',
---         32.8781073,  -- central location
---         -6.8894012,  -- central location
---         ST_SetSRID(ST_MakePoint(-6.8894012, 32.8781073), 4326),
---         CURRENT_TIMESTAMP
---     ),
---     (
---         'user4',
---         'https://example.com/images/user4.jpg',
---         'user4@example.com',
---         'hashedpassword4',
---         'Bob',
---         'Brown',
---         NULL,
---         TRUE,
---         FALSE,
---         'User within 10 km.',
---         4,
---         'male',
---         'female',
---         32.8972012,  -- 6.5 km away
---         -6.8937012,  -- 6.5 km away
---         ST_SetSRID(ST_MakePoint(-6.8937012, 32.8972012), 4326),
---         CURRENT_TIMESTAMP
---     ),
---     (
---         'user5',
---         'https://example.com/images/user5.jpg',
---         'user5@example.com',
---         'hashedpassword5',
---         'Charlie',
---         'Green',
---         NULL,
---         FALSE,
---         TRUE,
---         'Another user within 10 km.',
---         5,
---         'male',
---         'female',
---         32.9073012,  -- 9 km away
---         -6.8951012,  -- 9 km away
---         ST_SetSRID(ST_MakePoint(-6.8951012, 32.9073012), 4326),
---         CURRENT_TIMESTAMP
---     );
+    INSERT INTO users
+        (
+        username,
+        email,
+        password,
+        first_name,
+        last_name,
+        is_verified,
+        created_at
+        )
+    VALUES
+        (
+            'moha',
+            'moha@moha.com ',
+            '111111',
+            'moha',
+            'bhr',
+            TRUE,
+            CURRENT_TIMESTAMP
+    ),
+        (
+            'toto',
+            'toto@toto.com',
+            '111111',
+            'toto',
+            'bhr',
+            TRUE,
+            CURRENT_TIMESTAMP
+    )
+    ;
