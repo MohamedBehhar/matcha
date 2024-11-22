@@ -25,6 +25,7 @@ class MatchMakingServices {
     });
 
     const user = await orm.findOne("users", { where: { id: user_id } });
+    const liked = await orm.findOne("users", { where: { id: liked_id } });
 
     await orm.create("notifications", {
       user_id: liked_id,
@@ -53,8 +54,8 @@ class MatchMakingServices {
         user_id,
         friend_id: liked_id,
       });
-      this.socket?.to(user_id).emit("match", liked_id);
-      this.socket?.to(liked_id).emit("match", user_id);
+      this.socket?.to(user_id).emit("match", liked);
+      this.socket?.to(liked_id).emit("match", user);
 
       return { message: "It's a match!", friendship };
     }

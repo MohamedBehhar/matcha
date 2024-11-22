@@ -11,6 +11,14 @@ import {
   getNotificationsCount,
 } from "@/api/methods/notifications";
 import { useState } from "react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropDown";
 
 export default function Header() {
   const user = useUserStore((state) => state.user);
@@ -43,12 +51,11 @@ export default function Header() {
     socket.on("like", (userId: string) => {
       toast("User liked you: " + userId);
     });
-    socket.on("match", (userId: string) => {
-      alert(`User ${userId} matched with you`);
+    socket.on("match", (user: any) => {
+      toast("User matched with you: " + userId);
     });
 
     socket.on("notification", () => {
-      alert("New notification");
       fetchNotifications();
       fetchNotificationsCount();
     });
@@ -76,17 +83,33 @@ export default function Header() {
           </li>
         </ul>
         <ThemeSwithcer />
-        <Toaster />
-        <div className="flex items-center justify-center cursor-pointer  relative">
-          {notificationsCount > 0 && (
-            <div className="circle bg-red-500 w-4 absolute top-1 left-4 aspect-square rounded-[50%]">
-              <p className=" text-xs flex justify-center items-center h-full">
-                {notificationsCount}
-              </p>
+
+        <DropdownMenu>
+          <DropdownMenuTrigger>
+            {" "}
+            <div className="flex items-center justify-center cursor-pointer  relative">
+              {notificationsCount > 0 && (
+                <div className="circle bg-red-500 w-4 absolute top-1 left-4 aspect-square rounded-[50%]">
+                  <p className=" text-xs flex justify-center items-center h-full">
+                    {notificationsCount}
+                  </p>
+                </div>
+              )}
+              <CiBellOn size={32} />
             </div>
-          )}
-          <CiBellOn size={32} />
-        </div>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            {notifications.length > 0 ? (
+              notifications.map((notification) => (
+                <DropdownMenuItem key={notification.id}>
+                  {notification.content}
+                </DropdownMenuItem>
+              ))
+            ) : (
+              <DropdownMenuItem>No notifications</DropdownMenuItem>
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
         <Button
           className="bg-red-primary text-white"
           onClick={() => {
