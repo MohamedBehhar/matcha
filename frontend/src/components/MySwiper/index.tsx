@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import userImg from "@/assets/images/user.png";
 import { motion, useMotionValue, useTransform } from "framer-motion";
 import { likeAUser, unlikeAUser } from "@/api/methods/matchMaking";
+import { Button } from "../ui/button";
 
 function index({
   age,
@@ -40,6 +41,14 @@ function index({
       console.log(error);
     }
   };
+
+  const startACall = async (id: string) => {
+    try {
+      console.log("calling user", id);
+    } catch (error) {
+      console.log(error);
+    }
+  }
 
   const handelLikeAUser = async (liked_id: string) => {
     try {
@@ -112,6 +121,12 @@ function index({
                 Distance: {user.distance} km
               </p>
             </div>
+            <Button
+              onClick={() => startACall(user.id)}
+              className="bg-green-500" 
+            >
+              call
+            </Button>
           </motion.div>
         ))}
     </div>

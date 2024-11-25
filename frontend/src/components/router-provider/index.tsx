@@ -10,6 +10,7 @@ import VerifyEmailPage from "@/pages/verifyEmail";
 import VerifyEmailRedirectPage from "@/pages/VerifyEmailRedirectPage";
 import ProfileSettings from "@/pages/profileSettings";
 import MatchMaking from "@/pages/matchMaking";
+import CallPage from "@/pages/call";
 import {
   createBrowserRouter,
   RouteObject,
@@ -60,6 +61,10 @@ const routes: RouteObject[] = [
           {
             path: "match-making",
             element: <MatchMaking />,
+          }, 
+          {
+            path: 'call',
+            element: <CallPage />,
           }
         ],
       },

@@ -81,6 +81,9 @@ export default function Header() {
           <li>
             <Link to="/match-making">Match Making</Link>
           </li>
+          <li>
+            <Link to="/call">call</Link>
+          </li>
         </ul>
         <ThemeSwithcer />
 

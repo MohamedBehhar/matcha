@@ -64,6 +64,8 @@ socket.on("connection", (socket) => {
     console.log("message: " + msg);
     // socket.broadcast.emit('chat message', msg);
   });
+
+
   matchMakingServices.initSocket(socket as unknown as any, userMap);
   userServices.initSocket(socket as unknown as any);
 });

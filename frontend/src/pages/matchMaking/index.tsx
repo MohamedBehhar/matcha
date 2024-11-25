@@ -3,6 +3,7 @@ import { Slider } from "@/components/ui/Slider";
 import { Input } from "@/components/ui/input";
 import { getUsersUnderRadius } from "@/api/methods/geolocation";
 import MySwiper from "@/components/MySwiper";
+import Call from "@/components/videoPlayer";
 
 const Index = () => {
   const [users, setUsers] = useState([]);
@@ -61,6 +62,7 @@ const Index = () => {
         </div>
       </div>
       <MySwiper age={age} distance={distance} interests={interests} />
+      <Call />
     </div>
   );
 };
