@@ -9,7 +9,7 @@ const getUser = async () => {
     throw error;
   }
 };
-const updateUser = async (formData: FormData, id: number) => {
+const updateUser = async (formData: FormData, id: string ) => {
   try {
     const response = await instance.patch(`/user/${id}`, formData);
     return response.data;
@@ -18,4 +18,24 @@ const updateUser = async (formData: FormData, id: number) => {
     throw error;
   }
 };
-export { getUser, updateUser };
+
+const getUserById = async (id: string) => {
+  try {
+    const response = await instance.get(`/user/${id}`);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+}
+
+const updateUserLocation = async (id: string | null, data: any) => {
+  if (!id) return
+  try {
+    const response = await instance.patch(`/user/${id}/location`, data);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+}
+
+export { getUser, updateUser, getUserById, updateUserLocation };

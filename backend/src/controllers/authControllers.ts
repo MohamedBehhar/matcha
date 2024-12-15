@@ -1,4 +1,4 @@
-import { Request, Response } from "express"; // Ensure proper typing
+import { Request, Response } from "express"; 
 import authServices from "../services/authServices";
 import {
   RefreshTYPE,

@@ -9,14 +9,18 @@ import {
 	options,
 	placeholder,
 	name,
+	defaultValue,
   }: {
 	options: string[];
 	placeholder: string;
 	name: string;
+	defaultValue: string;
   }) {
 	return (
 	  <Select
+	  
 		name={name}
+		value={defaultValue}
 	  >
 		<SelectTrigger >
 		  <SelectValue placeholder={placeholder}  />

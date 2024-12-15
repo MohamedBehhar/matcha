@@ -5,55 +5,114 @@ import MySelect from "@/components/ui/MySelect";
 import { getInterests } from "@/api/methods/interest";
 import { MdOutlineDeleteForever } from "react-icons/md";
 import { FaRegEdit } from "react-icons/fa";
-import { updateUser } from "@/api/methods/user";
-
+import {
+  updateUser,
+  getUserById,
+  updateUserLocation,
+} from "@/api/methods/user";
+import userImg from "@/assets/images/user.png";
+import { FaStar } from "react-icons/fa6";
+import { FaRegStar } from "react-icons/fa6";
+import { DatePickerDemo } from "@/components/ui/datePicker";
 
 function ProfileSetting() {
   const [interests, setInterests] = useState([]);
   const [selectedInterests, setSelectedInterests] = useState([]);
   const [selectedImages, setSelectedImages] = useState([]);
+  const [userInfo, setUserInfo] = useState({});
+
+  const id = localStorage.getItem("id");
+  const getInfo = async () => {
+    try {
+      if (!id) return;
+      const user = await getUserById(id);
+      const interests = await getInterests();
+      setUserInfo(user);
+      setProfilePicture(user.profile_picture);
+      setInterests(interests);
+      setSelectedInterests(user.interests);
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   useEffect(() => {
-    getInterests()
-      .then((data) => {
-        console.log(data);
-        setInterests(data);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+    getInfo();
   }, []);
 
-  const selectInterest = (name: string) => {
-    setSelectedInterests((prevSelected: any) =>
-      prevSelected.includes(name)
-        ? prevSelected.filter((interest: any) => interest !== name)
-        : [...prevSelected, name]
-    );
+  interface Interest {
+    id: number;
+    name: string;
+  }
+
+  const selectInterest = (interest: Interest) => {
+    if (selectedInterests.some((item) => item.id === interest.id)) {
+      setSelectedInterests((prevInterests: any) =>
+        prevInterests.filter((item: any) => item.id !== interest.id)
+      );
+      return;
+    }
+    setSelectedInterests((prevInterests: any) => [...prevInterests, interest]);
   };
 
   const handleImageChange = (event: any) => {
     const files = Array.from(event.target.files);
-    const newImages = files.map((file) => URL.createObjectURL(file));
-    setSelectedImages((prevImages) => [...prevImages, ...newImages]);
+    const newImages = files.map((file) => URL.createObjectURL(file as Blob));
+    setSelectedImages((prevImages: any) => [...prevImages, ...newImages]);
   };
 
   const handleRemoveImage = (image: any) => {
-    setSelectedImages((prevImages) =>
+    setSelectedImages((prevImages: any) =>
       prevImages.filter((img) => img !== image)
     );
   };
   const [profilePicture, setProfilePicture] = useState("");
   const handelProfilePicture = (event: any) => {
     const file = event.target.files[0];
-    console.log(file);
-    setProfilePicture(
-      file
-    );
+    setProfilePicture(file);
   };
 
+  const [location, setLocation] = useState(null);
+  const [error, setError] = useState(null);
+
+  const updateLocation = async (id: string, data: any) => {
+    try {
+      const response = await updateUserLocation(id, data);
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  const handleGetLocation = () => {
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setLocation({
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+          });
+          updateLocation(id || "", {
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+            userId: id,
+          });
+          setError(null);
+        },
+        (error) => {
+          setError("Unable to retrieve location.");
+        }
+      );
+    } else {
+      setError("Geolocation is not supported by this browser.");
+    }
+  };
+
+  useEffect(() => {
+    handleGetLocation();
+  }, []);
+
   const handleSubmit = (event: any) => {
-    const id = 1;
     event.preventDefault();
     const formData = new FormData();
     formData.append("profile_picture", profilePicture);
@@ -64,7 +123,11 @@ function ProfileSetting() {
     formData.append("bio", event.target.bio.value);
     formData.append("gender", event.target.gender.value);
     formData.append("sexual_preference", event.target.sexual_preference.value);
-    console.log("formData", formData);
+    formData.append(
+      "interests",
+      JSON.stringify(selectedInterests.map((interest) => interest.id))
+    );
+    if (!id) return;
     updateUser(formData, id)
       .then((data) => {
         console.log(data);
@@ -75,22 +138,28 @@ function ProfileSetting() {
   };
 
   return (
-    <div className="container flex flex-col items-center justify-center h-screen">
+    <div className="container flex flex-col items-center justify-center">
       <h1 className="text-3xl font-bold text-center my-5">Profile Setting</h1>
-      <div className="flex items-center justify-center  p-4 rounded-full w-[300px]">
+      {error && <div className="text-red-500 text-sm">{error}</div>}
+      <div className="flex items-center justify-center  mb-2 rounded-full w-[300px]">
         {profilePicture ? (
           <div className=" relative ">
             <img
               src={
-                profilePicture
+                profilePicture instanceof File
                   ? URL.createObjectURL(profilePicture)
-                  : "https://randomuser.me/api/portrait"
+                  : `http://localhost:3000${userInfo.profile_picture}`
               }
               alt="profile"
-              className="flex-1 max-w-[200px] rounded-full"
+              className="flex-1 w-[200px] aspect-square object-cover  rounded-full"
+              onError={(e: any) => {
+                e.target.onerror = null;
+                e.target.src = userImg;
+              }}
             />
-            <FaRegEdit className="absolute top-0 right-0" 
-            onClick={() => setProfilePicture('')}
+            <FaRegEdit
+              className="absolute top-0 right-0"
+              onClick={() => setProfilePicture("")}
             />
           </div>
         ) : (
@@ -106,28 +175,67 @@ function ProfileSetting() {
             />
           </label>
         )}
-        {/* <img
-          src="https://randomuser.me/api/portraits/men/75.jpg"
-          alt="profile"
-          className="flex-1 max-w-[200px] rounded-full"
-        /> */}
       </div>
-      <form className="w-full max-w-[800px] border p-4 rounded-md"
+      <div className="rating mb-4 flex gap-1 items-center">
+        <FaRegStar />
+        <FaRegStar />
+        <FaRegStar />
+        <FaRegStar />
+        <FaRegStar />
+      </div>
+      <form
+        className="w-full max-w-[800px] border p-4 rounded-md"
         onSubmit={handleSubmit}
       >
         <div className="grid md:grid-cols-3 sm:grid-cols-2 gap-5 w-full mb-4">
-          <Input type="text" name="first_name" placeholder="First Name" />
-          <Input name="last_name" type="text" placeholder="Last Name" />
-          <Input name="email" type="email" placeholder="Email" />
-          <Input name="username" type="text" placeholder="Username" />
-          <MySelect options={["male", "female"]} placeholder="Gender" name="gender"/>
+          <Input
+            type="text"
+            name="first_name"
+            placeholder="First Name"
+            defaultValue={userInfo.first_name}
+          />
+          <Input
+            name="last_name"
+            type="text"
+            placeholder="Last Name"
+            defaultValue={userInfo.last_name}
+          />
+          <Input
+            name="email"
+            type="email"
+            placeholder="Email"
+            defaultValue={userInfo.email}
+          />
+          <Input
+            name="username"
+            type="text"
+            placeholder="Username"
+            defaultValue={userInfo.username || ""}
+          />
           <MySelect
             options={["male", "female"]}
-            placeholder="Sexual preferences"
+            placeholder="Gender"
+            name="gender"
+          />
+          <MySelect
+            options={["male", "female", "bi"]}
+            placeholder="Sexual"
             name="sexual_preference"
           />
+          <DatePickerDemo
+            name="date_of_birth"
+            placeholder="Date of birth"
+            defaultValue={userInfo.date_of_birth}
+            onChange={(date) => console.log(date)}
+          />
         </div>
-        <Input name="bio" type="text" placeholder="Bio" className="mb-4" />
+        <Input
+          name="bio"
+          type="text"
+          placeholder="Bio"
+          className="mb-4"
+          defaultValue={userInfo.bio}
+        />
         <div className="images grid grid-cols-4 gap-4 mb-4">
           {selectedImages.map((image, index) => (
             <div className="flex flex-col items-center relative" key={index}>
@@ -160,22 +268,22 @@ function ProfileSetting() {
         <div>
           <h2 className="text-xl font-bold">Select your interests</h2>
           <div className="flex gap-2 items-center flex-wrap">
-            {selectedInterests.map((interest, index) => (
+            {selectedInterests.map((interest: Interest) => (
               <Button
-                key={index}
+                key={interest.id}
                 type="button"
                 className="bg-red-tertiary text-white"
               >
-                #{interest}
+                #{interest.name}
               </Button>
             ))}
           </div>
-          {interests.map((interest, index) => (
+          {interests.map((interest) => (
             <button
-              key={index}
+              key={interest.id}
               type="button"
               className="bg-gray-300 m-1 text-gray-800 px-2 py-1 rounded-md text-xs"
-              onClick={() => selectInterest(interest.name)}
+              onClick={() => selectInterest(interest)}
             >
               #{interest.name}
             </button>

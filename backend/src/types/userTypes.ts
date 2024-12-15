@@ -10,6 +10,7 @@ const createUserDto =  Schema.object({
 });
 
 const updateUserDto = Schema.object({
+    profile_picture: Schema.string().optional(),
     email: Schema.string().email().optional(),
     first_name: Schema.string().optional(),
     last_name: Schema.string().optional(),
@@ -19,4 +20,10 @@ const updateUserDto = Schema.object({
     sexual_preference: Schema.string().optional(),
 });
 
-export { createUserDto, updateUserDto };
+const updateUserLocationDto = Schema.object({
+    latitude: Schema.number().required(),
+    longitude: Schema.number().required(),
+    userId: Schema.string().required(),
+});
+
+export { createUserDto, updateUserDto, updateUserLocationDto };

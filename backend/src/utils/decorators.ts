@@ -38,15 +38,17 @@ export function handleResponse() {
             } else result.data = { ...result };
           } else if (!result.data && !result) {
             result = {
-              data: "",
+              data: "" ,
             };
           }
         }
         status = status || result.status;
 
-        if ((status == 200 || status == 201) && result.data)
+        if ((status == 200 || status == 201) && result.data) {
+          // remove password from response
+          delete result.data.password;
           return res.status(status).send(result.data);
-        else return res.status(500).send("Internal server error");
+        } else return res.status(500).send("Internal server error");
       } catch (error) {
         next(error);
       }

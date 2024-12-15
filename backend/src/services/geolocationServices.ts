@@ -1,31 +1,63 @@
 import { User } from "../types/authTypes";
-import { Pool } from "pg";
-const db: Pool = require("../db/db");
+import pool from "../db/db";
 
 const getUsersUnderRadius = async (
-	latitude: number,
-	longitude: number,
-	radius: number
-  ): Promise<User[]> => {
-	const query = `
-	  SELECT id, username, email, location FROM users
-	  WHERE ST_DWithin(
-		ST_GeogFromText('SRID=4326;POINT(' || $2 || ' ' || $1 || ')'),
-		location,
-		$3
-	  );
+  latitude: number,
+  longitude: number,
+  radius: number,
+  user_id: string
+): Promise<User[]> => {
+  const query = `
+  SELECT 
+  u.id, 
+  u.username, 
+  u.email, 
+  u.location, 
+  u.bio, 
+  u.first_name, 
+  u.last_name, 
+  u.rating, 
+  u.gender, 
+  u.sexual_preference,
+  CEIL(
+    ST_Distance(
+      ST_GeogFromText('SRID=4326;POINT(' || $2 || ' ' || $1 || ')'),
+      u.location
+    ) / 1000
+  ) AS distance
+FROM users u
+WHERE 
+  ST_DWithin(
+    ST_GeogFromText('SRID=4326;POINT(' || $2 || ' ' || $1 || ')'),
+    u.location,
+    $3
+  )
+  AND u.id != $4
+  AND NOT EXISTS (
+    SELECT 1
+    FROM user_interactions ui
+    WHERE ui.user_id = $4
+    AND ui.target_user_id = u.id
+    AND ui.interaction_type IN ('like', 'dislike')
+)
+
+
+
 	`;
-  
-	console.log("service", latitude, longitude, radius);
-	try {
-	  const { rows } = await db.query(query, [latitude, longitude, radius]);
-	  return rows;
-	} catch (error) {
-	  console.error("Error fetching users:", error);
-	  throw new Error("Database query failed");
-	}
-  };
-  
+
+  try {
+    const { rows } = await pool.query(query, [
+      latitude,
+      longitude,
+      radius,
+      user_id,
+    ]);
+    return rows;
+  } catch (error) {
+    console.error("Error fetching users:", error);
+    throw new Error("Database query failed");
+  }
+};
 
 const geolocationServices = {
   getUsersUnderRadius,
