@@ -149,7 +149,7 @@ CREATE TABLE users
     VALUES
         (
             'moha',
-            'moha@moha.com ',
+            'moha@moha.com',
             '111111',
             'moha',
             'bhr',
