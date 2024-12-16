@@ -20,6 +20,7 @@ function ProfileSetting() {
   const [selectedInterests, setSelectedInterests] = useState([]);
   const [selectedImages, setSelectedImages] = useState([]);
   const [userInfo, setUserInfo] = useState({});
+  const [birthDate, setBirthDate] = useState("");
 
   const id = localStorage.getItem("id");
   const getInfo = async () => {
@@ -31,6 +32,10 @@ function ProfileSetting() {
       setProfilePicture(user.profile_picture);
       setInterests(interests);
       setSelectedInterests(user.interests);
+      setBirthDate(
+        user.date_of_birth
+          ? new Date(user.date_of_birth).toISOString().split("T")[0] : ""
+      )
     } catch (error) {
       console.log(error);
     }
@@ -112,9 +117,11 @@ function ProfileSetting() {
     handleGetLocation();
   }, []);
 
+
   const handleSubmit = (event: any) => {
     event.preventDefault();
     const formData = new FormData();
+    console.log('- - - - ',event.target.date_of_birth.value);
     formData.append("profile_picture", profilePicture);
     formData.append("first_name", event.target.first_name.value);
     formData.append("last_name", event.target.last_name.value);
@@ -123,6 +130,7 @@ function ProfileSetting() {
     formData.append("bio", event.target.bio.value);
     formData.append("gender", event.target.gender.value);
     formData.append("sexual_preference", event.target.sexual_preference.value);
+    formData.append("date_of_birth", event.target.date_of_birth.value);
     formData.append(
       "interests",
       JSON.stringify(selectedInterests.map((interest) => interest.id))
@@ -216,17 +224,33 @@ function ProfileSetting() {
             options={["male", "female"]}
             placeholder="Gender"
             name="gender"
+            defaultValue={
+              userInfo.gender
+            }
+            onchange={(e) => console.log(e)}
           />
           <MySelect
             options={["male", "female", "bi"]}
             placeholder="Sexual"
             name="sexual_preference"
           />
-          <DatePickerDemo
+          {/* <DatePickerDemo
             name="date_of_birth"
             placeholder="Date of birth"
             defaultValue={userInfo.date_of_birth}
             onChange={(date) => console.log(date)}
+          /> */}
+          <input
+            type="date"
+            id="date_of_birth"
+            name="date_of_birth"
+            value={
+              birthDate
+            }
+            min="2018-01-01"
+            max={new Date().toISOString().split("T")[0]}
+            className="w-full p-2 border  rounded-md bg-transparent padding-2"
+            onChange={(e) => setBirthDate(e.target.value)}
           />
         </div>
         <Input
