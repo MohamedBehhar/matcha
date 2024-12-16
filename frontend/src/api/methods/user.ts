@@ -11,6 +11,7 @@ const getUser = async () => {
 };
 const updateUser = async (formData: FormData, id: string ) => {
   try {
+    console.log("formData", formData);  
     const response = await instance.patch(`/user/${id}`, formData);
     return response.data;
   } catch (error) {
