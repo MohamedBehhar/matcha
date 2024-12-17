@@ -4,6 +4,8 @@ import {
   RefreshTYPE,
   SignUpInput,
   TokenType,
+  forgotPasswordType,
+  resetPasswordType,
   signInInput,
   signInType,
   signUpType,
@@ -55,6 +57,29 @@ class AuthControllers {
     } = verifyTokenType.validate(req.params);
     if (!body.token) throw new Error("Invalid token");
     const user = await authServices.verifyEmail(body.token);
+    return user as unknown as void;
+  }
+
+  @handleResponse()
+  public async forgotPassword(req: Request, res: Response) {
+    const body: {
+      email: string | undefined;
+    } = forgotPasswordType.validate(req.body);
+    if (!body.email) throw new Error("Invalid email");
+    const user = await authServices.forgotPassword(body.email);
+    console.log('- - - user: ',user);
+    return user as unknown as void;
+  }
+
+  @handleResponse()
+  public async resetPassword(req: Request, res: Response) {
+    const body: {
+      token: string | undefined;
+      password: string | undefined;
+    } = resetPasswordType.validate(req.body);
+    console.log(body);
+    if (!body.token || !body.password) throw new Error("Invalid token or password");
+    const user = await authServices.resetPassword(body.token, body.password);
     return user as unknown as void;
   }
 }

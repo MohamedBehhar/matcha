@@ -69,8 +69,10 @@ export default function Header() {
   }, []);
 
   return (
-    <header>
-      <nav className="h-[4rem] border-b px-container flex justify-between items-center">
+    <header
+      className="border-b "
+    >
+      <nav className="h-[4rem] container flex justify-between items-center">
         <ul className="flex gap-4 [&>*:hover]:text-primary [&>*]:transition-colors font-semibold">
           <li>
             <Link to="/">Home</Link>

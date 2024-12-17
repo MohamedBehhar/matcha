@@ -1,12 +1,20 @@
 import { User } from "../types/authTypes";
 import pool from "../db/db";
 
-const getUsersUnderRadius = async (
+
+class geolocationServices {
+  
+constructor () {
+  this.getUsersUnderRadius = this.getUsersUnderRadius.bind(this);
+}
+
+
+public async getUsersUnderRadius  (
   latitude: number,
   longitude: number,
   radius: number,
   user_id: string
-): Promise<User[]> => {
+) {
   const query = `
   SELECT 
   u.id, 
@@ -59,8 +67,7 @@ WHERE
   }
 };
 
-const geolocationServices = {
-  getUsersUnderRadius,
-};
+}
 
-export default geolocationServices;
+
+export default new geolocationServices();

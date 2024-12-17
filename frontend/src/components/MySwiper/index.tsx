@@ -77,12 +77,12 @@ function index({
   }, []);
 
   return (
-    <div className="grid min-h-screen   place-items-center ">
+    <div className="grid   place-items-center ">
       {users.length > 0 &&
         users.map((user) => (
           <motion.div
             key={user.id}
-            className="hover:cursor-grab active:cursor-grabbing card w-[300px] h-[400px] border border-white rounded-md bg-white text-gray-700 shadow-md "
+            className="hover:cursor-grab active:cursor-grabbing card w-[300px] h-[400px] border border-white rounded-md bg-white text-gray-700 shadow-md p-5"
             style={{
               gridRow: 1,
               gridColumn: 1,
@@ -107,13 +107,18 @@ function index({
               <h1 className="text-xl font-semibold text-center">
                 {user.username}, {user.age}
               </h1>
-              <p className="text-sm text-center">{user.bio}</p>
-              <p className="text-sm text-center">
+              <p className="text-xl text-center ">
                 Distance: {user.distance} km
               </p>
+              <p className="text-sm text-center truncate">{user.bio}</p>
             </div>
           </motion.div>
         ))}
+        {
+          users.length === 0 && <h1
+          className="text-3xl font-semibold text-center"
+          >No users found</h1>
+        }
     </div>
   );
 }

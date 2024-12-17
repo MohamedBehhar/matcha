@@ -30,6 +30,8 @@ class UserControllers {
     return user as unknown as void;
   }
 
+
+
   @handleResponse()
   public async update(req: Request, res: Response) {
     const body = updateUserDto.validate(req.body);
@@ -42,6 +44,7 @@ class UserControllers {
       const interests = JSON.parse(req.body.interests);
       await userServices.addUserInterests(req.params.id, interests);
     }
+    console.log('checkUserInfo', await userServices.changeUserDataCompleteStatus(req.params.id));
     return user as unknown as void;
   }
 

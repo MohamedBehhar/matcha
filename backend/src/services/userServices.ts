@@ -115,6 +115,32 @@ class UserService {
       [data.longitude, data.latitude, data.userId]
     );
   }
+
+  public async changeUserDataCompleteStatus(id: string) {
+    const user = await orm.findOne("users", { where: { id } });
+    const userInterests = await orm.querySql(
+      `
+      SELECT * FROM user_interests WHERE user_id = $1
+    `,
+      [id]
+    );
+    if (!user) {
+      throw new Error("User not found");
+    }
+    if (
+      user.bio == null ||
+      user.profile_picture == null ||
+      user.date_of_birth == null ||
+      user.gender == null ||
+      user.sexual_preference == null ||
+      userInterests.length <= 2
+    ) {
+      await orm.update("users", id, { is_required_data_filled: false });
+    } else {
+      console.log("all data filled");
+      await orm.update("users", id, { is_required_data_filled: true });
+    }
+  }
 }
 
 export default new UserService();
