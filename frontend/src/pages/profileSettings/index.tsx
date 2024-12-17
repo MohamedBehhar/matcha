@@ -121,7 +121,7 @@ function ProfileSetting() {
   const handleSubmit = (event: any) => {
     event.preventDefault();
     const formData = new FormData();
-    console.log('- - - - ',event.target.date_of_birth.value);
+    console.log('- - - - ',event.target.gender.value);
     formData.append("profile_picture", profilePicture);
     formData.append("first_name", event.target.first_name.value);
     formData.append("last_name", event.target.last_name.value);
@@ -224,10 +224,6 @@ function ProfileSetting() {
             options={["male", "female"]}
             placeholder="Gender"
             name="gender"
-            defaultValue={
-              userInfo.gender
-            }
-            onchange={(e) => console.log(e)}
           />
           <MySelect
             options={["male", "female", "bi"]}
