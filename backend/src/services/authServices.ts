@@ -126,10 +126,10 @@ class AuthServices {
     if (false == user.is_verified) {
       throw new ForbiddenError("Account not verified");
     }
-    // const isMatch = await bcrypt.compare(data.password, user.password);
-    // if (!isMatch) {
-    //   throw new UnauthorizedError("Invalid password");
-    // }
+    const isMatch = await bcrypt.compare(data.password, user.password);
+    if (!isMatch) {
+      throw new UnauthorizedError("Invalid password");
+    }
     await orm.update("users", user.id, { is_authenticated: true });
 
     const tokens = await this.createTokens(user);
@@ -247,6 +247,64 @@ class AuthServices {
       throw err;
     }
   }
+
+
+  public async forgotPassword(email: string): Promise<void> {
+    try {
+      const user = await orm.findOne("users", { where: { email } });
+      if (!user) {
+        throw new NotFoundError("User not found");
+      }
+      const resetToken = jwt.sign(
+        { email: user.email },
+        process.env.JWT_SECRET as string,
+        {
+          expiresIn: "1d",
+        }
+      );
+      const transporter = nodemailer.createTransport({
+        service: "Gmail",
+        auth: {
+          user: process.env.EMAIL_USER,
+          pass: process.env.EMAIL_PASS,
+        },
+      });
+
+      const mailOptions = {
+        from: process.env.EMAIL_USER,
+        to: user.email,
+        subject: "Reset your password",
+        html: `<p>Click <a href="http://localhost:5173/reset/${resetToken}">here</a> to reset your password.</p>`,
+      };
+
+      await transporter.sendMail(mailOptions);
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  public async resetPassword(
+    token: string,
+    password: string
+  ): Promise<void> {
+    try {
+      const { email } = jwt.verify(token, process.env.JWT_SECRET as string) as {
+        email: string;
+      };
+      if (!email) {
+        throw new UnauthorizedError("Invalid token");
+      }
+
+      const user = await orm.findOne("users", { where: { email } });
+      const hashedPassword = await bcrypt.hash(password, 10);
+      await orm.update("users", 
+        user.id
+      , { password: hashedPassword });
+    } catch (err) {
+      throw err;
+    }
+  }
+
 }
 
 export default new AuthServices();
