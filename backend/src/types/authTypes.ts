@@ -29,6 +29,15 @@ interface SignUpInput {
   username: string;
 }
 
+interface ResetPasswordInput {
+  token: string;
+  password: string;
+}
+
+interface ForgotPasswordInput {
+  email: string;
+}
+
 interface verifyEmailReturn {
   id: number;
   email: string;
@@ -67,6 +76,31 @@ const RefreshTYPE = Schema.object({
   refresh_token: Schema.string().required(),
 });
 
+const verifyEmailReturn = Schema.object({
+  id: Schema.number().required(),
+  email: Schema.string().email().required(),
+  first_name: Schema.string().required(),
+  last_name: Schema.string().required(),
+  username: Schema.string().required(),
+  is_verified: Schema.boolean().required(),
+  is_authenticated: Schema.boolean().required(),
+  access_token: Schema.string().required(),
+  refresh_token: Schema.string().required(),
+});
+
+const verifyEmailType = Schema.object({
+  token: Schema.string().required(),
+});
+
+const forgotPasswordType = Schema.object({
+  email: Schema.string().email().required(),
+});
+
+const resetPasswordType = Schema.object({
+  token: Schema.string().required(),
+  password: Schema.string().min(6).required(),
+});
+
 export {
   User,
   signInInput,
@@ -78,4 +112,9 @@ export {
   RefreshTYPE,
   verifyTokenType,
   verifyEmailReturn,
+  verifyEmailType,
+  forgotPasswordType,
+  ForgotPasswordInput,
+  resetPasswordType,
+  ResetPasswordInput,
 };
