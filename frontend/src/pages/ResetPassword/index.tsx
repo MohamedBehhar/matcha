@@ -2,8 +2,10 @@ import React from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { resetPassword } from "@/api/methods/auth";
+import { useNavigate } from "react-router";
 
 function index() {
+  const navigate = useNavigate();
   const handelResetPassword = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
@@ -16,6 +18,7 @@ function index() {
     const token = window.location.pathname.split("/")[2];
     try {
       await resetPassword(password, token);
+      navigate("/signin");
     } catch (error) {
       console.log(error);
     }

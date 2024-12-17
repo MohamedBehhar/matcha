@@ -67,10 +67,11 @@ class AuthControllers {
     } = forgotPasswordType.validate(req.body);
     if (!body.email) throw new Error("Invalid email");
     const user = await authServices.forgotPassword(body.email);
+    console.log('- - - user: ',user);
     return user as unknown as void;
   }
 
-  // @handleResponse()
+  @handleResponse()
   public async resetPassword(req: Request, res: Response) {
     const body: {
       token: string | undefined;
