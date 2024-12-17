@@ -9,6 +9,7 @@ import SignInPage from "@/pages/signin";
 import VerifyEmailPage from "@/pages/verifyEmail";
 import VerifyEmailRedirectPage from "@/pages/VerifyEmailRedirectPage";
 import ProfileSettings from "@/pages/profileSettings";
+import ResetPasswordPage from "@/pages/ResetPassword";
 import MatchMaking from "@/pages/matchMaking";
 import {
   createBrowserRouter,
@@ -32,6 +33,10 @@ const routes: RouteObject[] = [
   {
     path: "/verify/:token?",
     element: <VerifyEmailRedirectPage />,
+  },
+  {
+    path: "/reset/:token?",
+    element: <ResetPasswordPage />,
   },
   {
     path: "/",
