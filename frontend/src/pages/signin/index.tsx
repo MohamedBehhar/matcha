@@ -2,13 +2,14 @@ import React from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import SignupImg from "@/assets/images/signupImg.svg?react";
-import { signIn } from "@/api/methods/auth";
+import { signIn, forgotPassword } from "@/api/methods/auth";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
 function index() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [email, setEmail] = useState("");
   const navigate = useNavigate();
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -23,12 +24,25 @@ function index() {
       localStorage.setItem("access_token", response.access_token);
       localStorage.setItem("refresh_token", response.refresh_token);
       localStorage.setItem("id", response.id);
-      navigate("/");
+      if (response.isDataComplete) {
+        navigate("/");
+      } else {
+        navigate("/profile-settings");
+      }
     } catch (error) {
       setError(error.response.data);
-
     }
     setIsLoading(false);
+  };
+
+  const handleForgotPassword = async () => {
+    try {
+      await forgotPassword(email);
+      // redirect to forgot password page
+      navigate("/forgot-password");
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return (
@@ -42,14 +56,22 @@ function index() {
             type="email"
             placeholder="Email"
             className="mb-4"
+            onChange={(e) => setEmail(e.target.value)}
           />
 
           <Input
             name="password"
             type="password"
             placeholder="Password"
-            className="mb-4"
+            className=""
           />
+          <button
+            type="button"
+            className="mb-4 text-red-primary text-sm bg-transparent p-0 hover:none"
+            onClick={handleForgotPassword}
+          >
+            Forgot Password?
+          </button>
           <Button type="submit" className="w-full bg-red-primary text-white">
             {isLoading ? "Loading..." : "Sign In"}
           </Button>

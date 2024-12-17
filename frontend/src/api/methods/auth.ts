@@ -44,4 +44,22 @@ const refreshToken = async () => {
   }
 };
 
-export { signUp, signIn, verifyEmail, refreshToken };
+const forgotPassword = async (email: string) => {
+  try {
+    const response = await instance.post("/auth/forgot-password", { email });
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+}
+
+const resetPassword = async (password: string, token: string) => {
+  try {
+    const response = await instance.post("/auth/reset-password", { password, token });
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+}
+
+export { signUp, signIn, verifyEmail, refreshToken, resetPassword, forgotPassword };

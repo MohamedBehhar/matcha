@@ -10,17 +10,20 @@ import {
 	placeholder,
 	name,
 	defaultValue,
+	onChange,
   }: {
 	options: string[];
 	placeholder: string;
 	name: string;
 	defaultValue: string;
+	onChange?: (e: React.ChangeEvent<HTMLSelectElement>) => void
   }) {
 	return (
 	  <Select
 	  
 		name={name}
 		value={defaultValue}
+		onChange={onChange}
 	  >
 		<SelectTrigger >
 		  <SelectValue placeholder={placeholder}  />

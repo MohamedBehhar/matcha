@@ -18,6 +18,7 @@ const updateUserDto = Schema.object({
     bio: Schema.string().optional(),
     gender : Schema.string().optional(),
     sexual_preference: Schema.string().optional(),
+    date_of_birth: Schema.string().optional(),
 });
 
 const updateUserLocationDto = Schema.object({
