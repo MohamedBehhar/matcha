@@ -77,7 +77,7 @@ function index({
   }, []);
 
   return (
-    <div className="grid min-h-screen   place-items-center ">
+    <div className="grid   place-items-center ">
       {users.length > 0 &&
         users.map((user) => (
           <motion.div
@@ -114,6 +114,11 @@ function index({
             </div>
           </motion.div>
         ))}
+        {
+          users.length === 0 && <h1
+          className="text-3xl font-semibold text-center"
+          >No users found</h1>
+        }
     </div>
   );
 }
