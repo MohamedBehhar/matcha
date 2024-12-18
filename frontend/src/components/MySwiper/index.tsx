@@ -3,16 +3,9 @@ import { useEffect, useState } from "react";
 import userImg from "@/assets/images/user.png";
 import { motion, useMotionValue, useTransform } from "framer-motion";
 import { likeAUser, unlikeAUser } from "@/api/methods/matchMaking";
-
-function index({
-  age,
-  distance,
-  interests,
-}: {
-  age: number;
-  distance: number;
-  interests: string;
-}) {
+import { Button } from "@/components/ui/button";
+import { getInterests } from "@/api/methods/interest";
+function index() {
   const x = useMotionValue(0);
   const opacity = useTransform(x, [-200, 0, 200], [0, 1, 0]);
   const rotate = useTransform(x, [-200, 0, 200], [-45, 0, 45]);
@@ -21,6 +14,24 @@ function index({
   const longitude = -6.8894012;
   const id = localStorage.getItem("id");
   const [users, setUsers] = useState([]);
+
+  const [age, setAge] = useState([24, 40]);
+  const [distance, setDistance] = useState(0);
+  const [interests, setInterests] = useState([]);
+  const [selectedInterests, setSelectedInterests] = useState([]);
+
+  const fetchInterests = async () => {
+    try {
+      const response = await getInterests();
+      setInterests(response);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    fetchInterests();
+  }, []);
 
   const getNewUsers = async () => {
     try {
@@ -76,8 +87,107 @@ function index({
     getNewUsers();
   }, []);
 
+  const getNewMatches = async (e: any) => {
+    e.preventDefault();
+    try {
+      const response = await getUsersUnderRadius(
+        latitude,
+        longitude,
+        100000,
+        id,
+        age[0],
+        age[1],
+        distance * 1000,
+        selectedInterests.map((interest) => interest.id).join(",")
+      );
+      setUsers(response);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   return (
-    <div className="grid   place-items-center ">
+    <div className="   place-items-center ">
+      <form className="filters mb-20   border rounded-md w-full p-4  mx-auto mt-10 flex flex-col gap-4"
+        onSubmit={getNewMatches}
+      >
+        <div className="flex gap-2 items-center ">
+          <div className="filter flex-1 border p-2 rounded-md flex  items-center relative gap[-5px]">
+            <p>{age[0]}</p>
+            <input
+              type="range"
+              id="age-min"
+              min="18"
+              max="55"
+              value={age[0]}
+              onChange={(e) => setAge([parseInt(e.target.value), age[1]])}
+              className="rotate-180 "
+            />
+            <input
+              type="range"
+              id="age-max"
+              min="18"
+              max="55"
+              value={age[1]}
+              onChange={(e) => setAge([age[0], parseInt(e.target.value)])}
+              className=" right-[0px] "
+            />
+            <p> {age[1]}</p>
+          </div>
+          <div className="filter flex-1 border p-2 rounded-md flex gap-2">
+            <label htmlFor="distance">Distance {distance} Km</label>
+            <input
+              type="range"
+              id="distance"
+              min="0"
+              max="100"
+              value={distance}
+              onChange={(e) => setDistance(parseInt(e.target.value))}
+            />
+          </div>
+        </div>
+        <div>
+          <h2 className="text-xl font-bold">
+            Select cummon interests to match with
+          </h2>
+          <div className="flex gap-2 items-center flex-wrap">
+            {selectedInterests.map((interest: Interest) => (
+              <Button
+                key={interest.id}
+                type="button"
+                className="bg-red-tertiary text-white"
+              >
+                #{interest.name}
+              </Button>
+            ))}
+          </div>
+          {interests.map((interest) => (
+            <button
+              key={interest.id}
+              type="button"
+              className="bg-gray-300 m-1 text-gray-800 px-2 py-1 rounded-md text-xs"
+              onClick={
+                selectedInterests.includes(interest)
+                  ? () =>
+                      setSelectedInterests(
+                        selectedInterests.filter(
+                          (selectedInterest) => selectedInterest !== interest
+                        )
+                      )
+                  : () => setSelectedInterests([...selectedInterests, interest])
+              }
+            >
+              #{interest.name}
+            </button>
+          ))}
+        </div>
+        <Button
+          className="bg-red-tertiary text-white mt-4"
+          type="submit"
+        >
+          Apply
+        </Button>
+      </form>
       {users.length > 0 &&
         users.map((user) => (
           <motion.div
@@ -114,11 +224,9 @@ function index({
             </div>
           </motion.div>
         ))}
-        {
-          users.length === 0 && <h1
-          className="text-3xl font-semibold text-center"
-          >No users found</h1>
-        }
+      {users.length === 0 && (
+        <h1 className="text-3xl font-semibold text-center">No users found</h1>
+      )}
     </div>
   );
 }

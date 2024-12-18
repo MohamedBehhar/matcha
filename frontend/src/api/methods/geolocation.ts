@@ -4,9 +4,9 @@ import instance from "../axios";
 const getUsersUnderRadius = async (
   latitude: number,
   longitude: number,
-  radius: number,
   user_id: string | null,
-  age: number,
+  max_age: number,
+  min_age: number,
   distance: number,
   interests: string
 ) => {
@@ -15,7 +15,7 @@ const getUsersUnderRadius = async (
   }
   try {
     const response = await instance.get(
-      `/geolocation/get-users-under-radius?user_id=${user_id}&latitude=${latitude}&longitude=${longitude}&radius=${radius}`
+      `/geolocation/get-users-under-radius?user_id=${user_id}&latitude=${latitude}&longitude=${longitude}&radius=${distance}&max_age=${max_age}&min_age=${min_age}&interests=${interests}`
     );
     return response.data;
   } catch (error) {
