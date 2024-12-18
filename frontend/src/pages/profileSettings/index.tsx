@@ -14,6 +14,7 @@ import userImg from "@/assets/images/user.png";
 import { FaStar } from "react-icons/fa6";
 import { FaRegStar } from "react-icons/fa6";
 import { DatePickerDemo } from "@/components/ui/datePicker";
+import toast from "react-hot-toast";
 
 function ProfileSetting() {
   const [interests, setInterests] = useState([]);
@@ -34,8 +35,9 @@ function ProfileSetting() {
       setSelectedInterests(user.interests);
       setBirthDate(
         user.date_of_birth
-          ? new Date(user.date_of_birth).toISOString().split("T")[0] : ""
-      )
+          ? new Date(user.date_of_birth).toISOString().split("T")[0]
+          : ""
+      );
     } catch (error) {
       console.log(error);
     }
@@ -117,11 +119,10 @@ function ProfileSetting() {
     handleGetLocation();
   }, []);
 
-
   const handleSubmit = (event: any) => {
     event.preventDefault();
     const formData = new FormData();
-    console.log('- - - - ',event.target.gender.value);
+    console.log("- - - - ", event.target.gender.value);
     formData.append("profile_picture", profilePicture);
     formData.append("first_name", event.target.first_name.value);
     formData.append("last_name", event.target.last_name.value);
@@ -139,9 +140,11 @@ function ProfileSetting() {
     updateUser(formData, id)
       .then((data) => {
         console.log(data);
+        toast.success("Profile updated successfully");
       })
       .catch((error) => {
         console.log(error);
+        toast.error("Failed to update profile");
       });
   };
 
@@ -240,12 +243,13 @@ function ProfileSetting() {
             type="date"
             id="date_of_birth"
             name="date_of_birth"
-            value={
-              birthDate
+            value={birthDate}
+            max={
+              new Date(new Date().setFullYear(new Date().getFullYear() - 18))
+                .toISOString()
+                .split("T")[0]
             }
-            min="2018-01-01"
-            max={new Date().toISOString().split("T")[0]}
-            className="w-full p-2 border  rounded-md bg-transparent padding-2"
+            className="w-full p-2 border rounded-md bg-transparent padding-2"
             onChange={(e) => setBirthDate(e.target.value)}
           />
         </div>
