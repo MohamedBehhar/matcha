@@ -5,6 +5,7 @@ import { motion, useMotionValue, useTransform } from "framer-motion";
 import { likeAUser, unlikeAUser } from "@/api/methods/matchMaking";
 import { Button } from "@/components/ui/button";
 import { getInterests } from "@/api/methods/interest";
+
 function index() {
   const x = useMotionValue(0);
   const opacity = useTransform(x, [-200, 0, 200], [0, 1, 0]);
@@ -16,7 +17,7 @@ function index() {
   const [users, setUsers] = useState([]);
 
   const [age, setAge] = useState([24, 40]);
-  const [distance, setDistance] = useState(0);
+  const [distance, setDistance] = useState(1);
   const [interests, setInterests] = useState([]);
   const [selectedInterests, setSelectedInterests] = useState([]);
 
@@ -93,12 +94,11 @@ function index() {
       const response = await getUsersUnderRadius(
         latitude,
         longitude,
-        100000,
         id,
         age[0],
         age[1],
         distance * 1000,
-        selectedInterests.map((interest) => interest.id).join(",")
+        selectedInterests.map((interest) => interest.id).join(",") || "1"
       );
       setUsers(response);
     } catch (error) {

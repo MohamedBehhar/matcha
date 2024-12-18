@@ -137,8 +137,12 @@ class UserService {
     ) {
       await orm.update("users", id, { is_required_data_filled: false });
     } else {
-      console.log("all data filled");
       await orm.update("users", id, { is_required_data_filled: true });
+      // apdate user age in users table
+      await orm.querySql(
+        `UPDATE users SET age = EXTRACT(YEAR FROM AGE(date_of_birth)) WHERE id = $1`,
+        [id]
+      );
     }
   }
 }
