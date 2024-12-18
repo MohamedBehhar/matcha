@@ -7,13 +7,25 @@ class geolocationControllers {
   }
 
   public async getUsersUnderRadius(req: Request, res: Response) {
-    const { latitude, longitude, radius, user_id } = req.query;
+    const { latitude, longitude, distance, user_id, max_age, min_age, interests } = req.query;
+    console.log('-- - -  - - - - - ',
+      latitude,
+      longitude,
+      distance,
+      user_id,
+      max_age,
+      min_age,
+      interests
+    );
     try {
       const users = await geolocationServices.getUsersUnderRadius(
         Number(latitude),
         Number(longitude),
-        Number(radius),
-        user_id as string
+        Number(distance),
+        user_id as string,
+        Number(min_age),
+        Number(max_age),
+        (interests as string).split(",")
       );
       res.status(200).send(users);
     } catch (error) {

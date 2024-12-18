@@ -15,7 +15,7 @@ const getUsersUnderRadius = async (
   }
   try {
     const response = await instance.get(
-      `/geolocation/get-users-under-radius?user_id=${user_id}&latitude=${latitude}&longitude=${longitude}&radius=${distance}&max_age=${max_age}&min_age=${min_age}&interests=${interests}`
+      `/geolocation/get-users-under-radius?user_id=${user_id}&latitude=${latitude}&longitude=${longitude}&distance=${distance}&max_age=${max_age}&min_age=${min_age}&interests=${interests}`
     );
     return response.data;
   } catch (error) {
