@@ -5,8 +5,8 @@ const getUsersUnderRadius = async (
   latitude: number,
   longitude: number,
   user_id: string | null,
-  max_age: number,
   min_age: number,
+  max_age: number,
   distance: number,
   interests: string
 ) => {

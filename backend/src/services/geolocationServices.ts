@@ -15,10 +15,9 @@ class geolocationServices {
     max_age?: number,
     interests?: string[]
   ) {
-    console.log(
-      "-- - -  - - - - - ",
-     typeof min_age,
-    );
+   
+
+    console.log('min_age', interests, typeof interests);
 
     const query = `
   SELECT 
@@ -32,6 +31,7 @@ class geolocationServices {
   u.rating, 
   u.gender, 
   u.sexual_preference,
+  u.age,
   CEIL(
     ST_Distance(
       ST_GeogFromText('SRID=4326;POINT(' || $2 || ' ' || $1 || ')'),
@@ -47,13 +47,13 @@ WHERE
     $3
   )
   AND u.id != $4
-  AND ($5::INTEGER IS NULL OR u.age >= $5::INTEGER) -- Min age filter
-  AND ($6::INTEGER  IS NULL OR u.age <= $6::INTEGER) -- Max age filter
-  AND ($7::INTEGER[] IS NULL OR EXISTS (
+  AND u.age >= $5
+  AND u.age <= $6
+  AND ($7::integer[] IS NULL OR EXISTS (
     SELECT 1
     FROM user_interests ui2
     WHERE ui2.user_id = u.id
-    AND ui2.interest_id = ANY($7::INTEGER[])
+    AND ui2.interest_id = ANY($7::integer[])
   ))
   AND NOT EXISTS (
     SELECT 1
@@ -74,9 +74,9 @@ ORDER BY distance ASC;
         longitude,
         distance,
         user_id,
-        min_age || null,
-        max_age || null,
-        interests || null,
+        min_age,
+        max_age,
+        interests,
       ]);
       console.log("rows", rows);
       return rows;
