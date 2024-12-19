@@ -8,7 +8,7 @@ const getUsersUnderRadius = async (
   min_age: number,
   max_age: number,
   distance: number,
-  interests: string
+  interests: string | null
 ) => {
   if (!user_id) {
     throw new Error("User id is required");

@@ -17,7 +17,7 @@ function index() {
   const [users, setUsers] = useState([]);
 
   const [age, setAge] = useState([20, 40]);
-  const [distance, setDistance] = useState(1);
+  const [distance, setDistance] = useState(5);
   const [interests, setInterests] = useState([]);
   const [selectedInterests, setSelectedInterests] = useState([]);
 
@@ -99,7 +99,8 @@ function index() {
         age[0],
         age[1],
         distance * 1000,
-        selectedInterests.map((interest) => interest.id).join(",") || "1"
+        selectedInterests.map((interest: string) => interest.id).join(",") ||
+          ''
       );
       setUsers(response);
     } catch (error) {

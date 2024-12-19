@@ -166,5 +166,14 @@ CREATE TABLE users
             'bhr',
             TRUE,
             CURRENT_TIMESTAMP
+    ),
+        (
+            'ojamil',
+            'ojamil@ojamil.com',
+            '111111',
+            'ojamil',
+            'bhr',
+            TRUE,
+            CURRENT_TIMESTAMP
     )
     ;
