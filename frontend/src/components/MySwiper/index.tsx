@@ -43,7 +43,8 @@ function index() {
         age[0],
         age[1],
         distance * 1000,
-        selectedInterests.map((interest : string) => interest.id).join(",") || "1"
+        selectedInterests.map((interest: string) => interest.id).join(",") ||
+          "1"
       );
       console.log(response);
       setUsers(response);
@@ -108,7 +109,8 @@ function index() {
 
   return (
     <div className="   place-items-center ">
-      <form className="filters mb-20   border rounded-md w-full p-4  mx-auto mt-10 flex flex-col gap-4"
+      <form
+        className="filters mb-20   border rounded-md w-full p-4  mx-auto mt-10 flex flex-col gap-4"
         onSubmit={getNewMatches}
       >
         <div className="flex gap-2 items-center ">
@@ -181,52 +183,51 @@ function index() {
             </button>
           ))}
         </div>
-        <Button
-          className="bg-red-tertiary text-white mt-4"
-          type="submit"
-        >
+        <Button className="bg-red-tertiary text-white mt-4" type="submit">
           Apply
         </Button>
       </form>
-      {users.length > 0 &&
-        users.map((user) => (
-          <motion.div
-            key={user.id}
-            className="hover:cursor-grab active:cursor-grabbing card w-[300px] h-[400px] border border-white rounded-md bg-white text-gray-700 shadow-md p-5"
-            style={{
-              gridRow: 1,
-              gridColumn: 1,
-              opacity: opacity,
-              x,
-              rotate,
-            }}
-            drag="x"
-            dragConstraints={{ left: 0, right: 0 }}
-            onDragEnd={() => handleDragEnd(user.id)}
-          >
-            <img
-              src={`localhost:3000/${user.profilePicture}`}
-              alt="profile"
-              className={`w-full  object-cover rounded-t-md `} // Apply blur directly to the front card
-              onError={(e: any) => {
-                e.target.onerror = null;
-                e.target.src = userImg;
+      <div className="flex justify-center items-center ">
+        {users.length > 0 &&
+          users.map((user) => (
+            <motion.div
+              key={user.id}
+              className="hover:cursor-grab active:cursor-grabbing card w-[300px] h-[400px] border border-white rounded-md bg-white text-gray-700 shadow-md p-5"
+              style={{
+                gridRow: 1,
+                gridColumn: 1,
+                opacity: opacity,
+                x,
+                rotate,
               }}
-            />
-            <div className="info p-1">
-              <h1 className="text-xl font-semibold text-center">
-                {user.username}, {user.age}
-              </h1>
-              <p className="text-xl text-center ">
-                Distance: {user.distance} km
-              </p>
-              <p className="text-sm text-center truncate">{user.bio}</p>
-            </div>
-          </motion.div>
-        ))}
-      {users.length === 0 && (
-        <h1 className="text-3xl font-semibold text-center">No users found</h1>
-      )}
+              drag="x"
+              dragConstraints={{ left: 0, right: 0 }}
+              onDragEnd={() => handleDragEnd(user.id)}
+            >
+              <img
+                src={`localhost:3000/${user.profilePicture}`}
+                alt="profile"
+                className={`w-full  object-cover rounded-t-md `} // Apply blur directly to the front card
+                onError={(e: any) => {
+                  e.target.onerror = null;
+                  e.target.src = userImg;
+                }}
+              />
+              <div className="info p-1">
+                <h1 className="text-xl font-semibold text-center">
+                  {user.username}, {user.age}
+                </h1>
+                <p className="text-xl text-center ">
+                  Distance: {user.distance} km
+                </p>
+                <p className="text-sm text-center truncate">{user.bio}</p>
+              </div>
+            </motion.div>
+          ))}
+        {users.length === 0 && (
+          <h1 className="text-3xl font-semibold text-center">No users found</h1>
+        )}
+      </div>
     </div>
   );
 }
