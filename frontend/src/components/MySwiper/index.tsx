@@ -16,7 +16,7 @@ function index() {
   const id = localStorage.getItem("id");
   const [users, setUsers] = useState([]);
 
-  const [age, setAge] = useState([24, 40]);
+  const [age, setAge] = useState([20, 40]);
   const [distance, setDistance] = useState(1);
   const [interests, setInterests] = useState([]);
   const [selectedInterests, setSelectedInterests] = useState([]);
@@ -39,11 +39,11 @@ function index() {
       const response = await getUsersUnderRadius(
         latitude,
         longitude,
-        100000,
         id,
-        age,
-        distance,
-        ""
+        age[0],
+        age[1],
+        distance * 1000,
+        selectedInterests.map((interest : string) => interest.id).join(",") || "1"
       );
       console.log(response);
       setUsers(response);
