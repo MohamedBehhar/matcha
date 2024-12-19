@@ -13,12 +13,8 @@ class geolocationServices {
     user_id: string,
     min_age?: number,
     max_age?: number,
-    interests?: string[]
+    interests?: string[] | null
   ) {
-   
-
-    console.log('min_age', interests, typeof interests);
-
     const query = `
   SELECT 
   u.id, 
@@ -65,9 +61,6 @@ WHERE
 GROUP BY u.id
 ORDER BY distance ASC;
   `;
-
-    // console.log('query',query);
-
     try {
       const { rows } = await pool.query(query, [
         latitude,
@@ -78,7 +71,6 @@ ORDER BY distance ASC;
         max_age,
         interests,
       ]);
-      console.log("rows", rows);
       return rows;
     } catch (error) {
       console.error("Error fetching users:", error);
