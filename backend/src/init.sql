@@ -147,6 +147,7 @@ CREATE TABLE users
         last_name,
         date_of_birth,
         age,
+        gender,
         is_verified,
         created_at
         )
@@ -159,6 +160,7 @@ CREATE TABLE users
             'bhr',
             '2004-01-01',
             22,
+            'male',
             TRUE,
             CURRENT_TIMESTAMP
     ),
@@ -170,6 +172,7 @@ CREATE TABLE users
             'bhr',
             '2004-01-01',
             24,
+            'male',
             TRUE,
             CURRENT_TIMESTAMP
     ),
@@ -181,6 +184,7 @@ CREATE TABLE users
             'bhr',
             '2004-01-01',
             26,
+            'male',
             TRUE,
             CURRENT_TIMESTAMP
     ),
@@ -192,8 +196,20 @@ CREATE TABLE users
             'bhr',
             '2004-01-01',
             26,
+            'male',
             TRUE,
             CURRENT_TIMESTAMP
+    ),(
+        'salma',
+        'salma@salma.com',
+        '111111',
+        'salma',
+        'bhr',
+        '2004-01-01',
+        26,
+        'female',
+        TRUE,
+        CURRENT_TIMESTAMP
     );
     
     
