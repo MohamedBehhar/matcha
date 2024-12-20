@@ -16,7 +16,7 @@ function index() {
   const id = localStorage.getItem("id");
   const [users, setUsers] = useState([]);
 
-  const [age, setAge] = useState([20, 40]);
+  const [ageGap, setAgeGap] = useState(5);
   const [distance, setDistance] = useState(5);
   const [interests, setInterests] = useState([]);
   const [selectedInterests, setSelectedInterests] = useState([]);
@@ -40,8 +40,7 @@ function index() {
         latitude,
         longitude,
         id,
-        age[0],
-        age[1],
+        ageGap,
         distance * 1000,
         selectedInterests.map((interest: string) => interest.id).join(",") || ""
       );
@@ -78,8 +77,7 @@ function index() {
   const handleDragEnd = async (id: string) => {
     if (x.get() > 100) {
       await handelLikeAUser(id);
-    }
-    else if (x.get() < 100) {
+    } else if (x.get() < 100) {
       await handelUnlikeAUser(id);
     }
   };
@@ -95,8 +93,7 @@ function index() {
         latitude,
         longitude,
         id,
-        age[0],
-        age[1],
+        ageGap,
         distance * 1000,
         selectedInterests.map((interest: string) => interest.id).join(",") || ""
       );
@@ -113,30 +110,25 @@ function index() {
         onSubmit={getNewMatches}
       >
         <div className="flex gap-2 items-center ">
-          <div className="filter flex-1 border p-2 rounded-md flex  items-center relative gap[-5px]">
-            <p>{age[0]}</p>
+          <div className="filter flex-1 border p-2 rounded-md flex  items-center relative gap-5">
+            <label htmlFor="age-gap">
+              Age Gap 
+            </label>
             <input
               type="range"
-              id="age-min"
-              min="18"
-              max="55"
-              value={age[0]}
-              onChange={(e) => setAge([parseInt(e.target.value), age[1]])}
-              className="rotate-180 "
+              id="age-gap"
+              min="0"
+              max="20"
+              value={ageGap}
+              onChange={(e) => setAgeGap(parseInt(e.target.value))}
+              className=" flex-1 "
             />
-            <input
-              type="range"
-              id="age-max"
-              min="18"
-              max="55"
-              value={age[1]}
-              onChange={(e) => setAge([age[0], parseInt(e.target.value)])}
-              className=" right-[0px] "
-            />
-            <p> {age[1]}</p>
+            <p>
+            {ageGap} years
+            </p>
           </div>
           <div className="filter flex-1 border p-2 rounded-md flex gap-2">
-            <label htmlFor="distance">Distance {distance} Km</label>
+            <label htmlFor="distance">Distance </label>
             <input
               type="range"
               id="distance"
@@ -144,7 +136,11 @@ function index() {
               max="100"
               value={distance}
               onChange={(e) => setDistance(parseInt(e.target.value))}
+              className=" flex-1 "
             />
+            <p>
+              {distance} km
+            </p>
           </div>
         </div>
         <div>

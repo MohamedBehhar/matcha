@@ -27,15 +27,14 @@ class MatchMakingControllers {
 
 	@handleResponse()
 	public async getMatches(req: Request, res: Response) {
-		const { latitude, longitude, distance, user_id, max_age, min_age, interests } = req.query;
+		const { latitude, longitude, distance, user_id, age_gap, interests } = req.query;
     try {
       const users = await matchMakingServices.getMatches(
         Number(latitude),
         Number(longitude),
         Number(distance),
         user_id as string,
-        Number(min_age),
-        Number(max_age),
+        Number(age_gap),
         interests ? (interests as string).split(",") : null
       );
       res.status(200).send(users);

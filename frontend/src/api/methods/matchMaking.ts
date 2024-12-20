@@ -22,8 +22,7 @@ const getMatches = async (
   latitude: number,
   longitude: number,
   user_id: string | null,
-  min_age: number,
-  max_age: number,
+  ageGap: number,
   distance: number,
   interests: string | null
 ) => {
@@ -32,7 +31,7 @@ const getMatches = async (
   }
   try {
     const response = await instance.get(
-      `/matchmaking/matches?user_id=${user_id}&latitude=${latitude}&longitude=${longitude}&distance=${distance}&max_age=${max_age}&min_age=${min_age}&interests=${interests}`
+      `/matchmaking/matches?user_id=${user_id}&latitude=${latitude}&longitude=${longitude}&distance=${distance}&age_gap=${ageGap}&interests=${interests}`
     );
     return response.data;
   } catch (error) {
