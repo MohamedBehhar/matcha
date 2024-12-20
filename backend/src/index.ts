@@ -11,7 +11,6 @@ import { Server, Socket } from "socket.io";
 import userServices from "./services/userServices";
 import multer from "multer";
 import path from "path";
-import geolocationRoutes from "./routers/geolocationRoutes";
 import matchMakingRoutes from "./routers/matchMakingRoutes";
 import matchMakingServices from "./services/matchMakingServices";
 import notificationsRoutes from "./routers/notificationsRoutes";
@@ -41,7 +40,6 @@ app.use("/api/auth", authRoutes);
 // app.use(authMiddleware);
 app.use("/api/user", userRoutes);
 app.use("/api/interests", interstsRoutes);
-app.use("/api/geolocation", geolocationRoutes);
 app.use("/api/matchmaking", matchMakingRoutes);
 app.use("/api/notifications", notificationsRoutes);
 

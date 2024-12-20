@@ -8,7 +8,8 @@ import { useNavigate } from "react-router-dom";
 
 function index() {
   const [isLoading, setIsLoading] = useState(false);
-  
+  const [birthDate, setBirthDate] = useState("");
+
   const navigate = useNavigate();
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -20,6 +21,7 @@ function index() {
       email: formData.get("email") as string,
       username: formData.get("username") as string,
       password: formData.get("password") as string,
+      date_of_birth: birthDate,
     };
     try {
       const response = await signUp(signUpInput);
@@ -66,6 +68,19 @@ function index() {
             placeholder="Password"
             className="mb-4"
           />
+          <input
+            type="date"
+            id="date_of_birth"
+            name="date_of_birth"
+            value={birthDate}
+            max={
+              new Date(new Date().setFullYear(new Date().getFullYear() - 18))
+                .toISOString()
+                .split("T")[0]
+            }
+            className="w-full p-2 border rounded-md bg-transparent padding-2 mb-4"
+            onChange={(e) => setBirthDate(e.target.value)}
+          />{" "}
           <Button type="submit" className="w-full bg-red-primary text-white">
             {isLoading ? "Loading..." : "Sign Up"}
           </Button>
