@@ -210,7 +210,7 @@ function index() {
               />
               <div className="info p-1">
                 <h1 className="text-xl font-semibold text-center">
-                  {user.username}, {user.age}
+                  {user.username}, {user.age}, {user.gender}
                 </h1>
                 <p className="text-xl text-center ">
                   Distance: {user.distance} km
