@@ -72,12 +72,20 @@ class AuthServices {
     }
   }
 
+  public async calculateAge(birthDate: Date): Promise<number> {
+    const ageDifMs = Date.now() - birthDate.getTime();
+    const ageDate = new Date(ageDifMs);
+    return Math.abs(ageDate.getUTCFullYear() - 1970);
+  }
+
   public async signUp(data: SignUpInput): Promise<Record<string, unknown>> {
     try {
       const body = signUpType.validate(data);
       const hashedPassword = await bcrypt.hash(body.password, 10);
+      const age = await this.calculateAge(new Date(body.date_of_birth));
       const newUser = await orm.create("users", {
         ...body,
+        age,
         password: hashedPassword,
         is_verified: false,
       });

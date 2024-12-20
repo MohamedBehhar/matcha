@@ -145,6 +145,7 @@ CREATE TABLE users
         password,
         first_name,
         last_name,
+        age,
         is_verified,
         created_at
         )
@@ -155,6 +156,7 @@ CREATE TABLE users
             '111111',
             'moha',
             'bhr',
+            22,
             TRUE,
             CURRENT_TIMESTAMP
     ),
@@ -164,6 +166,7 @@ CREATE TABLE users
             '111111',
             'toto',
             'bhr',
+            24,
             TRUE,
             CURRENT_TIMESTAMP
     ),
@@ -173,7 +176,19 @@ CREATE TABLE users
             '111111',
             'ojamil',
             'bhr',
+            26,
             TRUE,
             CURRENT_TIMESTAMP
-    )
-    ;
+    ),
+    (
+        'karim',
+        'karim@karim.com',
+        '111111',
+        'karim',
+        'bhr',
+        26,
+        TRUE,
+        CURRENT_TIMESTAMP
+    );
+    
+    

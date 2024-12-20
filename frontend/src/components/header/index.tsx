@@ -69,9 +69,7 @@ export default function Header() {
   }, []);
 
   return (
-    <header
-      className="border-b "
-    >
+    <header className="border-b ">
       <nav className="h-[4rem] container flex justify-between items-center">
         <ul className="flex gap-4 [&>*:hover]:text-primary [&>*]:transition-colors font-semibold">
           <li>
@@ -112,6 +110,9 @@ export default function Header() {
             )}
           </DropdownMenuContent>
         </DropdownMenu>
+        <h1
+          className="text-xl font-bold capitalize"
+        >{localStorage.getItem('name')}</h1>
         <Button
           className="bg-red-primary text-white"
           onClick={() => {

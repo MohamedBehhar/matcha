@@ -1,4 +1,4 @@
-import { getUsersUnderRadius } from "@/api/methods/geolocation";
+import { getMatches } from "@/api/methods/matchMaking";
 import { useEffect, useState } from "react";
 import userImg from "@/assets/images/user.png";
 import { motion, useMotionValue, useTransform } from "framer-motion";
@@ -36,15 +36,14 @@ function index() {
 
   const getNewUsers = async () => {
     try {
-      const response = await getUsersUnderRadius(
+      const response = await getMatches(
         latitude,
         longitude,
         id,
         age[0],
         age[1],
         distance * 1000,
-        selectedInterests.map((interest: string) => interest.id).join(",") ||
-          "1"
+        selectedInterests.map((interest: string) => interest.id).join(",") || ""
       );
       console.log(response);
       setUsers(response);
@@ -80,7 +79,7 @@ function index() {
     if (x.get() > 100) {
       await handelLikeAUser(id);
     }
-    if (x.get() < 100) {
+    else if (x.get() < 100) {
       await handelUnlikeAUser(id);
     }
   };
@@ -92,15 +91,14 @@ function index() {
   const getNewMatches = async (e: any) => {
     e.preventDefault();
     try {
-      const response = await getUsersUnderRadius(
+      const response = await getMatches(
         latitude,
         longitude,
         id,
         age[0],
         age[1],
         distance * 1000,
-        selectedInterests.map((interest: string) => interest.id).join(",") ||
-          ''
+        selectedInterests.map((interest: string) => interest.id).join(",") || ""
       );
       setUsers(response);
     } catch (error) {
@@ -109,7 +107,7 @@ function index() {
   };
 
   return (
-    <div className="   place-items-center ">
+    <div className=" ">
       <form
         className="filters mb-20   border rounded-md w-full p-4  mx-auto mt-10 flex flex-col gap-4"
         onSubmit={getNewMatches}
@@ -188,7 +186,7 @@ function index() {
           Apply
         </Button>
       </form>
-      <div className="flex justify-center items-center ">
+      <div className=" grid min-h-screen   place-items-center">
         {users.length > 0 &&
           users.map((user) => (
             <motion.div

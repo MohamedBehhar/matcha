@@ -2,7 +2,6 @@ import useCountStore from "@/store/store";
 import { getUser } from "@/api/methods/user";
 import { useEffect, useState } from "react";
 import { updateUserLocation } from "@/api/methods/user";
-import { DatePickerDemo } from "@/components/ui/datePicker";
 import { socket } from "@/utils/socket";
 
 export default function HomePage() {
@@ -52,7 +51,6 @@ export default function HomePage() {
   const count = useCountStore((state) => state.count);
   return (
     <main className="grid place-content-center">
-      <DatePickerDemo />
       <h1 className="text-6xl">Home Page</h1>
       {count}
     </main>

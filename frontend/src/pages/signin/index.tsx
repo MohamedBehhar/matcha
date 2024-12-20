@@ -23,6 +23,7 @@ function index() {
       const response = await signIn(signInInput);
       localStorage.setItem("access_token", response.access_token);
       localStorage.setItem("refresh_token", response.refresh_token);
+      localStorage.setItem("name", response.username);
       localStorage.setItem("id", response.id);
       if (response.isDataComplete) {
         navigate("/");
