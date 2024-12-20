@@ -81,8 +81,7 @@ class MatchMakingServices {
     longitude: number,
     distance: number,
     user_id: string,
-    min_age?: number,
-    max_age?: number,
+    age_gap: number,
     interests?: string[] | null
   ) {
     const query = `
@@ -131,6 +130,13 @@ WHERE
 GROUP BY u.id
 ORDER BY distance ASC;
   `;
+    const user = await orm.findOne("users", {
+      where: { id: user_id },
+    });
+    const min_age =  user?.age! - age_gap;
+    const max_age =  user?.age! + age_gap;
+    console.log("min_age", min_age);
+    console.log("max_age", max_age);
     try {
       const { rows } = await pool.query(query, [
         latitude,
@@ -141,6 +147,7 @@ ORDER BY distance ASC;
         max_age,
         interests,
       ]);
+
       return rows;
     } catch (error) {
       console.error("Error fetching users:", error);
@@ -150,5 +157,3 @@ ORDER BY distance ASC;
 }
 
 export default new MatchMakingServices();
-
-

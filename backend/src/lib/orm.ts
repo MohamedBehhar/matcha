@@ -139,10 +139,7 @@ class OrmMatcha {
   }
   async querySql(sql: string, values: any[]) {
     try {
-      return pool.query(
-        sql,
-        values
-      ).then((result) => result.rows);
+      return pool.query(sql, values).then((result) => result.rows);
     } catch (err) {
       throw new Error(`Error querying sql: ${err}`);
     }
