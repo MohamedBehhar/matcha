@@ -5,35 +5,36 @@ import {
 	SelectTrigger,
 	SelectValue,
   } from "@/components/ui/select";
+  
   function MySelect({
 	options,
 	placeholder,
 	name,
-	defaultValue,
+	value,
 	onChange,
   }: {
 	options: string[];
 	placeholder: string;
 	name: string;
-	defaultValue: string;
-	onChange?: (e: React.ChangeEvent<HTMLSelectElement>) => void
+	value: string;
+	onChange?: (value: string) => void;
   }) {
 	return (
 	  <Select
-	  
 		name={name}
-		value={defaultValue}
-		onChange={onChange}
+		value={value} // Controlled value
+		onValueChange={(value) => {
+		  if (onChange) {
+			onChange(value);
+		  }
+		}}
 	  >
-		<SelectTrigger >
-		  <SelectValue placeholder={placeholder}  />
+		<SelectTrigger>
+		  <SelectValue placeholder={placeholder} />
 		</SelectTrigger>
-		<SelectContent
-
-		>
+		<SelectContent>
 		  {options.map((option) => (
-			<SelectItem key={option} value={option} 
-			>
+			<SelectItem key={option} value={option}>
 			  {option}
 			</SelectItem>
 		  ))}
@@ -43,3 +44,4 @@ import {
   }
   
   export default MySelect;
+  

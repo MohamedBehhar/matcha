@@ -25,7 +25,7 @@ class MatchMakingControllers {
 		return await matchMakingServices.unlikeAUser(body) as unknown as void;
 	}
 
-	@handleResponse()
+	// @handleResponse()
 	public async getMatches(req: Request, res: Response) {
 		const { latitude, longitude, distance, user_id, age_gap, interests } = req.query;
     try {

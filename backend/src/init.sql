@@ -6,7 +6,11 @@ ALTER DATABASE MATCHA_DB OWNER TO matcha;
 CREATE TYPE gender_type AS ENUM
 ('male', 'female');
 CREATE TYPE  sexual_preference_type AS ENUM
-('male', 'female', 'bi');
+(
+    'bisexual',
+    'heterosexual',
+    'homosexual'
+);
 CREATE TABLE users
 (
     id SERIAL PRIMARY KEY,
@@ -25,7 +29,7 @@ CREATE TABLE users
     bio TEXT,
     rating INTEGER DEFAULT 0,
     gender gender_type DEFAULT NULL,
-    sexual_preference sexual_preference_type DEFAULT 'bi',
+    sexual_preference sexual_preference_type DEFAULT 'bisexual',
     latitude DOUBLE PRECISION,
     longitude DOUBLE PRECISION,
     location GEOMETRY(POINT,
