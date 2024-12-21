@@ -227,11 +227,18 @@ function ProfileSetting() {
             options={["male", "female"]}
             placeholder="Gender"
             name="gender"
+            value={userInfo.gender}
+            onChange={(value) => setUserInfo({ ...userInfo, gender: value })}
           />
+
           <MySelect
-            options={["male", "female", "bi"]}
-            placeholder="Sexual"
+            options={["bisexual", "heterosexual", "homosexual"]}
+            placeholder="Sexual Preference"
             name="sexual_preference"
+            value={userInfo.sexual_preference}
+            onChange={(value) =>
+              setUserInfo({ ...userInfo, sexual_preference: value })
+            }
           />
           {/* <DatePickerDemo
             name="date_of_birth"
