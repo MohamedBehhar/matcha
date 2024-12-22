@@ -12,6 +12,7 @@ import ProfileSettings from "@/pages/profileSettings";
 import ResetPasswordPage from "@/pages/ResetPassword";
 import MatchMaking from "@/pages/matchMaking";
 import ForgotPasswordPage from "@/pages/forgotPassword";
+import ProfilePage from "@/pages/profile";
 import {
   createBrowserRouter,
   RouteObject,
@@ -70,6 +71,9 @@ const routes: RouteObject[] = [
           {
             path: "match-making",
             element: <MatchMaking />,
+          }, {
+            path: "profile/:userid",
+            element: <ProfilePage />,
           }
         ],
       },

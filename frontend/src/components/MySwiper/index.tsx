@@ -5,6 +5,8 @@ import { motion, useMotionValue, useTransform } from "framer-motion";
 import { likeAUser, unlikeAUser } from "@/api/methods/matchMaking";
 import { Button } from "@/components/ui/button";
 import { getInterests } from "@/api/methods/interest";
+import { useNavigate } from "react-router";
+import { Link } from "react-router-dom";
 
 function index() {
   const x = useMotionValue(0);
@@ -15,6 +17,7 @@ function index() {
   const longitude = -6.8894012;
   const id = localStorage.getItem("id");
   const [users, setUsers] = useState([]);
+  const Navigate = useNavigate();
 
   const [ageGap, setAgeGap] = useState(5);
   const [distance, setDistance] = useState(5);
@@ -199,6 +202,7 @@ function index() {
               dragConstraints={{ left: 0, right: 0 }}
               onDragEnd={() => handleDragEnd(user.id)}
             >
+              <Link to={`/profile/${user.id}`}>
               <img
                 src={`localhost:3000/${user.profilePicture}`}
                 alt="profile"
@@ -217,6 +221,7 @@ function index() {
                 </p>
                 <p className="text-sm text-center truncate">{user.bio}</p>
               </div>
+              </Link>
             </motion.div>
           ))}
         {users.length === 0 && (

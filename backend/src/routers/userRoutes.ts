@@ -11,4 +11,5 @@ router.delete("/:id", userControllers.delete);
 router.get("/:id", userControllers.getUsersById);
 router.patch("/:id/location", userControllers.updateUserLocation);
 
+
 export default router;
