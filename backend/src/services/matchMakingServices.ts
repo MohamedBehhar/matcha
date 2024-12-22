@@ -9,6 +9,7 @@ class MatchMakingServices {
   constructor() {
     this.likeAUser = this.likeAUser.bind(this);
     this.unlikeAUser = this.unlikeAUser.bind(this);
+    this.getMatches = this.getMatches.bind(this);
   }
 
   public initSocket(io: Server, userMap: Map<string, string>) {
@@ -18,22 +19,28 @@ class MatchMakingServices {
 
   public async likeAUser(body: any) {
     const { user_id, liked_id } = body;
-
-    await orm.create("user_interactions", {
-      user_id,
-      target_user_id: liked_id,
-      interaction_type: "like",
+    const alreadyDisliked = await orm.findOne("user_interactions", {
+      where: {
+        user_id,
+        target_user_id: liked_id,
+        interaction_type: "dislike",
+      },
     });
-
     const user = await orm.findOne("users", { where: { id: user_id } });
     const liked = await orm.findOne("users", { where: { id: liked_id } });
 
-    await orm.create("notifications", {
-      user_id: liked_id,
-      content: `${user?.first_name} ${user?.last_name} liked you!`,
-      sender_id: user_id,
-    });
-
+    if (alreadyDisliked) {
+      await orm.querySql(
+        "UPDATE user_interactions SET interaction_type = 'like' WHERE user_id = $1 AND target_user_id = $2",
+        [user_id, liked_id]
+      );
+    } else {
+      await orm.create("user_interactions", {
+        user_id,
+        target_user_id: liked_id,
+        interaction_type: "like",
+      });
+    }
     const mutualLike = await orm.findOne("user_interactions", {
       where: {
         user_id: liked_id,
@@ -65,15 +72,42 @@ class MatchMakingServices {
 
   public async unlikeAUser(body: any) {
     const { user_id, disliked_id } = body;
-
-    // Insert the "dislike" interaction
-    await orm.create("user_interactions", {
-      user_id,
-      target_user_id: disliked_id,
-      interaction_type: "dislike",
+    // check if the user has liked the target user
+    const like = await orm.findOne("user_interactions", {
+      where: {
+        user_id,
+        target_user_id: disliked_id,
+        interaction_type: "like",
+      },
     });
 
+    if (like) {
+      await orm.querySql(
+        "UPDATE user_interactions SET interaction_type = 'dislike' WHERE user_id = $1 AND target_user_id = $2",
+        [user_id, disliked_id]
+      );
+    } else {
+      await orm.create("user_interactions", {
+        user_id,
+        target_user_id: disliked_id,
+        interaction_type: "dislike",
+      });
+    }
+
     return { message: "Dislike added" };
+  }
+
+  public async blockAUser(body: any) {
+    const { user_id, blocked_id } = body;
+
+    // Insert the "block" interaction
+    await orm.create("user_interactions", {
+      user_id,
+      target_user_id: blocked_id,
+      interaction_type: "block",
+    });
+
+    return { message: "Blocked user" };
   }
 
   public async getMatches(
@@ -129,7 +163,6 @@ class MatchMakingServices {
         AND (
             -- Match based on sexual preference logic
             CASE 
-                WHEN $7 = 'bisexual' THEN TRUE -- Bisexual sees everyone
                 WHEN $7 = 'heterosexual' AND $8 = 'male' THEN (u.gender = 'female' AND u.sexual_preference IN ('heterosexual', 'bisexual'))
                  WHEN $7 = 'heterosexual' AND $8 = 'female' THEN (u.gender = 'male' AND u.sexual_preference IN ('heterosexual', 'bisexual'))
                  WHEN $7 = 'homosexual' AND $8 = 'male' THEN (u.gender = 'male' AND u.sexual_preference IN ('homosexual', 'bisexual'))
@@ -172,6 +205,17 @@ class MatchMakingServices {
     } catch (error) {
       console.error("Error executing query:", error);
     }
+  }
+
+  public async checkLike(user_id: string, target_id: string) {
+    const like = await orm.querySql(
+      "SELECT * FROM user_interactions WHERE user_id = $1 AND target_user_id = $2 AND interaction_type = 'like'",
+      [user_id, target_id]
+    );
+
+    console.log("Like8:", like);
+
+    return { liked: like.length > 0 ? true : false };
   }
 }
 

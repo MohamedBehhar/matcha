@@ -39,4 +39,6 @@ const updateUserLocation = async (id: string | null, data: any) => {
   }
 }
 
+
+
 export { getUser, updateUser, getUserById, updateUserLocation };

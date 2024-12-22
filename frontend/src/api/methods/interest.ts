@@ -10,4 +10,13 @@ const getInterests = async () => {
   }
 };
 
-export { getInterests };
+const getUserInterests = async (user_id: string) => {
+	  try {
+	const response = await instance.get(`/interests/get-user-interests/${user_id}`);
+	return response.data;
+  } catch (error) {
+	throw error;
+  }
+}
+
+export { getInterests, getUserInterests };
