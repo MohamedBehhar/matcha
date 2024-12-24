@@ -11,9 +11,10 @@ import { Server, Socket } from "socket.io";
 import userServices from "./services/userServices";
 import multer from "multer";
 import path from "path";
-import matchMakingRoutes from "./routers/matchMakingRoutes";
-import matchMakingServices from "./services/matchMakingServices";
+import usersInteractionsRoutes from "./routers/usersInteractionsRoutes";
+import UsersInteractionsServices from "./services/UsersInteractionsServices";
 import notificationsRoutes from "./routers/notificationsRoutes";
+import notificationsServices from "./services/notificationsServices";
 
 const PORT = 3000;
 const app = express();
@@ -40,7 +41,7 @@ app.use("/api/auth", authRoutes);
 // app.use(authMiddleware);
 app.use("/api/user", userRoutes);
 app.use("/api/interests", interstsRoutes);
-app.use("/api/matchmaking", matchMakingRoutes);
+app.use("/api/interactions", usersInteractionsRoutes);
 app.use("/api/notifications", notificationsRoutes);
 
 const socket = new Server(server, {
@@ -62,8 +63,9 @@ socket.on("connection", (socket) => {
     console.log("message: " + msg);
     // socket.broadcast.emit('chat message', msg);
   });
-  matchMakingServices.initSocket(socket as unknown as any, userMap);
+  UsersInteractionsServices.initSocket(socket as unknown as any, userMap);
   userServices.initSocket(socket as unknown as any);
+  notificationsServices.initSocket(socket as unknown as any, userMap);
 });
 
 socket.on("error", (err) => {

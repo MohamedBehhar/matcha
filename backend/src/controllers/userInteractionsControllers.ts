@@ -3,9 +3,9 @@ import { Request, Response } from "express";
 import { handleResponse } from "../utils/decorators";
 
 
-import matchMakingServices from "../services/matchMakingServices";
+import UsersInteractionsServices from "../services/UsersInteractionsServices";
 
-class MatchMakingControllers {
+class UserInteractionsControllers {
 	constructor() {
 		this.likeAUser = this.likeAUser.bind(this);
 		this.unlikeAUser = this.unlikeAUser.bind(this);
@@ -16,26 +16,26 @@ class MatchMakingControllers {
 	@handleResponse()
 	public async likeAUser(req: Request, res: Response) {
 		const body = req.body;
-		return await matchMakingServices.likeAUser(body) as unknown as void;
+		return await UsersInteractionsServices.likeAUser(body) as unknown as void;
 	}
 
 	@handleResponse()
 	public async unlikeAUser(req: Request, res: Response) {
 		const body = req.body;
-		return await matchMakingServices.unlikeAUser(body) as unknown as void;
+		return await UsersInteractionsServices.unlikeAUser(body) as unknown as void;
 	}
 
 	@handleResponse()
 	public async blockAUser(req: Request, res: Response) {
 		const body = req.body;
-		return await matchMakingServices.blockAUser(body) as unknown as void;
+		return await UsersInteractionsServices.blockAUser(body) as unknown as void;
 	}
 
 	// @handleResponse()
 	public async getMatches(req: Request, res: Response) {
 		const { latitude, longitude, distance, user_id, age_gap, interests } = req.query;
     try {
-      const users = await matchMakingServices.getMatches(
+      const users = await UsersInteractionsServices.getMatches(
         Number(latitude),
         Number(longitude),
         Number(distance),
@@ -55,9 +55,14 @@ class MatchMakingControllers {
 		const { user_id, target_id } = req.params;
 		console.log("user_id3", user_id);
 		console.log("target_id3", target_id);
-		return await matchMakingServices.checkLike(user_id, target_id) as unknown as void;
+		return await UsersInteractionsServices.checkLike(user_id, target_id) as unknown as void;
+	}
+
+	@handleResponse()
+	public async newVisit(req: Request, res: Response) {
+		const { user_id, visited_id } = req.body;
+		return await UsersInteractionsServices.newVisit(user_id, visited_id) as unknown as void;
 	}
 }
 
-const matchMakingControllers = new MatchMakingControllers();
-export default matchMakingControllers;
+export default  new UserInteractionsControllers();

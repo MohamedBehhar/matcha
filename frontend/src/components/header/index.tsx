@@ -15,8 +15,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
+
   DropdownMenuTrigger,
 } from "@/components/ui/dropDown";
 
@@ -55,9 +54,10 @@ export default function Header() {
       toast("User matched with you: " + userId);
     });
 
-    socket.on("notification", () => {
+    socket.on("notification", (data: any) => {
       fetchNotifications();
       fetchNotificationsCount();
+      console.log("notification", data);
     });
 
     return () => {

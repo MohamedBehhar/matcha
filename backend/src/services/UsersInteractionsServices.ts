@@ -1,8 +1,9 @@
 import orm from "../lib/orm";
 import { Server } from "socket.io";
 import pool from "../db/db";
+import notificationsServices from "./notificationsServices";
 
-class MatchMakingServices {
+class UsersInteractionsServices {
   private socket: Server | undefined;
   private userMap: Map<string, string> = new Map();
 
@@ -15,6 +16,12 @@ class MatchMakingServices {
   public initSocket(io: Server, userMap: Map<string, string>) {
     this.socket = io;
     this.userMap = userMap;
+
+    this.socket.on("newVisit", async (data: any) => {
+      console.log("newVisit", data);
+      await this.newVisit(data.user_id, data.visited_id);
+    });
+    
   }
 
   public async likeAUser(body: any) {
@@ -217,6 +224,17 @@ class MatchMakingServices {
 
     return { liked: like.length > 0 ? true : false };
   }
+
+  public async newVisit(user_id: string, visited_id: string) {
+    await orm.create("visits", { user_id, visited_id });
+    await notificationsServices.createNotification(
+      visited_id,
+      `User ${user_id} visited your profile`,
+      user_id
+    );
+
+    return;
+  }
 }
 
-export default new MatchMakingServices();
+export default new UsersInteractionsServices();
