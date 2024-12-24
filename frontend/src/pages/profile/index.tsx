@@ -16,7 +16,10 @@ import {
   likeAUser,
   unlikeAUser,
   blockAUser,
-} from "@/api/methods/matchMaking";
+} from "@/api/methods/interactions";
+import { socket } from "@/utils/socket";
+
+
 function index() {
   const [user, setUser] = useState<any>(null);
   const [userInterests, setUserInterests] = useState<any>(null);
@@ -116,6 +119,7 @@ function index() {
     handelGetUserInfo();
     handelGetUserInterests();
     handelCheckLike();
+    socket.emit("newVisit", { user_id, visited_id: target_id });
   }, []);
   return (
     <div className="container h-full flex flex-col">

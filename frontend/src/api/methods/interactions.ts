@@ -3,7 +3,7 @@ import instance from "../axios";
 const likeAUser = async (body: any) => {
   console.log("body", body);
   try {
-    const response = await instance.post("/matchmaking/like", body);
+    const response = await instance.post("/interactions/like", body);
     return response.data;
   } catch (error) {
     throw error;
@@ -13,7 +13,7 @@ const likeAUser = async (body: any) => {
 const unlikeAUser = async (body: any) => {
   console.log("body", body);
   try {
-    const response = await instance.post("/matchmaking/unlike", body);
+    const response = await instance.post("/interactions/unlike", body);
     return response.data;
   } catch (error) {
     throw error;
@@ -33,7 +33,7 @@ const getMatches = async (
   }
   try {
     const response = await instance.get(
-      `/matchmaking/matches?user_id=${user_id}&latitude=${latitude}&longitude=${longitude}&distance=${distance}&age_gap=${ageGap}&interests=${interests}`
+      `/interactions/matches?user_id=${user_id}&latitude=${latitude}&longitude=${longitude}&distance=${distance}&age_gap=${ageGap}&interests=${interests}`
     );
     return response.data;
   } catch (error) {
@@ -46,7 +46,7 @@ const checkLike = async (user_id: string, liked_id: string) => {
   console.log("liked_id", liked_id);
   try {
     const response = await instance.get(
-      "/matchmaking/check-like/" + user_id + "/" + liked_id
+      "/interactions/check-like/" + user_id + "/" + liked_id
     );
     return response.data;
   } catch (error) {

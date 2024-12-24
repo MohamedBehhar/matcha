@@ -111,8 +111,7 @@ CREATE TABLE users
         id SERIAL PRIMARY KEY,
         user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
         visited_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        UNIQUE (user_id, visited_id)
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
     CREATE TABLE freinds_requests
     (
@@ -203,17 +202,18 @@ CREATE TABLE users
             'male',
             TRUE,
             CURRENT_TIMESTAMP
-    ),(
-        'salma',
-        'salma@salma.com',
-        '111111',
-        'salma',
-        'bhr',
-        '2004-01-01',
-        26,
-        'female',
-        TRUE,
-        CURRENT_TIMESTAMP
+    ),
+        (
+            'salma',
+            'salma@salma.com',
+            '111111',
+            'salma',
+            'bhr',
+            '2004-01-01',
+            26,
+            'female',
+            TRUE,
+            CURRENT_TIMESTAMP
     );
     
     

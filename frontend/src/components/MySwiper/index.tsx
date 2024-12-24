@@ -1,8 +1,8 @@
-import { getMatches } from "@/api/methods/matchMaking";
+import { getMatches } from "@/api/methods/interactions";
 import { useEffect, useState } from "react";
 import userImg from "@/assets/images/user.png";
 import { motion, useMotionValue, useTransform } from "framer-motion";
-import { likeAUser, unlikeAUser } from "@/api/methods/matchMaking";
+import { likeAUser, unlikeAUser } from "@/api/methods/interactions";
 import { Button } from "@/components/ui/button";
 import { getInterests } from "@/api/methods/interest";
 import { useNavigate } from "react-router";
@@ -114,9 +114,7 @@ function index() {
       >
         <div className="flex gap-2 items-center ">
           <div className="filter flex-1 border p-2 rounded-md flex  items-center relative gap-5">
-            <label htmlFor="age-gap">
-              Age Gap 
-            </label>
+            <label htmlFor="age-gap">Age Gap</label>
             <input
               type="range"
               id="age-gap"
@@ -126,9 +124,7 @@ function index() {
               onChange={(e) => setAgeGap(parseInt(e.target.value))}
               className=" flex-1 "
             />
-            <p>
-            {ageGap} years
-            </p>
+            <p>{ageGap} years</p>
           </div>
           <div className="filter flex-1 border p-2 rounded-md flex gap-2">
             <label htmlFor="distance">Distance </label>
@@ -141,9 +137,7 @@ function index() {
               onChange={(e) => setDistance(parseInt(e.target.value))}
               className=" flex-1 "
             />
-            <p>
-              {distance} km
-            </p>
+            <p>{distance} km</p>
           </div>
         </div>
         <div>
@@ -203,24 +197,24 @@ function index() {
               onDragEnd={() => handleDragEnd(user.id)}
             >
               <Link to={`/profile/${user.id}`}>
-              <img
-                src={`localhost:3000/${user.profilePicture}`}
-                alt="profile"
-                className={`w-full  object-cover rounded-t-md `} // Apply blur directly to the front card
-                onError={(e: any) => {
-                  e.target.onerror = null;
-                  e.target.src = userImg;
-                }}
-              />
-              <div className="info p-1">
-                <h1 className="text-xl font-semibold text-center">
-                  {user.username}, {user.age}, {user.gender}
-                </h1>
-                <p className="text-xl text-center ">
-                  Distance: {user.distance} km
-                </p>
-                <p className="text-sm text-center truncate">{user.bio}</p>
-              </div>
+                <img
+                  src={`localhost:3000/${user.profilePicture}`}
+                  alt="profile"
+                  className={`w-full  object-cover rounded-t-md `} // Apply blur directly to the front card
+                  onError={(e: any) => {
+                    e.target.onerror = null;
+                    e.target.src = userImg;
+                  }}
+                />
+                <div className="info p-1">
+                  <h1 className="text-xl font-semibold text-center">
+                    {user.username}, {user.age}, {user.gender}
+                  </h1>
+                  <p className="text-xl text-center ">
+                    Distance: {user.distance} km
+                  </p>
+                  <p className="text-sm text-center truncate">{user.bio}</p>
+                </div>
               </Link>
             </motion.div>
           ))}

@@ -1,7 +1,7 @@
 import React from "react";
 import userImg from "@/assets/images/user.png";
 import { motion, useMotionValue, useTransform } from "framer-motion";
-import { likeAUser, unlikeAUser } from "@/api/methods/matchMaking";
+import { likeAUser, unlikeAUser } from "@/api/methods/interactions";
 interface User {
   profilePicture: string;
   name: string;
