@@ -6,10 +6,12 @@ import { signIn, forgotPassword } from "@/api/methods/auth";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
+import useUserStore from "@/store/userStore";
 function index() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [email, setEmail] = useState("");
+  const setUserInfos = useUserStore((state) => state.setUserInfos);
   const navigate = useNavigate();
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -25,6 +27,7 @@ function index() {
       localStorage.setItem("refresh_token", response.refresh_token);
       localStorage.setItem("name", response.username);
       localStorage.setItem("id", response.id);
+      setUserInfos(response);
       if (response.isDataComplete) {
         navigate("/");
       } else {

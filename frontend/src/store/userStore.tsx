@@ -7,11 +7,13 @@ type User = {
   first_name: string;
   last_name: string;
   is_authenticated: boolean;
+  latitude?: number;
+  longitude?: number;
 };
 
 type State = {
   user: User;
-  setUser: (user: User) => void; // Changed user from string to User object
+  setUserInfos: (user: User) => void; // Changed user from string to User object
 };
 
 type Actions = {
@@ -26,8 +28,10 @@ const useUserStore = create<State & Actions>((set) => ({
     first_name: "",
     last_name: "",
     is_authenticated: false,
+    latitude: 0,
+    longitude: 0,
   },
-  setUser: (user: User) => set({ user }), // Accepts a User object
+  setUserInfos: (user: User) => set({ user }), // Accepts a User object
   logout: () =>
     set({
       user: {
@@ -37,6 +41,8 @@ const useUserStore = create<State & Actions>((set) => ({
         first_name: "",
         last_name: "",
         is_authenticated: false,
+        latitude: 0,
+        longitude: 0,
       },
     }),
 }));

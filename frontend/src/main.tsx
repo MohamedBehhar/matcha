@@ -2,6 +2,7 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./global.css";
 import { RouterProvider } from "@/components/router-provider";
+import "leaflet/dist/leaflet.css";
 
 const body = document.body;
 const theme = localStorage.getItem("theme") || "system";
