@@ -3,8 +3,11 @@ import { getUser } from "@/api/methods/user";
 import { useEffect, useState } from "react";
 import { updateUserLocation } from "@/api/methods/user";
 import { socket } from "@/utils/socket";
+import useUserStore from "@/store/userStore";
+import { set } from "date-fns";
 
 export default function HomePage() {
+  const setUserInfos = useUserStore((state) => state.setUserInfos);
   const id = localStorage.getItem("id");
   const [errro, setError] = useState()
   const updateLocation = async (id: string, data: any) => {
@@ -28,6 +31,12 @@ export default function HomePage() {
           });
           localStorage.setItem("latitude", position.coords.latitude);
           localStorage.setItem("longitude", position.coords.longitude);
+          setUserInfos({
+            ...useUserStore.getState().user,
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+          });
+          
           setError(null);
         },
         (error) => {

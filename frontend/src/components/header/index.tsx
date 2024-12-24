@@ -18,6 +18,7 @@ import {
 
   DropdownMenuTrigger,
 } from "@/components/ui/dropDown";
+import { FaPowerOff } from "react-icons/fa6";
 
 export default function Header() {
   const user = useUserStore((state) => state.user);
@@ -114,7 +115,7 @@ export default function Header() {
           className="text-xl font-bold capitalize"
         >{localStorage.getItem('name')}</h1>
         <Button
-          className="bg-red-primary text-white"
+          className="bg-red-primary text-white rounded-full"
           onClick={() => {
             localStorage.removeItem("access_token");
             localStorage.removeItem("refresh_token");
@@ -122,7 +123,7 @@ export default function Header() {
             window.location.href = "/signin";
           }}
         >
-          Logout
+          <FaPowerOff  />
         </Button>
       </nav>
     </header>
