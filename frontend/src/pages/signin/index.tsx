@@ -12,6 +12,7 @@ function index() {
   const [error, setError] = useState("");
   const [email, setEmail] = useState("");
   const setUserInfos = useUserStore((state) => state.setUserInfos);
+  const logUser = useUserStore((state) => state.logUser);
   const navigate = useNavigate();
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -28,6 +29,7 @@ function index() {
       localStorage.setItem("name", response.username);
       localStorage.setItem("id", response.id);
       setUserInfos(response);
+      logUser(response);
       if (response.isDataComplete) {
         navigate("/");
       } else {
