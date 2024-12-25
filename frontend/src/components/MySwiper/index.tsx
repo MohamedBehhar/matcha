@@ -52,11 +52,13 @@ function Index() {
   }, []);
 
   const calculateZoom = (distance: number): number => {
-    if (distance <= 5) return 10; // Close view
-    if (distance <= 10) return 12;
-    if (distance <= 20) return 11;
-    if (distance <= 50) return 10;
-    return 9; // Far view
+    if (distance <= 5) return 12; // Close view
+    if (distance <= 10) return 11;
+    if (distance <= 20) return 9;
+    if (distance <= 40) return 9;
+    if (distance <= 60) return 8;
+    if (distance <= 80) return 7;
+    return 6.5; // Far view
   };
 
   useEffect(() => {
@@ -100,7 +102,7 @@ function Index() {
   return (
     <div>
       <form
-        className="filters mb-20 border rounded-md w-full p-4 mx-auto mt-10 grid grid-cols-2 gap-4 min-h-80"
+        className="filters mb-20 border rounded-md w-full p-4 mx-auto mt-10 grid grid-cols-2 gap-4 min-h-90"
         onSubmit={(e) => {
           e.preventDefault();
           getNewUsers();
