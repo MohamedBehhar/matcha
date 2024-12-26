@@ -13,6 +13,7 @@ import ResetPasswordPage from "@/pages/ResetPassword";
 import MatchMaking from "@/pages/matchMaking";
 import ForgotPasswordPage from "@/pages/forgotPassword";
 import ProfilePage from "@/pages/profile";
+import WelecomePage from "@/pages/welcome";
 import {
   createBrowserRouter,
   RouteObject,
@@ -45,6 +46,10 @@ const routes: RouteObject[] = [
     element: <ForgotPasswordPage />,
   },
   {
+    path: "/welcome",
+    element: <WelecomePage />,
+  },
+  {
     path: "/",
     element: <App />,
     children: [
@@ -53,7 +58,7 @@ const routes: RouteObject[] = [
         element: <ProtectedRoutes />,
         children: [
           {
-            path: "",
+            path: "/home",
             element: <HomePage />,
           },
           {

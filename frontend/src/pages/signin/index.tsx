@@ -2,6 +2,7 @@ import React from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import SignupImg from "@/assets/images/signupImg.svg?react";
+import PeopleAround from "@/assets/images/people-around.svg?react";
 import { signIn, forgotPassword } from "@/api/methods/auth";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
