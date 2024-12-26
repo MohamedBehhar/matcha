@@ -5,7 +5,7 @@ import { getUser } from "@/api/methods/user";
 const ProtectedRoutes = () => {
   const token = localStorage.getItem("access_token");
   if (token === null) {
-    return <Navigate to="/signin" />;
+    return <Navigate to="/" />;
   }
   const decoded = jwtDecode(token);
   const isExpired = decoded.exp * 1000 < Date.now();
