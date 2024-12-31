@@ -68,8 +68,8 @@ function Index() {
   const getNewUsers = async () => {
     try {
       const response = await getMatches(
-        user?.latitude || 0,
-        user?.longitude || 0,
+        user?.latitude,
+        user?.longitude,
         id,
         ageGap,
         distance * 1000,
@@ -94,10 +94,7 @@ function Index() {
     getNewUsers();
   }, []);
 
-  const position: [number, number] = [
-    user?.latitude || 0,
-    user?.longitude || 0,
-  ];
+  const position: [number, number] = [user?.latitude, user?.longitude];
 
   return (
     <div>
@@ -108,27 +105,39 @@ function Index() {
           getNewUsers();
         }}
       >
-        <div className="col-span-1 row-span-2">
-          <MapContainer
-            center={position}
-            zoom={zoom}
-            style={{ height: "100%", width: "100%" }}
-          >
-            <TileLayer
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-              attribution="&copy; OpenStreetMap contributors"
-            />
-            <Marker position={position}>
-              <Popup>Your Location</Popup>
-            </Marker>
-            <Circle
+        {user.latitude && user.longitude ? (
+          <div className="col-span-1 row-span-2">
+            <MapContainer
               center={position}
-              radius={distance * 1000}
-              pathOptions={{ color: "blue", fillOpacity: 0.2 }}
-            />
-            <ZoomHandler zoom={zoom} />
-          </MapContainer>
-        </div>
+              zoom={zoom}
+              style={{ height: "100%", width: "100%" }}
+            >
+              <TileLayer
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                attribution="&copy; OpenStreetMap contributors"
+              />
+              <Marker position={position}>
+                <Popup>Your Location</Popup>
+              </Marker>
+              <Circle
+                center={position}
+                radius={distance * 1000}
+                pathOptions={{ color: "blue", fillOpacity: 0.2 }}
+              />
+              <ZoomHandler zoom={zoom} />
+            </MapContainer>
+          </div>
+        ) : (
+          <div className="col-span-1 row-span-2 flex items-center justify-center flex-col gap-4  ">
+            <h1 className="text-3xl font-bold text-center">
+              Please enable location access
+            </h1>
+            <Link to="/profile" className="text-center text-red-tertiary">
+              Go to profile
+            </Link>
+          </div>
+        )}
+
         <div className="col-span-1 row-span-2 flex flex-col gap-2">
           <div className="filter flex-1 border p-2 rounded-md flex items-center gap-5">
             <label htmlFor="age-gap">Age Gap</label>

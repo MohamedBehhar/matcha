@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { handleResponse } from "../utils/decorators";
 import userServices from "../services/userServices";
 import { createUserDto, updateUserDto, updateUserLocationDto } from "../types/userTypes";
+import { ForbiddenError } from "../lib/customError";
 
 class UserControllers {
   constructor() {
@@ -13,7 +14,7 @@ class UserControllers {
 
   @handleResponse()
   public async me(req: Request, res: Response) {
-    const token = req.headers.authorization?.split(" ")[1];
+    const token = req.headers.authorization?.split(" ")[1].trim();
     return await userServices.me(token) as unknown as void;
   }
 

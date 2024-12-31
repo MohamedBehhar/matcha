@@ -1,6 +1,6 @@
 import bcrypt from "bcryptjs";
 import orm from "../lib/orm";
-import { ConflictError, UnauthorizedError } from "../lib/customError";
+import { ConflictError, UnauthorizedError, ForbiddenError } from "../lib/customError";
 import authServices from "./authServices";
 import env from "../utils/env";
 import { Server } from "socket.io";
@@ -22,11 +22,15 @@ class UserService {
   }
 
   public async me(token: string | undefined) {
+    if (token == "null" || token == "undefined") {
+      throw new ForbiddenError("Forbidden");
+    }
     const email = await authServices.verifyToken(
       token as string,
       env.JWT_SECRET as string,
       "access"
     );
+    // check signature
     if (!email) {
       throw new UnauthorizedError("Unauthorized");
     }
