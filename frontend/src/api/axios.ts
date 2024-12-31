@@ -27,7 +27,7 @@ instance.interceptors.response.use(
 			localStorage.removeItem("access_token");
 			localStorage.removeItem("refresh_token");
 			localStorage.removeItem("id");
-			window.location.href = "/";
+			window.location.href = "/signin";
 		}
 		if (error?.response?.status === 401 && !originalRequest._retry) {
 			try {

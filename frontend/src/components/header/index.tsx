@@ -19,6 +19,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropDown";
 import { FaPowerOff } from "react-icons/fa6";
+import { getUser } from "@/api/methods/user";
 
 export default function Header() {
   const user = useUserStore((state) => state.user);
@@ -41,7 +42,9 @@ export default function Header() {
     setNotificationsCount(count.count);
   };
 
+
   useEffect(() => {
+    getUser();
     fetchNotifications();
     fetchNotificationsCount();
   }, []);

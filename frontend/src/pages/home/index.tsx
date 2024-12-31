@@ -101,9 +101,15 @@ export default function HomePage() {
 
   const count = useCountStore((state) => state.count);
   return (
-    <main className="grid place-content-center">
+    <main className="flex items-center justify-center h-full ">
       <h1 className="text-6xl">Home Page</h1>
       {count}
+      <p className="text-xl cursor-pointer text-blue-500">
+        Lorem ipsum dolor sit amet consectetur adipisicing elit. Impedit
+        officia, rem animi aliquid vel tempore. Obcaecati doloribus adipisci
+        accusamus dolorum inventore aspernatur illum facilis magni
+        necessitatibus, ex maiores, numquam eligendi.
+      </p>
     </main>
   );
 }

@@ -23,6 +23,7 @@ class AuthServices {
   private refreshTokenMaxAge = 60 * 60 ;
 
   public async createTokens(user: User): Promise<Tokens> {
+    console.log("createTokens=> ", process.env.JWT_SECRET);
     const access_token = jwt.sign(
       { email: user.email, id: user.id },
       process.env.JWT_SECRET as string,

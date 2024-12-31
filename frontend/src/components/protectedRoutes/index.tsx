@@ -3,6 +3,7 @@ import { jwtDecode } from "jwt-decode";
 import { getUser } from "@/api/methods/user";
 
 const ProtectedRoutes = () => {
+  try{
   const token = localStorage.getItem("access_token");
   if (token === null) {
     return <Navigate to="/" />;
@@ -16,10 +17,14 @@ const ProtectedRoutes = () => {
 
   const location = useLocation();
   if (token !== "undefined" && token !== null) {
+    alert("token is not null");
     return <Outlet />;
   }
 
   return <Navigate to="/signin" state={{ from: location }} />;
+  } catch (error) {
+    return <Navigate to="/signin" />;
+  }
 };
 
 export default ProtectedRoutes;
