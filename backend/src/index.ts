@@ -27,8 +27,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 const userMap = new Map<string, string>();
 
-app.use("/public", express.static(path.join(__dirname, "public")));
-
+app.use(express.static(path.join(__dirname, '../public')))
 pool
   .connect()
   .then(() => {
