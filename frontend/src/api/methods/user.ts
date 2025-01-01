@@ -39,6 +39,18 @@ const updateUserLocation = async (id: string | null, data: any) => {
   }
 }
 
+const addUserImages = async (formData: FormData, id: string) => {
+  console.log("formData", formData);
+  
+  try {
+    const response = await instance.patch(`/user/images/${id}`, formData);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+}
 
 
-export { getUser, updateUser, getUserById, updateUserLocation };
+
+
+export { getUser, updateUser, getUserById, updateUserLocation, addUserImages };

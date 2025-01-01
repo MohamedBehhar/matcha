@@ -9,12 +9,14 @@ import {
   updateUser,
   getUserById,
   updateUserLocation,
+  addUserImages,
 } from "@/api/methods/user";
 import userImg from "@/assets/images/user.png";
 import { FaStar } from "react-icons/fa6";
 import { FaRegStar } from "react-icons/fa6";
 import { DatePickerDemo } from "@/components/ui/datePicker";
 import toast from "react-hot-toast";
+import { Textarea } from "@/components/ui/textArea";
 
 function ProfileSetting() {
   const [interests, setInterests] = useState([]);
@@ -22,6 +24,7 @@ function ProfileSetting() {
   const [selectedImages, setSelectedImages] = useState([]);
   const [userInfo, setUserInfo] = useState({});
   const [birthDate, setBirthDate] = useState("");
+  const [profilePicture, setProfilePicture] = useState("");
 
   const id = localStorage.getItem("id");
   const getInfo = async () => {
@@ -73,7 +76,6 @@ function ProfileSetting() {
       prevImages.filter((img) => img !== image)
     );
   };
-  const [profilePicture, setProfilePicture] = useState("");
   const handelProfilePicture = (event: any) => {
     const file = event.target.files[0];
     setProfilePicture(file);
@@ -115,6 +117,20 @@ function ProfileSetting() {
     }
   };
 
+  const handleAddUserImages = async () => {
+    const formData = new FormData();
+    selectedImages.forEach((image) => {
+      console
+      formData.append("images", image);
+    });
+    try {
+      const response = await addUserImages(formData, id || "");
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  }
+
   useEffect(() => {
     handleGetLocation();
   }, []);
@@ -136,7 +152,9 @@ function ProfileSetting() {
       "interests",
       JSON.stringify(selectedInterests.map((interest) => interest.id))
     );
+    
     if (!id) return;
+    handleAddUserImages();
     updateUser(formData, id)
       .then((data) => {
         console.log(data);
@@ -159,11 +177,12 @@ function ProfileSetting() {
               src={
                 profilePicture instanceof File
                   ? URL.createObjectURL(profilePicture)
-                  : `http://localhost:3000${userInfo.profile_picture}`
+                  : `http://localhost:3000/${userInfo.profile_picture}`
               }
               alt="profile"
               className="flex-1 w-[200px] aspect-square object-cover  rounded-full"
               onError={(e: any) => {
+                console.log({ e });
                 e.target.onerror = null;
                 e.target.src = userImg;
               }}
@@ -260,13 +279,15 @@ function ProfileSetting() {
             onChange={(e) => setBirthDate(e.target.value)}
           />
         </div>
-        <Input
+        <Textarea
           name="bio"
-          type="text"
           placeholder="Bio"
-          className="mb-4"
           defaultValue={userInfo.bio}
+          className="mb-4"
+          maxLength={500}
+          rows={5}
         />
+
         <div className="images grid grid-cols-4 gap-4 mb-4">
           {selectedImages.map((image, index) => (
             <div className="flex flex-col items-center relative" key={index}>

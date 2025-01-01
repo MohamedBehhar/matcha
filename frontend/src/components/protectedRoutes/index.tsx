@@ -17,7 +17,6 @@ const ProtectedRoutes = () => {
 
   const location = useLocation();
   if (token !== "undefined" && token !== null) {
-    alert("token is not null");
     return <Outlet />;
   }
 
