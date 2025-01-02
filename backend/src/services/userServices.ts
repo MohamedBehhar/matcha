@@ -36,6 +36,7 @@ class UserService {
     }
     this.socket?.emit("me", email);
     const user = await orm.findOne("users", { where: { email } });
+    console.log(user);
     return user;
   }
 
@@ -61,7 +62,7 @@ class UserService {
   public async addUserImage(userId: string, file: any) {
     return await orm.create("images", {
       user_id: userId,
-      url: file.path,
+      url: '/' + file.filename,
       is_profile: true,
     });
   }
