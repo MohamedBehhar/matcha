@@ -2,6 +2,7 @@ import orm from "../lib/orm";
 import { Server } from "socket.io";
 import pool from "../db/db";
 import notificationsServices from "./notificationsServices";
+import userServices from "./userServices";
 
 class UsersInteractionsServices {
   private socket: Server | undefined;
@@ -57,8 +58,12 @@ class UsersInteractionsServices {
 
     const receiver_id = this.userMap.get(liked_id + "");
     if (receiver_id) {
-      this.socket?.to(receiver_id).emit("like", user_id);
-      this.socket?.to(receiver_id).emit("notification");
+      const sender = await userServices.getUsersById(user_id);
+      notificationsServices.createNotification(
+        liked_id,
+        `${sender.username} liked your profile`,
+        user_id
+      );
     }
 
     if (mutualLike) {
@@ -67,8 +72,18 @@ class UsersInteractionsServices {
         user_id,
         friend_id: liked_id,
       });
-      this.socket?.to(user_id).emit("match", liked);
-      this.socket?.to(liked_id).emit("match", user);
+      const sender = await userServices.getUsersById(user_id);
+      const receiver = await userServices.getUsersById(liked_id);
+      notificationsServices.createNotification(
+        liked_id,
+        `${sender.username} and you are now friends`,
+        user_id
+      );
+      notificationsServices.createNotification(
+        user_id,
+        `${receiver.username} and you are now friends`,
+        liked_id
+      );
 
       return { message: "It's a match!", friendship };
     }
@@ -98,6 +113,13 @@ class UsersInteractionsServices {
         target_user_id: disliked_id,
         interaction_type: "dislike",
       });
+      const sender = await userServices.getUsersById(user_id);
+      notificationsServices.createNotification(
+        disliked_id,
+        `${sender.username} disliked your profile`,
+        user_id
+      );
+
     }
 
     return { message: "Dislike added" };
