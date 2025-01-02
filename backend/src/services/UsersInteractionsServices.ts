@@ -21,7 +21,6 @@ class UsersInteractionsServices {
       console.log("newVisit", data);
       await this.newVisit(data.user_id, data.visited_id);
     });
-    
   }
 
   public async likeAUser(body: any) {
@@ -143,6 +142,7 @@ class UsersInteractionsServices {
         u.sexual_preference, 
         u.latitude, 
         u.longitude,
+        u.profile_picture,
         CEIL(
             ST_Distance(
                 ST_GeogFromText('SRID=4326;POINT(' || $2 || ' ' || $1 || ')'),

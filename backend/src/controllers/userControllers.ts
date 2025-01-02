@@ -1,7 +1,11 @@
 import { Request, Response } from "express";
 import { handleResponse } from "../utils/decorators";
 import userServices from "../services/userServices";
-import { createUserDto, updateUserDto, updateUserLocationDto } from "../types/userTypes";
+import {
+  createUserDto,
+  updateUserDto,
+  updateUserLocationDto,
+} from "../types/userTypes";
 import { ForbiddenError } from "../lib/customError";
 
 class UserControllers {
@@ -15,7 +19,7 @@ class UserControllers {
   @handleResponse()
   public async me(req: Request, res: Response) {
     const token = req.headers.authorization?.split(" ")[1].trim();
-    return await userServices.me(token) as unknown as void;
+    return (await userServices.me(token)) as unknown as void;
   }
 
   @handleResponse()
@@ -31,12 +35,10 @@ class UserControllers {
     return user as unknown as void;
   }
 
-
-
   @handleResponse()
   public async update(req: Request, res: Response) {
     const body = updateUserDto.validate(req.body);
-    body.profile_picture = req.file?.path || "";
+    body.profile_picture = "/" + req.file?.filename || "";
     const user = await userServices.update(body, req.params.id);
     if (req.file) {
       await userServices.addUserImage(req.params.id, req.file);
@@ -45,27 +47,31 @@ class UserControllers {
       const interests = JSON.parse(req.body.interests);
       await userServices.addUserInterests(req.params.id, interests);
     }
-    console.log('checkUserInfo', await userServices.changeUserDataCompleteStatus(req.params.id));
+    console.log(
+      "checkUserInfo",
+      await userServices.changeUserDataCompleteStatus(req.params.id)
+    );
     return user as unknown as void;
   }
 
-
-
   @handleResponse()
   public async getUsersById(req: Request, res: Response) {
-    return await userServices.getUsersById(req.params.id) as unknown as void;
+    return (await userServices.getUsersById(req.params.id)) as unknown as void;
   }
 
   @handleResponse()
   public async delete(req: Request, res: Response) {
-    return await userServices.delete(req.params.id) as unknown as void;
+    return (await userServices.delete(req.params.id)) as unknown as void;
   }
 
   @handleResponse()
   public async updateUserLocation(req: Request, res: Response) {
     const body = updateUserLocationDto.validate(req.body);
     console.log(body);
-    return await userServices.updateUserLocation(req.params.id, body) as unknown as void;
+    return (await userServices.updateUserLocation(
+      req.params.id,
+      body
+    )) as unknown as void;
   }
 }
 

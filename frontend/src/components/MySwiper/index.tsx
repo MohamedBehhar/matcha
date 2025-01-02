@@ -14,7 +14,7 @@ import {
   Circle,
   useMap,
 } from "react-leaflet";
-import useUserStore from "@/store/userStore";
+import { getUser } from "@/api/methods/user";
 
 function ZoomHandler({ zoom }: { zoom: number }) {
   const map = useMap();
@@ -25,7 +25,6 @@ function ZoomHandler({ zoom }: { zoom: number }) {
 }
 
 function Index() {
-  const user = useUserStore((state) => state.user);
   const x = useMotionValue(0);
   const opacity = useTransform(x, [-200, 0, 200], [0, 1, 0]);
   const rotate = useTransform(x, [-200, 0, 200], [-45, 0, 45]);
@@ -37,6 +36,7 @@ function Index() {
   const [distance, setDistance] = useState(5);
   const [interests, setInterests] = useState([]);
   const [selectedInterests, setSelectedInterests] = useState([]);
+  const [user, setUser] = useState(null);
 
   const fetchInterests = async () => {
     try {
@@ -46,10 +46,16 @@ function Index() {
       console.error(error);
     }
   };
-
-  useEffect(() => {
-    fetchInterests();
-  }, []);
+  const [position, setPosition] = useState([0, 0]);
+  const getUserInfo = async () => {
+    try {
+      const response = await getUser();
+      setUser(response);
+      setPosition([response.latitude, response.longitude]);
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   const calculateZoom = (distance: number): number => {
     if (distance <= 5) return 12; // Close view
@@ -90,23 +96,31 @@ function Index() {
     await getNewUsers();
   };
 
+  const handleFetchData = async () => {
+    await getUserInfo();
+    await fetchInterests();
+    await getNewUsers();
+  };
+
   useEffect(() => {
     getNewUsers();
+  }, [position]);
+
+  useEffect(() => {
+    handleFetchData();
   }, []);
 
-  const position: [number, number] = [user?.latitude, user?.longitude];
-
   return (
-    <div>
+    <div className="   grid grid-cols-12 gap-3">
       <form
-        className="filters mb-20 border rounded-md w-full p-4 mx-auto mt-10 grid grid-cols-2 gap-4 min-h-90"
+        className="filters  border rounded-md w-full p-4 mx-auto mt-10  gap-4 min-h-[400px] col-span-5"
         onSubmit={(e) => {
           e.preventDefault();
           getNewUsers();
         }}
       >
-        {user.latitude && user.longitude ? (
-          <div className="col-span-1 row-span-2">
+        {user ? (
+          <div className="h-[400px] mb-2 rounded-md overflow-hidden">
             <MapContainer
               center={position}
               zoom={zoom}
@@ -128,7 +142,7 @@ function Index() {
             </MapContainer>
           </div>
         ) : (
-          <div className="col-span-1 row-span-2 flex items-center justify-center flex-col gap-4  ">
+          <div className=" row-span-2 flex items-center justify-center flex-col gap-4  ">
             <h1 className="text-3xl font-bold text-center">
               Please enable location access
             </h1>
@@ -138,7 +152,7 @@ function Index() {
           </div>
         )}
 
-        <div className="col-span-1 row-span-2 flex flex-col gap-2">
+        <div className=" row-span-2 flex flex-col gap-2">
           <div className="filter flex-1 border p-2 rounded-md flex items-center gap-5">
             <label htmlFor="age-gap">Age Gap</label>
             <input
@@ -208,30 +222,44 @@ function Index() {
         </div>
       </form>
 
-      <div className="grid place-items-center">
-        {users.map((user) => (
-          <motion.div
-            key={user.id}
-            className="card w-72 h-96 border bg-white shadow-md p-5"
-            style={{ opacity, x, rotate }}
-            drag="x"
-            dragConstraints={{ left: 0, right: 0 }}
-            onDragEnd={() => handleDragEnd(user.id)}
-          >
-            <img
-              src={user.profilePicture || userImg}
-              alt="profile"
-              className="w-full h-3/5 object-cover rounded-t-md"
-            />
-            <div className="info p-1">
-              <h1 className="text-xl font-semibold text-center">
-                {user.username}, {user.age}, {user.gender}
-              </h1>
-              <p className="text-center">Distance: {user.distance} km</p>
-              <p className="text-sm text-center truncate">{user.bio}</p>
-            </div>
-          </motion.div>
-        ))}
+      <div className=" grid place-content-center  border rounded-md col-span-7 mt-10">
+        {users.length > 0 &&
+          users.map((user) => (
+            <motion.div
+              key={user.id}
+              className=" card w-[300px] h-[400px] border border-white rounded-md bg-white text-gray-700 shadow-md p-5"
+              style={{
+                gridRow: 1,
+                gridColumn: 1,
+                opacity: opacity,
+                x,
+                rotate,
+              }}
+              drag="x"
+              dragConstraints={{ left: 0, right: 0 }}
+              onDragEnd={() => handleDragEnd(user.id)}
+            >
+              <img
+                src={`http://localhost:3000/${user.profile_picture}`}
+                alt="profile"
+                className={`w-full  object-cover rounded-full aspect-square `} // Apply blur directly to the front card
+                onError={(e: any) => {
+                  console.log(e);
+                  e.target.onerror = null;
+                  e.target.src = userImg;
+                }}
+              />
+              <div className="info p-1">
+                <h1 className="text-xl font-semibold text-center">
+                  {user.username}, {user.age}, {user.gender}
+                </h1>
+                <p className="text-xl text-center ">
+                  Distance: {user.distance} km
+                </p>
+                <p className="text-sm text-center truncate">{user.bio}</p>
+              </div>
+            </motion.div>
+          ))}
         {users.length === 0 && (
           <h1 className="text-3xl font-semibold text-center">No users found</h1>
         )}
