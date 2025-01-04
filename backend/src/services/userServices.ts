@@ -60,12 +60,17 @@ class UserService {
   }
 
   public async addUserImage(userId: string, file: any) {
+    console.log('file: ',file);
+    if (!file) {
+      throw new Error("No file uploaded");
+    }
     return await orm.create("images", {
       user_id: userId,
       url: '/' + file.filename,
-      is_profile: true,
     });
   }
+
+
 
   public async addUserInterests(userId: string, interestsIds: string[]) {
     const user = await orm.findOne("users", { where: { id: userId } });
@@ -121,7 +126,17 @@ class UserService {
     );
   }
 
-  public async changeUserDataCompleteStatus(id: string) {
+  public async getUserImages(userId: string) {
+    console.log('userId: ',userId);
+    return await orm.querySql(
+      `
+    SELECT * FROM images WHERE user_id = $1
+  `,
+      [userId]
+    );
+  }
+
+  public async profileCompleted(id: string) {
     const user = await orm.findOne("users", { where: { id } });
     const userInterests = await orm.querySql(
       `
@@ -143,12 +158,15 @@ class UserService {
       await orm.update("users", id, { is_required_data_filled: false });
     } else {
       await orm.update("users", id, { is_required_data_filled: true });
-      // apdate user age in users table
       await orm.querySql(
         `UPDATE users SET age = EXTRACT(YEAR FROM AGE(date_of_birth)) WHERE id = $1`,
         [id]
       );
     }
+  }
+
+  public async deleteImage(imageId: string) {
+    return await orm.delete("images", imageId);
   }
 }
 

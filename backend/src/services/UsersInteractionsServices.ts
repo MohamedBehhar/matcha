@@ -93,7 +93,6 @@ class UsersInteractionsServices {
 
   public async unlikeAUser(body: any) {
     const { user_id, disliked_id } = body;
-    // check if the user has liked the target user
     const like = await orm.findOne("user_interactions", {
       where: {
         user_id,

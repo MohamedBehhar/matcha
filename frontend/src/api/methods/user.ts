@@ -1,5 +1,6 @@
 import axios from "axios";
 import instance from "../axios";
+import { tr } from "date-fns/locale";
 
 const getUser = async () => {
   try {
@@ -9,9 +10,8 @@ const getUser = async () => {
     throw error;
   }
 };
-const updateUser = async (formData: FormData, id: string ) => {
+const updateUser = async (formData: FormData, id: string) => {
   try {
-    console.log("formData", formData);  
     const response = await instance.patch(`/user/${id}`, formData);
     return response.data;
   } catch (error) {
@@ -27,30 +27,52 @@ const getUserById = async (id: string) => {
   } catch (error) {
     throw error;
   }
-}
+};
 
 const updateUserLocation = async (id: string | null, data: any) => {
-  if (!id) return
+  if (!id) return;
   try {
     const response = await instance.patch(`/user/${id}/location`, data);
     return response.data;
   } catch (error) {
     throw error;
   }
-}
+};
 
 const addUserImages = async (formData: FormData, id: string) => {
-  console.log("formData", formData);
-  
   try {
     const response = await instance.patch(`/user/images/${id}`, formData);
     return response.data;
   } catch (error) {
     throw error;
   }
+};
+
+const getUserImages = async (id: string) => {
+  console.log("userId: ", id);
+  try {
+    const response = await instance.get(`/user/images/${id}`);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+const deleteUserImage = async (id: string) => {
+  try {
+    const response = await instance.delete(`/user/images/${id}`);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
 }
 
-
-
-
-export { getUser, updateUser, getUserById, updateUserLocation, addUserImages };
+export {
+  getUser,
+  updateUser,
+  getUserById,
+  updateUserLocation,
+  addUserImages,
+  getUserImages,
+  deleteUserImage
+};

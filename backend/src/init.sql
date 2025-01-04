@@ -52,8 +52,7 @@ CREATE TABLE users
     (
         id SERIAL PRIMARY KEY,
         user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
-        url VARCHAR(255) NOT NULL,
-        is_profile BOOLEAN DEFAULT FALSE
+        url VARCHAR(255) NOT NULL
     );
     CREATE TABLE friendships
     (
