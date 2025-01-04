@@ -40,16 +40,13 @@ class UserControllers {
     const body = updateUserDto.validate(req.body);
     body.profile_picture = "/" + req.file?.filename || "";
     const user = await userServices.update(body, req.params.id);
-    if (req.file) {
-      await userServices.addUserImage(req.params.id, req.file);
-    }
+
     if (req.body.interests) {
       const interests = JSON.parse(req.body.interests);
       await userServices.addUserInterests(req.params.id, interests);
     }
     console.log(
-      "checkUserInfo",
-      await userServices.changeUserDataCompleteStatus(req.params.id)
+      await userServices.profileCompleted(req.params.id)
     );
     return user as unknown as void;
   }
@@ -72,6 +69,28 @@ class UserControllers {
       req.params.id,
       body
     )) as unknown as void;
+  }
+
+  // @handleResponse()
+  public async addImages(req: Request, res: Response) {
+    console.log('- - - - - - - - - - - - - hhh - - - - - - - ')
+    const images = req.files as [];
+    const userId = req.params.id;
+    console.log('hhhh ',images);
+    for (const image of images) {
+      await userServices.addUserImage(userId, image);
+    }
+    return;
+  }
+
+  @handleResponse()
+  public async getUserImages(req: Request, res: Response) {
+    return (await userServices.getUserImages(req.params.id)) as unknown as void;
+  }
+
+  @handleResponse()
+  public async deleteImage(req: Request, res: Response) {
+    return (await userServices.deleteImage(req.params.id)) as unknown as void;
   }
 }
 

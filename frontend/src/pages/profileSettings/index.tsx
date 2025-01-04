@@ -10,6 +10,8 @@ import {
   getUserById,
   updateUserLocation,
   addUserImages,
+  getUserImages,
+  deleteUserImage,
 } from "@/api/methods/user";
 import userImg from "@/assets/images/user.png";
 import { FaStar } from "react-icons/fa6";
@@ -32,6 +34,7 @@ function ProfileSetting() {
       if (!id) return;
       const user = await getUserById(id);
       const interests = await getInterests();
+      const images = await getUserImages(id);
       setUserInfo(user);
       setProfilePicture(user.profile_picture);
       setInterests(interests);
@@ -41,6 +44,7 @@ function ProfileSetting() {
           ? new Date(user.date_of_birth).toISOString().split("T")[0]
           : ""
       );
+      setSelectedImages(images);
     } catch (error) {
       console.log(error);
     }
@@ -66,15 +70,20 @@ function ProfileSetting() {
   };
 
   const handleImageChange = (event: any) => {
-    const files = Array.from(event.target.files);
-    const newImages = files.map((file) => URL.createObjectURL(file as Blob));
-    setSelectedImages((prevImages: any) => [...prevImages, ...newImages]);
+    const files = event.target.files[0]
+    setSelectedImages((prevImages: any) => [...prevImages, files]);
   };
 
   const handleRemoveImage = (image: any) => {
-    setSelectedImages((prevImages: any) =>
-      prevImages.filter((img) => img !== image)
-    );
+    deleteUserImage(image.id)
+      .then(() => {
+        setSelectedImages((prevImages: any) =>
+          prevImages.filter((img: any) => img.id !== image.id)
+        );
+      })
+      .catch((error) => {
+        console.log(error);
+      });
   };
   const handelProfilePicture = (event: any) => {
     const file = event.target.files[0];
@@ -82,7 +91,7 @@ function ProfileSetting() {
   };
 
   const [location, setLocation] = useState(null);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState('');
 
   const updateLocation = async (id: string, data: any) => {
     try {
@@ -124,6 +133,7 @@ function ProfileSetting() {
       formData.append("images", image);
     });
     try {
+      console.log({ formData });
       const response = await addUserImages(formData, id || "");
       return response.data;
     } catch (error) {
@@ -138,7 +148,6 @@ function ProfileSetting() {
   const handleSubmit = (event: any) => {
     event.preventDefault();
     const formData = new FormData();
-    console.log("- - - - ", event.target.gender.value);
     formData.append("profile_picture", profilePicture);
     formData.append("first_name", event.target.first_name.value);
     formData.append("last_name", event.target.last_name.value);
@@ -152,6 +161,7 @@ function ProfileSetting() {
       "interests",
       JSON.stringify(selectedInterests.map((interest) => interest.id))
     );
+
     
     if (!id) return;
     handleAddUserImages();
@@ -289,10 +299,14 @@ function ProfileSetting() {
         />
 
         <div className="images grid grid-cols-4 gap-4 mb-4">
-          {selectedImages.map((image, index) => (
+          {selectedImages.map((image : any, index) => (
             <div className="flex flex-col items-center relative" key={index}>
               <img
-                src={image}
+                src={
+                  image instanceof File
+                    ? URL.createObjectURL(image)
+                    : `http://localhost:3000/${image.url}`
+                }
                 alt={`Preview ${index}`}
                 className="rounded-md mb-4 w-full aspect-square object-cover "
               />
