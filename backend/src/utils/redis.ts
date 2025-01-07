@@ -19,16 +19,16 @@ redisClient.on("reconnecting", () => {
   console.log("Reconnecting to Redis");
 });
 
-
-
-export const setKey = async (key: string, value: string, time:number): Promise<void> => {
-    try {
-        await redisClient?.set(key, value, 
-            'EX', time
-        );  // No need for callback
-    } catch (err) {
-        throw new Error(`Error setting key in Redis: ${err}`);
-    }
+export const setKey = async (
+  key: string,
+  value: string,
+  time: number
+): Promise<void> => {
+  try {
+    await redisClient?.set(key, value, "EX", time); // No need for callback
+  } catch (err) {
+    throw new Error(`Error setting key in Redis: ${err}`);
+  }
 };
 
 export const getKey = async (key: string): Promise<string | null> => {
@@ -42,6 +42,31 @@ export const getKey = async (key: string): Promise<string | null> => {
 export const deleteKey = async (key: string): Promise<void> => {
   try {
     await redisClient?.del(key);
+  } catch (err) {
+    throw new Error(`Error deleting key from Redis: ${err}`);
+  }
+};
+
+export const addSocketIdToRedis = async (socketId: string, userId: string) => {
+  try {
+    console.log("socketId", socketId, "userId", userId);
+    await redisClient?.set(socketId, userId);
+  } catch (err) {
+    throw new Error(`Error setting key in Redis: ${err}`);
+  }
+};
+
+export const getSocketIdFromRedis = async (socketId: string) => {
+  try {
+    return await redisClient?.get(socketId);
+  } catch (err) {
+    throw new Error(`Error getting key from Redis: ${err}`);
+  }
+};
+
+export const deleteSocketIdFromRedis = async (socketId: string) => {
+  try {
+    await redisClient?.del(socketId);
   } catch (err) {
     throw new Error(`Error deleting key from Redis: ${err}`);
   }

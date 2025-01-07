@@ -15,6 +15,7 @@ import usersInteractionsRoutes from "./routers/usersInteractionsRoutes";
 import UsersInteractionsServices from "./services/UsersInteractionsServices";
 import notificationsRoutes from "./routers/notificationsRoutes";
 import notificationsServices from "./services/notificationsServices";
+import { addSocketIdToRedis, deleteSocketIdFromRedis } from "./utils/redis";
 
 const PORT = 3000;
 const app = express();
@@ -50,13 +51,13 @@ const socket = new Server(server, {
 });
 
 socket.on("connection", (socket) => {
-  console.log("User connected");
+  console.log("a user connected", socket.id );
   socket.on("disconnect", () => {
-    console.log("User disconnected");
+    deleteSocketIdFromRedis(socket.id);
   });
   socket.on("join", (userId) => {
     console.log("User joined", userId);
-    userMap.set(userId, socket.id);
+    addSocketIdToRedis(userId, socket.id);
   });
   socket.on("chat message", (msg) => {
     console.log("message: " + msg);

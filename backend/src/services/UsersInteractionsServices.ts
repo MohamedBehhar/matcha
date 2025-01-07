@@ -3,6 +3,7 @@ import { Server } from "socket.io";
 import pool from "../db/db";
 import notificationsServices from "./notificationsServices";
 import userServices from "./userServices";
+import { getSocketIdFromRedis } from "../utils/redis";
 
 class UsersInteractionsServices {
   private socket: Server | undefined;
@@ -56,15 +57,22 @@ class UsersInteractionsServices {
       },
     });
 
-    const receiver_id = this.userMap.get(liked_id + "");
-    if (receiver_id) {
-      const sender = await userServices.getUsersById(user_id);
-      notificationsServices.createNotification(
-        liked_id,
-        `${sender.username} liked your profile`,
-        user_id
-      );
-    }
+    notificationsServices.createNotification(
+      liked_id,
+      `${user.username} liked your profile`,
+      user_id
+    );
+
+    // const receiver_id = await getSocketIdFromRedis(liked_id);
+    // console.log("receiver_id - - - - - - - - - -> user interactions ", receiver_id);
+    // if (receiver_id) {
+    //   const sender = await userServices.getUsersById(user_id);
+    //   notificationsServices.createNotification(
+    //     liked_id,
+    //     `${sender.username} liked your profile`,
+    //     user_id
+    //   );
+    // }
 
     if (mutualLike) {
       // Create a friendship
@@ -191,6 +199,7 @@ class UsersInteractionsServices {
         AND (
             -- Match based on sexual preference logic
             CASE 
+                WHEN $7 = 'bisexual' THEN TRUE
                 WHEN $7 = 'heterosexual' AND $8 = 'male' THEN (u.gender = 'female' AND u.sexual_preference IN ('heterosexual', 'bisexual'))
                  WHEN $7 = 'heterosexual' AND $8 = 'female' THEN (u.gender = 'male' AND u.sexual_preference IN ('heterosexual', 'bisexual'))
                  WHEN $7 = 'homosexual' AND $8 = 'male' THEN (u.gender = 'male' AND u.sexual_preference IN ('homosexual', 'bisexual'))

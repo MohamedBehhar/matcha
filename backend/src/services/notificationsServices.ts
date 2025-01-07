@@ -1,5 +1,6 @@
 import orm from "../lib/orm";
 import { Server } from "socket.io";
+import { getSocketIdFromRedis } from "../utils/redis";
 
 class NotificationsServices {
   private socket : Server | undefined;
@@ -29,7 +30,8 @@ class NotificationsServices {
       sender_id,
     });
 
-    const receiver_id = this.userMap.get(user_id + "");
+    const receiver_id = await getSocketIdFromRedis(user_id);
+    console.log("receiver_id - - - - - - - - - -> notif: ", receiver_id);
     if (receiver_id) {
       this.socket?.to(receiver_id).emit("notification");
     }
