@@ -16,43 +16,38 @@ export function handleResponse() {
       next: NextFunction
     ) {
       try {
-        let status = null;
-        if (req.method == "POST" || req.method == "PATCH") {
-          if (Object.keys(req.body).length == 0) {
-            throw new ValidationError("Request body cannot be empty");
-          }
+        // Validate the request body for POST and PATCH
+        if ((req.method === "POST" || req.method === "PATCH") && !Object.keys(req.body).length) {
+          throw new ValidationError("Request body cannot be empty");
         }
-        let result: {
-          status?: number;
-          data?: any;
-        } = await original.call(this, req, res, next);
+
+        // Call the original method and await its result
+        const result = await original.call(this, req, res, next);
+
+        // Handle error-like results
         if (result instanceof Error) {
           return next(result);
-        } else {
-          if (!result.status && result.status !== 0) {
-            status = req.method == "POST" ? 201 : 200;
-          }
-          if (!result.data && result) {
-            if (Array.isArray(result)) {
-              result.data = result || [];
-            } else result.data = { ...result };
-          } else if (!result.data && !result) {
-            result = {
-              data: "" ,
-            };
-          }
         }
-        status = status || result.status;
 
-        if ((status == 200 || status == 201) && result.data) {
-          // remove password from response
-          delete result.data.password;
-          return res.status(status).send(result.data);
-        } else return res.status(500).send("Internal server error");
+        // Default status based on the HTTP method
+        let status = result?.status || (req.method === "POST" ? 201 : 200);
+
+        // Prepare the response data
+        const responseData = result?.data ?? result ?? {};
+
+        // Remove sensitive data like passwords
+        if (responseData && typeof responseData === "object" && "password" in responseData) {
+          delete responseData.password;
+        }
+
+        // Send a successful response
+        return res.status(status).send(responseData);
       } catch (error) {
+        // Pass any errors to the error handler middleware
         next(error);
       }
     };
     return descriptor;
   };
 }
+

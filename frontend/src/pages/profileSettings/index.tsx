@@ -14,9 +14,7 @@ import {
   deleteUserImage,
 } from "@/api/methods/user";
 import userImg from "@/assets/images/user.png";
-import { FaStar } from "react-icons/fa6";
 import { FaRegStar } from "react-icons/fa6";
-import { DatePickerDemo } from "@/components/ui/datePicker";
 import toast from "react-hot-toast";
 import { Textarea } from "@/components/ui/textArea";
 
@@ -70,7 +68,7 @@ function ProfileSetting() {
   };
 
   const handleImageChange = (event: any) => {
-    const files = event.target.files[0]
+    const files = event.target.files[0];
     setSelectedImages((prevImages: any) => [...prevImages, files]);
   };
 
@@ -91,7 +89,7 @@ function ProfileSetting() {
   };
 
   const [location, setLocation] = useState(null);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   const updateLocation = async (id: string, data: any) => {
     try {
@@ -129,26 +127,27 @@ function ProfileSetting() {
   const handleAddUserImages = async () => {
     const formData = new FormData();
     selectedImages.forEach((image) => {
-      console
       formData.append("images", image);
     });
     try {
-      console.log({ formData });
       const response = await addUserImages(formData, id || "");
+
       return response.data;
     } catch (error) {
       throw error;
     }
-  }
+  };
 
   useEffect(() => {
     handleGetLocation();
   }, []);
 
-  const handleSubmit = (event: any) => {
+  const handleSubmit = async (event: any) => {
     event.preventDefault();
     const formData = new FormData();
-    formData.append("profile_picture", profilePicture);
+    if (profilePicture instanceof File) {
+      formData.append("profile_picture", profilePicture);
+    }
     formData.append("first_name", event.target.first_name.value);
     formData.append("last_name", event.target.last_name.value);
     formData.append("email", event.target.email.value);
@@ -162,10 +161,9 @@ function ProfileSetting() {
       JSON.stringify(selectedInterests.map((interest) => interest.id))
     );
 
-    
     if (!id) return;
-    handleAddUserImages();
-    updateUser(formData, id)
+    await handleAddUserImages();
+    await updateUser(formData, id)
       .then((data) => {
         console.log(data);
         toast.success("Profile updated successfully");
@@ -299,7 +297,7 @@ function ProfileSetting() {
         />
 
         <div className="images grid grid-cols-4 gap-4 mb-4">
-          {selectedImages.map((image : any, index) => (
+          {selectedImages.map((image: any, index) => (
             <div className="flex flex-col items-center relative" key={index}>
               <img
                 src={
