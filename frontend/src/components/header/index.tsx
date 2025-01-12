@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/dropDown";
 import { FaPowerOff } from "react-icons/fa6";
 import { getUser } from "@/api/methods/user";
+import userImg from "@/assets/images/user.png";
 
 export default function Header() {
   const [user, setUser] = useState(null);
@@ -86,6 +87,9 @@ export default function Header() {
           <img
             src={`http://localhost:3000/${user?.profile_picture}`}
             className="w-10 h-10 rounded-full border object-cover"
+            onError={(e) => {
+              e.currentTarget.src = userImg;
+            }}
           />
           <h1 className="text-xl font-bold capitalize">
             {localStorage.getItem("name")}

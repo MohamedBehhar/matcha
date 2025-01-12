@@ -38,16 +38,15 @@ class UserControllers {
   @handleResponse()
   public async update(req: Request, res: Response) {
     const body = updateUserDto.validate(req.body);
-    body.profile_picture = "/" + req.file?.filename || "";
+    if (req.file?.filename) {
+      body.profile_picture = "/" + req.file?.filename || "";
+    }
     const user = await userServices.update(body, req.params.id);
-
     if (req.body.interests) {
       const interests = JSON.parse(req.body.interests);
       await userServices.addUserInterests(req.params.id, interests);
     }
-    console.log(
-      await userServices.profileCompleted(req.params.id)
-    );
+    console.log(await userServices.profileCompleted(req.params.id));
     return user as unknown as void;
   }
 
@@ -71,12 +70,12 @@ class UserControllers {
     )) as unknown as void;
   }
 
-  // @handleResponse()
+  @handleResponse() 
   public async addImages(req: Request, res: Response) {
-    console.log('- - - - - - - - - - - - - hhh - - - - - - - ')
+    console.log("- - - - - - - - - - - - - hhh - - - - - - - ");
     const images = req.files as [];
     const userId = req.params.id;
-    console.log('hhhh ',images);
+    console.log("hhhh ", images);
     for (const image of images) {
       await userServices.addUserImage(userId, image);
     }
