@@ -117,8 +117,10 @@ class UserService {
   `,
       [id]
     );
+
+    const images = await orm.findMany("images", { where: { user_id: id } });
     const user = await orm.findOne("users", { where: { id } });
-    return { ...user, interests };
+    return { ...user, interests, images };
   }
 
   public async delete(id: string) {
