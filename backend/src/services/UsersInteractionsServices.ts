@@ -4,6 +4,7 @@ import pool from "../db/db";
 import notificationsServices from "./notificationsServices";
 import userServices from "./userServices";
 import { getSocketIdFromRedis } from "../utils/redis";
+import notificationsEnum from "../types/notificationsType";
 
 class UsersInteractionsServices {
   private socket: Server | undefined;
@@ -60,7 +61,8 @@ class UsersInteractionsServices {
     notificationsServices.createNotification(
       liked_id,
       `${user.username} liked your profile`,
-      user_id
+      user_id,
+      notificationsEnum.like
     );
 
     // const receiver_id = await getSocketIdFromRedis(liked_id);
@@ -85,12 +87,14 @@ class UsersInteractionsServices {
       notificationsServices.createNotification(
         liked_id,
         `${sender.username} and you are now friends`,
-        user_id
+        user_id,
+        notificationsEnum.match
       );
       notificationsServices.createNotification(
         user_id,
         `${receiver.username} and you are now friends`,
-        liked_id
+        liked_id,
+        notificationsEnum.match
       );
 
       return { message: "It's a match!", friendship };
@@ -124,21 +128,21 @@ class UsersInteractionsServices {
       notificationsServices.createNotification(
         disliked_id,
         `${sender.username} disliked your profile`,
-        user_id
+        user_id,
+        notificationsEnum.dislike
       );
-
     }
 
     return { message: "Dislike added" };
   }
 
   public async blockAUser(body: any) {
-    const { user_id, blocked_id } = body;
+    const { user_id, target_id } = body;
 
     // Insert the "block" interaction
     await orm.create("user_interactions", {
       user_id,
-      target_user_id: blocked_id,
+      target_user_id: target_id,
       interaction_type: "block",
     });
 
@@ -191,7 +195,7 @@ class UsersInteractionsServices {
           FROM user_interactions interactions
           WHERE interactions.user_id = $4
           AND interactions.target_user_id = u.id
-          AND interactions.interaction_type IN ('like', 'dislike')
+          AND interactions.interaction_type IN ('like', 'dislike', 'block')
         )
         AND u.id != $4 -- Exclude the current user
         AND u.age >= $5 -- Minimum age filter
@@ -256,11 +260,21 @@ class UsersInteractionsServices {
   }
 
   public async newVisit(user_id: string, visited_id: string) {
-    await orm.create("visits", { user_id, visited_id });
+    await orm.querySql(
+      `
+      INSERT INTO visits (user_id, visited_id)
+      SELECT $1, $2
+      WHERE NOT EXISTS (
+        SELECT 1 FROM visits WHERE user_id = $1 AND visited_id = $2
+      ) `,
+      [user_id, visited_id]
+    );
+    const user = await userServices.getUsersById(user_id);
     await notificationsServices.createNotification(
       visited_id,
-      `User ${user_id} visited your profile`,
-      user_id
+      `${user.username} visited your profile`,
+      user_id,
+      notificationsEnum.visit
     );
 
     return;

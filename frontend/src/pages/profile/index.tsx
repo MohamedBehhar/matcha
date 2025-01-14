@@ -19,7 +19,6 @@ import {
 } from "@/api/methods/interactions";
 import { socket } from "@/utils/socket";
 
-
 function index() {
   const [user, setUser] = useState<any>(null);
   const [userInterests, setUserInterests] = useState<any>(null);
@@ -82,7 +81,7 @@ function index() {
               className="flex gap-2"
               onClick={async () => {
                 try {
-                  await blockAUser({ user_id, target_id });
+                  await blockAUser({ user_id,  target_id });
                   handelCheckLike();
                 } catch (error) {
                   console.error("Error blocking user:", error);
@@ -109,6 +108,20 @@ function index() {
               <FaRegHeart />
               <p>Like</p>
             </Button>
+            <Button
+              className="flex gap-2"
+              onClick={async () => {
+                try {
+                  await blockAUser({ user_id, target_id });
+                  handelCheckLike();
+                } catch (error) {
+                  console.error("Error blocking user:", error);
+                }
+              }}
+            >
+              <MdBlock />
+              <p>Block</p>
+            </Button>
           </>
         )}
       </div>
@@ -122,24 +135,29 @@ function index() {
     socket.emit("newVisit", { user_id, visited_id: target_id });
   }, []);
   return (
-    <div className="container h-full flex flex-col">
-      <div className="conver h-[300px] border-b relative">
-        <img
+    <div className="container  h-full mt-[100px] border-t border-gray-600">
+      <div className="conver  relative">
+        {/* <img
           src={CoverImg}
           alt="cover"
           className="object-cover h-full w-full"
-        />
+        /> */}
+
         {returnAdequateButtons()}
       </div>
-      <div className=" grid grid-cols-12 flex-1 ">
+      <div className=" grid grid-cols-12 flex-1  ">
         <div
           className="info col-span-4 flex flex-col gap-3
-          relative pt-[80px] text-center bg-gray-900 p-4  capitalize"
+          relative pt-[80px] text-center p-4  capitalize border-r border-gray-600"
         >
           <img
-            src={UserImg}
+            src={
+              user?.profile_picture
+                ? `http://localhost:3000/${user?.profile_picture}`
+                : UserImg
+            }
             alt="profile"
-            className="profile h-[150px] aspect-square rounded-[50%] absolute -top-[75px] left-1/2 transform -translate-x-1/2"
+            className="profile h-[150px] aspect-square rounded-[50%] absolute -top-[75px] left-1/2 transform -translate-x-1/2 object-cover"
           />
           <div className="flex items-end justify-center gap-1 text-4xl">
             <FaRegUser />
@@ -168,7 +186,17 @@ function index() {
             </div>
           </div>
         </div>
-        <div className="activities col-span-8 bg-white"></div>
+        <div className="activities col-span-8 ">
+          <div className="flex flex-col  items-center justify-center gap-2 p-1">
+            {user?.images?.map((image: any) => (
+              <img
+                src={`http://localhost:3000/${image.url}`}
+                alt="profile"
+                className="w-[300px] h-[300px] object-cover rounded-md "
+              />
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );

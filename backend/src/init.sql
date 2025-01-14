@@ -11,6 +11,20 @@ CREATE TYPE  sexual_preference_type AS ENUM
     'heterosexual',
     'homosexual'
 );
+
+CREATE TYPE notification_type AS ENUM
+(
+    'like',
+    'dislike',
+    'block',
+    'report',
+    'message',
+    'visit',
+    'friend_request',
+    'friend_accept',
+    'match'
+);
+
 CREATE TABLE users
 (
     id SERIAL PRIMARY KEY,
@@ -68,7 +82,7 @@ CREATE TABLE users
         id SERIAL PRIMARY KEY,
         user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
         target_user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-        interaction_type VARCHAR(10) NOT NULL CHECK (interaction_type IN ('like', 'dislike')),
+        interaction_type VARCHAR(10) NOT NULL CHECK (interaction_type IN ('like', 'dislike', 'block', 'report')),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         UNIQUE (user_id, target_user_id)
     );
@@ -103,6 +117,7 @@ CREATE TABLE users
         user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
         sender_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
         content TEXT NOT NULL,
+        notification_type notification_type NOT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
     CREATE TABLE visits

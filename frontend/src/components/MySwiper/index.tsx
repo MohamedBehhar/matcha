@@ -239,25 +239,27 @@ function Index() {
               dragConstraints={{ left: 0, right: 0 }}
               onDragEnd={() => handleDragEnd(user.id)}
             >
-              <img
-                src={`http://localhost:3000/${user.profile_picture}`}
-                alt="profile"
-                className={`w-full  object-cover rounded-full aspect-square `} // Apply blur directly to the front card
-                onError={(e: any) => {
-                  console.log(e);
-                  e.target.onerror = null;
-                  e.target.src = userImg;
-                }}
-              />
-              <div className="info p-1">
-                <h1 className="text-xl font-semibold text-center">
-                  {user.username}, {user.age}, {user.gender}
-                </h1>
-                <p className="text-xl text-center ">
-                  Distance: {user.distance} km
-                </p>
-                <p className="text-sm text-center truncate">{user.bio}</p>
-              </div>
+              <Link to={`/profile/${user.id}`} key={user.id}>
+                <img
+                  src={`http://localhost:3000/${user.profile_picture}`}
+                  alt="profile"
+                  className={`w-full  object-cover rounded-full aspect-square `} // Apply blur directly to the front card
+                  onError={(e: any) => {
+                    console.log(e);
+                    e.target.onerror = null;
+                    e.target.src = userImg;
+                  }}
+                />
+                <div className="info p-1">
+                  <h1 className="text-xl font-semibold text-center">
+                    {user.username}, {user.age}, {user.gender}
+                  </h1>
+                  <p className="text-xl text-center ">
+                    Distance: {user.distance} km
+                  </p>
+                  <p className="text-sm text-center truncate">{user.bio}</p>
+                </div>
+              </Link>
             </motion.div>
           ))}
         {users.length === 0 && (

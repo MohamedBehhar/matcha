@@ -56,7 +56,7 @@ const checkLike = async (user_id: string, liked_id: string) => {
 
 const blockAUser = async (body: any) => {
   try {
-    const response = await instance.post("/matchmaking/block", body);
+    const response = await instance.post("/interactions/block", body);
     return response.data;
   } catch (error) {
     throw error;
