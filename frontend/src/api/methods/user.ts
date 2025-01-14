@@ -60,7 +60,7 @@ const getUserImages = async (id: string) => {
 
 const deleteUserImage = async (id: string) => {
   try {
-    const response = await instance.delete(`/user/images/${id}`);
+    const response = await instance.delete(`/user/images/delete/${id}`);
     return response.data;
   } catch (error) {
     throw error;

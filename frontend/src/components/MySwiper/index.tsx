@@ -72,6 +72,7 @@ function Index() {
   }, [distance]);
 
   const getNewUsers = async () => {
+    if (!user) return;
     try {
       const response = await getMatches(
         user?.latitude,
@@ -99,7 +100,6 @@ function Index() {
   const handleFetchData = async () => {
     await getUserInfo();
     await fetchInterests();
-    await getNewUsers();
   };
 
   useEffect(() => {

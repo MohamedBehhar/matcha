@@ -17,6 +17,8 @@ import userImg from "@/assets/images/user.png";
 import { FaRegStar } from "react-icons/fa6";
 import toast from "react-hot-toast";
 import { Textarea } from "@/components/ui/textArea";
+import { s } from "node_modules/vite/dist/node/types.d-aGj9QkWt";
+import { set } from "date-fns";
 
 function ProfileSetting() {
   const [interests, setInterests] = useState([]);
@@ -42,6 +44,9 @@ function ProfileSetting() {
           ? new Date(user.date_of_birth).toISOString().split("T")[0]
           : ""
       );
+      for (const image of images) {
+        console.log("image: ", image instanceof File);
+      }
       setSelectedImages(images);
     } catch (error) {
       console.log(error);
@@ -73,6 +78,12 @@ function ProfileSetting() {
   };
 
   const handleRemoveImage = (image: any) => {
+    if (image instanceof File) {
+      setSelectedImages((prevImages: any) =>
+        prevImages.filter((img: any) => img !== image)
+      );
+      return;
+    }
     deleteUserImage(image.id)
       .then(() => {
         setSelectedImages((prevImages: any) =>
@@ -115,7 +126,7 @@ function ProfileSetting() {
           });
           setError(null);
         },
-        (error) => {
+        ( error) => {
           setError("Unable to retrieve location.");
         }
       );
@@ -131,8 +142,7 @@ function ProfileSetting() {
     });
     try {
       const response = await addUserImages(formData, id || "");
-
-      return response.data;
+      setSelectedImages(response);
     } catch (error) {
       throw error;
     }
@@ -178,7 +188,7 @@ function ProfileSetting() {
     <div className="container flex flex-col items-center justify-center">
       <h1 className="text-3xl font-bold text-center my-5">Profile Setting</h1>
       {error && <div className="text-red-500 text-sm">{error}</div>}
-      <div className="flex items-center justify-center  mb-2 rounded-full w-[300px]">
+      <div className="flex items-center justify-center  mb-2 rounded-full w-[200px]">
         {profilePicture ? (
           <div className=" relative ">
             <img
@@ -201,7 +211,7 @@ function ProfileSetting() {
             />
           </div>
         ) : (
-          <label className="cursor-pointer flex flex-col items-center justify-center aspect-square rounded-full border p-1">
+          <label className="cursor-pointer flex flex-col items-center justify-center aspect-square rounded-full border p-1 w-full">
             <span className="text-gray-500 text-center text-xs">
               Click to upload an image
             </span>
