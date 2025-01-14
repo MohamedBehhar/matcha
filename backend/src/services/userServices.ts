@@ -1,11 +1,16 @@
 import bcrypt from "bcryptjs";
 import orm from "../lib/orm";
-import { ConflictError, UnauthorizedError, ForbiddenError } from "../lib/customError";
+import {
+  ConflictError,
+  UnauthorizedError,
+  ForbiddenError,
+} from "../lib/customError";
 import authServices from "./authServices";
 import env from "../utils/env";
 import { Server } from "socket.io";
 import { SignUpInput, signUpType, User } from "../types/authTypes";
 import { updateUserDto } from "../types/userTypes";
+import fs from "fs";
 
 class UserService {
   private socket: Server | undefined;
@@ -60,17 +65,18 @@ class UserService {
   }
 
   public async addUserImage(userId: string, file: any) {
-    console.log('file: ',file);
+    console.log("file: ", file);
     if (!file) {
       throw new Error("No file uploaded");
     }
-    return await orm.create("images", {
+    await orm.create("images", {
       user_id: userId,
-      url: '/' + file.filename,
+      url: "/" + file.filename,
     });
+    const images = await orm.findMany("images", { where: { user_id: userId } });
+    console.log("images: ", images);
+    return images;
   }
-
-
 
   public async addUserInterests(userId: string, interestsIds: string[]) {
     const user = await orm.findOne("users", { where: { id: userId } });
@@ -127,7 +133,7 @@ class UserService {
   }
 
   public async getUserImages(userId: string) {
-    console.log('userId: ',userId);
+    console.log("userId: ", userId);
     return await orm.querySql(
       `
     SELECT * FROM images WHERE user_id = $1
@@ -166,7 +172,9 @@ class UserService {
   }
 
   public async deleteImage(imageId: string) {
-    return await orm.delete("images", imageId);
+    console.log("imageId: ", imageId);
+    const img = await orm.delete("images", imageId);
+    fs.unlinkSync(`./public${img.url}`);
   }
 }
 

@@ -10,7 +10,7 @@ router.patch("/:id", upload.single("profile_picture"), userControllers.update);
 router.patch('/images/:id', upload.array('images'), userControllers.addImages);
 router.get('/images/:id', userControllers.getUserImages);
 router.delete("/:id", userControllers.delete);
-router.delete("/images/:id", userControllers.deleteImage);
+router.delete("/images/delete/:id",  userControllers.deleteImage);
 router.get("/:id", userControllers.getUsersById);
 router.patch("/:id/location", userControllers.updateUserLocation);
 

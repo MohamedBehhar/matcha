@@ -16,34 +16,26 @@ export function handleResponse() {
       next: NextFunction
     ) {
       try {
-        // Validate the request body for POST and PATCH
-        if ((req.method === "POST" || req.method === "PATCH") && !Object.keys(req.body).length) {
+        if ((req.method === "POST" || req.method === "PATCH") && !Object.keys(req.body).length && !req.files) {
           throw new ValidationError("Request body cannot be empty");
         }
 
-        // Call the original method and await its result
         const result = await original.call(this, req, res, next);
 
-        // Handle error-like results
         if (result instanceof Error) {
           return next(result);
         }
 
-        // Default status based on the HTTP method
         let status = result?.status || (req.method === "POST" ? 201 : 200);
 
-        // Prepare the response data
         const responseData = result?.data ?? result ?? {};
 
-        // Remove sensitive data like passwords
         if (responseData && typeof responseData === "object" && "password" in responseData) {
           delete responseData.password;
         }
 
-        // Send a successful response
         return res.status(status).send(responseData);
       } catch (error) {
-        // Pass any errors to the error handler middleware
         next(error);
       }
     };

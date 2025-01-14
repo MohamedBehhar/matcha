@@ -9,7 +9,7 @@ const theme = localStorage.getItem("theme") || "system";
 body.classList.add(theme);
 
 createRoot(document.getElementById("root")!).render(
-  <StrictMode>
+  // <StrictMode>
     <RouterProvider />
-  </StrictMode>
+  // </StrictMode>
 );

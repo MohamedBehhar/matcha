@@ -79,7 +79,7 @@ class UserControllers {
     for (const image of images) {
       await userServices.addUserImage(userId, image);
     }
-    return;
+    return await userServices.getUserImages(userId) as unknown as void;
   }
 
   @handleResponse()
