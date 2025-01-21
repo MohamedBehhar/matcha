@@ -92,6 +92,12 @@ function index() {
           </Link>
         </p>
       </div>
+
+      <Button className="mt-4 bg-red-primary text-white">
+      <a href="http://localhost:3000/api/auth/google" style={{ color: "white", textDecoration: "none" }}>
+        Sign In with Google
+      </a>
+    </Button>
     </div>
   );
 }

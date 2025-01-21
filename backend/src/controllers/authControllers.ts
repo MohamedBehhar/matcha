@@ -1,4 +1,4 @@
-import { Request, Response } from "express"; 
+import { Request, Response, NextFunction } from "express"; 
 import authServices from "../services/authServices";
 import {
   RefreshTYPE,
@@ -82,6 +82,16 @@ class AuthControllers {
     const user = await authServices.resetPassword(body.token, body.password);
     return user as unknown as void;
   }
+
+    // Google OAuth Login
+    public googleLogin(req: Request, res: Response, next: NextFunction) {
+      authServices.googleLogin()(req, res, next);
+    }
+  
+    // Google OAuth Callback
+    public googleCallback(req: Request, res: Response, next: NextFunction) {
+      authServices.googleCallback()(req, res, next);
+    }
 }
 
 export default new AuthControllers();

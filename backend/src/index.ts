@@ -16,6 +16,8 @@ import UsersInteractionsServices from "./services/UsersInteractionsServices";
 import notificationsRoutes from "./routers/notificationsRoutes";
 import notificationsServices from "./services/notificationsServices";
 import { addSocketIdToRedis, deleteSocketIdFromRedis } from "./utils/redis";
+import session from "express-session";
+import passport from "passport";
 
 const PORT = 3000;
 const app = express();
@@ -25,6 +27,17 @@ const upload = multer();
 app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+
+app.use(session({
+  secret: 'secret',
+  resave: false,
+  saveUninitialized: true,
+}));
+
+// Initialize Passport
+app.use(passport.initialize());
+app.use(passport.session());
+
 
 const userMap = new Map<string, string>();
 

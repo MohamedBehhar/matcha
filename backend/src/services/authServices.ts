@@ -1,7 +1,13 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import nodemailer from "nodemailer";
-import { SignUpInput, signUpType, Tokens, User, verifyEmailReturn } from "../types/authTypes";
+import {
+  SignUpInput,
+  signUpType,
+  Tokens,
+  User,
+  verifyEmailReturn,
+} from "../types/authTypes";
 import { deleteKey, getKey, setKey } from "../utils/redis";
 import pool from "../db/db";
 import orm from "../lib/orm";
@@ -11,6 +17,11 @@ import {
   NotFoundError,
   UnauthorizedError,
 } from "../lib/customError";
+
+import passport from "passport";
+import { Strategy as GoogleStrategy } from "passport-google-oauth20";
+
+
 class AuthServices {
   constructor() {
     this.signUp = this.signUp.bind(this);
@@ -18,9 +29,80 @@ class AuthServices {
     this.logout = this.logout.bind(this);
     this.refresh = this.refresh.bind(this);
     this.verifyEmail = this.verifyEmail.bind(this);
+    this.configureGoogleStrategy();
   }
   private accessTokenMaxAge = 60 * 30;
-  private refreshTokenMaxAge = 60 * 60 ;
+  private refreshTokenMaxAge = 60 * 60;
+
+  private configureGoogleStrategy() {
+    passport.use(
+      new GoogleStrategy(
+        {
+          clientID: GOOGLE_CLIENT_ID,
+          clientSecret: GOOGLE_CLIENT_SECRET,
+          callbackURL: "http://localhost:3000/api/auth/google/callback",
+        },
+        async (accessToken, refreshToken, profile, cb) => {
+          try {
+            const user = await this.findOrCreateUser(profile);
+            cb(null, user);
+          } catch (err) {
+            cb(err);
+          }
+        }
+      )
+    );
+
+    passport.serializeUser((user: any, cb) => {
+      cb(null, user.email);
+    });
+
+    passport.deserializeUser(async (googleId: string, cb) => {
+      try {
+        const user = await this.findUserByGoogleId(googleId);
+        cb(null, user);
+      } catch (err) {
+        cb(err);
+      }
+    });
+  }
+
+  // Find or create a user using Google profile
+  public async findOrCreateUser(profile: any): Promise<User> {
+    const user = await orm.findOne("users", {
+      where: { googleId: profile.id },
+    });
+    if (user) {
+      return user;
+    } else {
+      const newUser = await orm.create("users", {
+        googleId: profile.id,
+        email: profile.emails?.[0].value,
+        displayName: profile.displayName,
+        is_verified: true,
+        is_authenticated: true,
+      });
+      return newUser;
+    }
+  }
+
+  // Find a user by Google ID
+  public async findUserByGoogleId(googleId: string): Promise<User | null> {
+    return await orm.findOne("users", { where: { googleId } });
+  }
+
+  // Google OAuth Login
+  public googleLogin() {
+    return passport.authenticate("google", { scope: ["profile", "email"] });
+  }
+
+  // Google OAuth Callback
+  public googleCallback() {
+    return passport.authenticate("google", {
+      failureRedirect: "/login",
+      successRedirect: "http://localhost:5173",
+    });
+  }
 
   public async createTokens(user: User): Promise<Tokens> {
     console.log("createTokens=> ", process.env.JWT_SECRET);
@@ -39,7 +121,7 @@ class AuthServices {
       }
     );
 
-    await this.setTokensInRedis({ access_token, refresh_token }, user.email);  
+    await this.setTokensInRedis({ access_token, refresh_token }, user.email);
 
     return { access_token, refresh_token };
   }
@@ -59,10 +141,10 @@ class AuthServices {
       }
       let checkRedis = null;
       if (type === "access") {
-         checkRedis = await getKey(`access_token_${decoded.email}`);
+        checkRedis = await getKey(`access_token_${decoded.email}`);
       }
       if (type === "refresh") {
-         checkRedis = await getKey(`refresh_token_${decoded.email}`);
+        checkRedis = await getKey(`refresh_token_${decoded.email}`);
       }
       if (!checkRedis) {
         return null;
@@ -148,7 +230,7 @@ class AuthServices {
       delete (user as { password?: string }).password;
       return {
         ...user,
-          ...tokens,
+        ...tokens,
       };
     } else throw new ForbiddenError("Account not verified");
   }
@@ -170,7 +252,6 @@ class AuthServices {
     }
   }
 
-
   public async setTokensInRedis(tokens: Tokens, email: string): Promise<void> {
     try {
       await setKey(
@@ -186,7 +267,6 @@ class AuthServices {
     } catch (err) {
       throw err;
     }
-
   }
 
   public async refresh(refresh_token: string): Promise<{
@@ -214,7 +294,7 @@ class AuthServices {
         throw new NotFoundError("User not found");
       }
       const tokens = await this.createTokens(user);
-      await this.setTokensInRedis(tokens, email );
+      await this.setTokensInRedis(tokens, email);
       return tokens;
     } catch (err) {
       throw err;
@@ -230,10 +310,10 @@ class AuthServices {
         throw new UnauthorizedError("Invalid token");
       }
       const user: User | null = await pool
-      .query(
-        "UPDATE users SET is_verified = $1, is_authenticated = $2 WHERE email = $3 RETURNING *",
-        [true, true, email]
-      )      
+        .query(
+          "UPDATE users SET is_verified = $1, is_authenticated = $2 WHERE email = $3 RETURNING *",
+          [true, true, email]
+        )
         .then((result: { rows: User[] }) => result.rows[0]);
 
       if (!user) {
@@ -257,7 +337,6 @@ class AuthServices {
       throw err;
     }
   }
-
 
   public async forgotPassword(email: string): Promise<void> {
     try {
@@ -294,10 +373,7 @@ class AuthServices {
     }
   }
 
-  public async resetPassword(
-    token: string,
-    password: string
-  ): Promise<void> {
+  public async resetPassword(token: string, password: string): Promise<void> {
     try {
       const { email } = jwt.verify(token, process.env.JWT_SECRET as string) as {
         email: string;
@@ -308,15 +384,12 @@ class AuthServices {
 
       const user = await orm.findOne("users", { where: { email } });
       const hashedPassword = await bcrypt.hash(password, 10);
-      await orm.update("users", 
-        user.id
-      , { password: hashedPassword });
+      await orm.update("users", user.id, { password: hashedPassword });
       return user;
     } catch (err) {
       throw err;
     }
   }
-
 }
 
 export default new AuthServices();

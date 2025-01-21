@@ -30,6 +30,7 @@ CREATE TABLE users
     id SERIAL PRIMARY KEY,
     username VARCHAR(50) NOT NULL,
     is_required_data_filled BOOLEAN DEFAULT FALSE,
+    googleid NUMBER,
     age INTEGER,
     profile_picture VARCHAR(255),
     email VARCHAR(255) NOT NULL,
