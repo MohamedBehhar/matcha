@@ -20,7 +20,7 @@ import {
 
 import passport from "passport";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
-
+import { Response } from "express";
 
 class AuthServices {
   constructor() {
@@ -38,8 +38,8 @@ class AuthServices {
     passport.use(
       new GoogleStrategy(
         {
-          clientID: GOOGLE_CLIENT_ID,
-          clientSecret: GOOGLE_CLIENT_SECRET,
+          clientID: process.env.GOOGLE_CLIENT_ID as string,
+          clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
           callbackURL: "http://localhost:3000/api/auth/google/callback",
         },
         async (accessToken, refreshToken, profile, cb) => {
@@ -62,6 +62,7 @@ class AuthServices {
         const user = await this.findUserByGoogleId(googleId);
         cb(null, user);
       } catch (err) {
+        console.log(err);
         cb(err);
       }
     });
@@ -75,12 +76,23 @@ class AuthServices {
     if (user) {
       return user;
     } else {
+      const emailExists = await orm.findOne("users", {
+        where: { email: profile.emails?.[0].value },
+      });
+      if (emailExists) {
+        throw new ConflictError("Email already exists");
+      }
+      const hashedPassword = await bcrypt.hash(profile.emails?.[0].value, 10);
       const newUser = await orm.create("users", {
         googleId: profile.id,
         email: profile.emails?.[0].value,
-        displayName: profile.displayName,
+        username: profile.displayName,
+        first_name: profile.name?.givenName,
+        last_name: profile.name?.familyName,
         is_verified: true,
         is_authenticated: true,
+        auth_provider: "google",
+        password: hashedPassword,
       });
       return newUser;
     }
@@ -204,10 +216,13 @@ class AuthServices {
     }
   }
 
-  public async singIn(data: {
-    email: string;
-    password: string;
-  }): Promise<User | undefined> {
+  public async singIn(
+    data: {
+      email: string;
+      password: string;
+    },
+    res: Response
+  ): Promise<User | undefined> {
     console.log(data);
     const user = await orm.findOne("users", { where: { email: data.email } });
     if (!user) {
@@ -225,6 +240,16 @@ class AuthServices {
     await orm.update("users", user.id, { is_authenticated: true });
 
     const tokens = await this.createTokens(user);
+    res.cookie("access_token", tokens.access_token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production", // Ensure HTTPS in production
+      sameSite: "strict",
+    });
+    res.cookie("refresh_token", tokens.refresh_token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+    });
 
     if (true == user.is_verified) {
       delete (user as { password?: string }).password;
