@@ -25,12 +25,21 @@ CREATE TYPE notification_type AS ENUM
     'match'
 );
 
+CREATE TYPE auth_provider AS ENUM
+(
+    'google',
+    'facebook',
+    'local'
+);
+
 CREATE TABLE users
 (
     id SERIAL PRIMARY KEY,
     username VARCHAR(50) NOT NULL,
     is_required_data_filled BOOLEAN DEFAULT FALSE,
-    googleid NUMBER,
+    googleid VARCHAR(255),
+    facebookid VARCHAR(255),
+    auth_provider auth_provider DEFAULT 'local',
     age INTEGER,
     profile_picture VARCHAR(255),
     email VARCHAR(255) NOT NULL,

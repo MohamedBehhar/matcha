@@ -28,7 +28,7 @@ class AuthControllers {
   @handleResponse()
   public async signIn(req: Request, res: Response) {
     const body: signInInput = signInType.validate(req.body);
-    const user = await authServices.singIn(body);
+    const user = await authServices.singIn(body, res);
     return user as unknown as void;
   }
   @handleResponse()
