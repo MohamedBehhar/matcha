@@ -82,7 +82,6 @@ class AuthServices {
       if (emailExists) {
         throw new ConflictError("Email already exists");
       }
-      const hashedPassword = await bcrypt.hash(profile.emails?.[0].value, 10);
       const newUser = await orm.create("users", {
         googleId: profile.id,
         email: profile.emails?.[0].value,
@@ -92,9 +91,13 @@ class AuthServices {
         is_verified: true,
         is_authenticated: true,
         auth_provider: "google",
-        password: hashedPassword,
+        password: null,
       });
-      return newUser;
+      const tokens = await this.createTokens(newUser);
+      return {
+        ...newUser,
+        ...tokens,
+      };
     }
   }
 
