@@ -6,7 +6,7 @@ import {
   updateUserDto,
   updateUserLocationDto,
 } from "../types/userTypes";
-import { ForbiddenError } from "../lib/customError";
+import { ForbiddenError, UnauthorizedError } from "../lib/customError";
 
 class UserControllers {
   constructor() {
@@ -18,8 +18,14 @@ class UserControllers {
 
   @handleResponse()
   public async me(req: Request, res: Response) {
-    const token = req.headers.authorization?.split(" ")[1].trim();
-    return (await userServices.me(token)) as unknown as void;
+    // Get the access token from cookies
+    console.log("req.cookies", req.cookies);
+    const accessToken = req.cookies.access_token;
+
+    if (!accessToken) {
+      throw new UnauthorizedError("Access token not found");
+    }
+    return await userServices.me(accessToken);
   }
 
   @handleResponse()
@@ -70,7 +76,7 @@ class UserControllers {
     )) as unknown as void;
   }
 
-  @handleResponse() 
+  @handleResponse()
   public async addImages(req: Request, res: Response) {
     console.log("- - - - - - - - - - - - - hhh - - - - - - - ");
     const images = req.files as [];
@@ -79,7 +85,7 @@ class UserControllers {
     for (const image of images) {
       await userServices.addUserImage(userId, image);
     }
-    return await userServices.getUserImages(userId) as unknown as void;
+    return (await userServices.getUserImages(userId)) as unknown as void;
   }
 
   @handleResponse()

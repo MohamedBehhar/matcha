@@ -20,7 +20,7 @@ import {
 
 import passport from "passport";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
-import { Response } from "express";
+import { Response, NextFunction, Request } from "express";
 
 class AuthServices {
   constructor() {
@@ -54,12 +54,12 @@ class AuthServices {
     );
 
     passport.serializeUser((user: any, cb) => {
-      cb(null, user.email);
+      cb(null, user.google_id);
     });
 
-    passport.deserializeUser(async (googleId: string, cb) => {
+    passport.deserializeUser(async (google_id: string, cb) => {
       try {
-        const user = await this.findUserByGoogleId(googleId);
+        const user = await this.findUserByGoogleId(google_id);
         cb(null, user);
       } catch (err) {
         console.log(err);
@@ -71,7 +71,7 @@ class AuthServices {
   // Find or create a user using Google profile
   public async findOrCreateUser(profile: any): Promise<User> {
     const user = await orm.findOne("users", {
-      where: { googleId: profile.id },
+      where: { google_id: profile.id },
     });
     if (user) {
       return user;
@@ -83,7 +83,7 @@ class AuthServices {
         throw new ConflictError("Email already exists");
       }
       const newUser = await orm.create("users", {
-        googleId: profile.id,
+        google_id: profile.id,
         email: profile.emails?.[0].value,
         username: profile.displayName,
         first_name: profile.name?.givenName,
@@ -102,8 +102,8 @@ class AuthServices {
   }
 
   // Find a user by Google ID
-  public async findUserByGoogleId(googleId: string): Promise<User | null> {
-    return await orm.findOne("users", { where: { googleId } });
+  public async findUserByGoogleId(google_id: string): Promise<User | null> {
+    return await orm.findOne("users", { where: { google_id } });
   }
 
   // Google OAuth Login
@@ -112,11 +112,31 @@ class AuthServices {
   }
 
   // Google OAuth Callback
-  public googleCallback() {
-    return passport.authenticate("google", {
-      failureRedirect: "/login",
-      successRedirect: "http://localhost:5173",
-    });
+  public googleCallback(req: Request, res: Response, next: NextFunction) {
+    return passport.authenticate("google", async (err: any, user: any) => {
+      if (err || !user) {
+        return res.redirect(
+          "http://localhost:5173/login?error=Authentication failed"
+        );
+      }
+
+      try {
+        const tokens = await this.createTokens(user);
+
+        res.cookie("access_token", tokens.access_token, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: "strict",
+          maxAge: 1000 * 60 * 60 * 24,
+        });
+
+        res.redirect("http://localhost:5173");
+      } catch (error) {
+        res.redirect(
+          "http://localhost:5173/login?error=Token generation failed"
+        );
+      }
+    })(req, res, next);
   }
 
   public async createTokens(user: User): Promise<Tokens> {
@@ -245,13 +265,15 @@ class AuthServices {
     const tokens = await this.createTokens(user);
     res.cookie("access_token", tokens.access_token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production", // Ensure HTTPS in production
-      sameSite: "strict",
+      secure: false,
+      sameSite: "lax",
+      maxAge: 1000 * 60 * 60 * 24,
     });
     res.cookie("refresh_token", tokens.refresh_token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      secure: false,
+      sameSite: "lax",
+      maxAge: 1000 * 60 * 60 * 24,
     });
 
     if (true == user.is_verified) {
