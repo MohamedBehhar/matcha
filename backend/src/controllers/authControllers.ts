@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from "express"; 
+import { Request, Response, NextFunction } from "express";
 import authServices from "../services/authServices";
 import {
   RefreshTYPE,
@@ -67,7 +67,7 @@ class AuthControllers {
     } = forgotPasswordType.validate(req.body);
     if (!body.email) throw new Error("Invalid email");
     const user = await authServices.forgotPassword(body.email);
-    console.log('- - - user: ',user);
+    console.log("- - - user: ", user);
     return user as unknown as void;
   }
 
@@ -78,20 +78,21 @@ class AuthControllers {
       password: string | undefined;
     } = resetPasswordType.validate(req.body);
     console.log(body);
-    if (!body.token || !body.password) throw new Error("Invalid token or password");
+    if (!body.token || !body.password)
+      throw new Error("Invalid token or password");
     const user = await authServices.resetPassword(body.token, body.password);
     return user as unknown as void;
   }
 
-    // Google OAuth Login
-    public googleLogin(req: Request, res: Response, next: NextFunction) {
-      authServices.googleLogin()(req, res, next);
-    }
-  
-    // Google OAuth Callback
-    public googleCallback(req: Request, res: Response, next: NextFunction) {
-      authServices.googleCallback()(req, res, next);
-    }
+  // Google OAuth Login
+  public googleLogin(req: Request, res: Response, next: NextFunction) {
+    authServices.googleLogin()(req, res, next);
+  }
+
+  // Google OAuth Callback
+  public googleCallback(req: Request, res: Response, next: NextFunction) {
+    return authServices.googleCallback(req, res, next);
+  }
 }
 
 export default new AuthControllers();

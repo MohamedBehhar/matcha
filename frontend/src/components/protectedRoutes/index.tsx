@@ -1,29 +1,29 @@
 import { Navigate, Outlet, useLocation } from "react-router-dom";
-import { jwtDecode } from "jwt-decode";
+import { useEffect, useState } from "react";
 import { getUser } from "@/api/methods/user";
 
 const ProtectedRoutes = () => {
-  try{
-  const token = localStorage.getItem("access_token");
-  if (token === null) {
-    return <Navigate to="/" />;
-  }
-  const decoded = jwtDecode(token);
-  const isExpired = decoded.exp * 1000 < Date.now();
-
-  if (isExpired) {
-    getUser();
-  }
-
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const location = useLocation();
-  if (token !== "undefined" && token !== null) {
-    return <Outlet />;
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        await getUser();
+        setIsAuthenticated(true);
+      } catch (error) {
+        setIsAuthenticated(false);
+      }
+    };
+
+    checkAuth();
+  }, []);
+
+  if (isAuthenticated === null) {
+    return <p>Loading...</p>; // 👈 Show a loading state while checking auth
   }
 
-  return <Navigate to="/signin" state={{ from: location }} />;
-  } catch (error) {
-    return <Navigate to="/signin" />;
-  }
+  return isAuthenticated ? <Outlet /> : <Navigate to="/signin" state={{ from: location }} />;
 };
 
 export default ProtectedRoutes;

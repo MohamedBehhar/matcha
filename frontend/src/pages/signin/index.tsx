@@ -25,12 +25,11 @@ function index() {
     };
     try {
       const response = await signIn(signInInput);
-      localStorage.setItem("access_token", response.access_token);
-      localStorage.setItem("refresh_token", response.refresh_token);
       localStorage.setItem("name", response.username);
       localStorage.setItem("id", response.id);
       setUserInfos(response);
       logUser(response);
+      console.log(response);
       if (response.isDataComplete) {
         navigate("/");
       } else {

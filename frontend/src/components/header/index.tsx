@@ -78,12 +78,7 @@ export default function Header() {
   return (
     <header className="border-b ">
       <nav className="h-[4rem] container flex justify-between items-center">
-        <div
-          className="flex items-center gap-4 cursor-pointer"
-          onClick={() => {
-            window.location.href = "/";
-          }}
-        >
+        <Link to="/" className="flex items-center gap-4 cursor-pointer">
           <img
             src={`http://localhost:3000/${user?.profile_picture}`}
             className="w-10 h-10 rounded-full border object-cover"
@@ -94,7 +89,7 @@ export default function Header() {
           <h1 className="text-xl font-bold capitalize">
             {localStorage.getItem("name")}
           </h1>
-        </div>
+        </Link>
         <div className="flex gap-4 items-center">
           <ul className="flex gap-4 [&>*:hover]:text-primary [&>*]:transition-colors font-semibold">
             <li>
