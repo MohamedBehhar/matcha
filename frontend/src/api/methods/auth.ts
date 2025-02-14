@@ -70,13 +70,17 @@ const resetPassword = async (password: string, token: string) => {
 
 const logout = async () => {
   try {
-    await instance.post(
-      "/auth/logout",
-      {},
-      {
-        withCredentials: true,
-      }
-    );
+    await instance
+      .post(
+        "/auth/logout",
+        {},
+        {
+          withCredentials: true,
+        }
+      )
+      .then(() => {
+        window.location.href = "/signin";
+      });
   } catch (error) {
     throw error;
   }
