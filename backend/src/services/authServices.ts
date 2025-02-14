@@ -32,7 +32,7 @@ class AuthServices {
     this.configureGoogleStrategy();
   }
   private accessTokenMaxAge = 1000 * 10;
-  private refreshTokenMaxAge = 1000 * 60 * 2;
+  private refreshTokenMaxAge = 1000 * 60;
 
   private configureGoogleStrategy() {
     passport.use(
@@ -93,7 +93,7 @@ class AuthServices {
         auth_provider: "google",
         password: null,
       });
-      const tokens = await this.createTokens(newUser);
+      const tokens = await this.createTokens(newUser.email as string);
       return {
         ...newUser,
         ...tokens,
@@ -121,7 +121,7 @@ class AuthServices {
       }
 
       try {
-        const tokens = await this.createTokens(user);
+        const tokens = await this.createTokens(user.email as string);
 
         res.cookie("access_token", tokens.access_token, {
           httpOnly: true,
@@ -139,24 +139,23 @@ class AuthServices {
     })(req, res, next);
   }
 
-  public async createTokens(user: User): Promise<Tokens> {
-    console.log("createTokens=> ", process.env.JWT_SECRET);
+  public async createTokens(email: string): Promise<Tokens> {
     const access_token = jwt.sign(
-      { email: user.email, id: user.id },
+      { email: email },
       process.env.JWT_SECRET as string,
       {
         expiresIn: this.accessTokenMaxAge,
       }
     );
     const refresh_token = jwt.sign(
-      { email: user.email, id: user.id },
+      { email: email },
       process.env.REFRESH_SECRET as string,
       {
         expiresIn: this.refreshTokenMaxAge,
       }
     );
 
-    await this.setTokensInRedis({ access_token, refresh_token }, user.email);
+    await this.setTokensInRedis({ access_token, refresh_token }, email);
 
     return { access_token, refresh_token };
   }
@@ -262,7 +261,7 @@ class AuthServices {
     }
     await orm.update("users", user.id, { is_authenticated: true });
 
-    const tokens = await this.createTokens(user);
+    const tokens = await this.createTokens(user.email as string);
     res.cookie("access_token", tokens.access_token, {
       httpOnly: true,
       secure: false,
@@ -358,7 +357,7 @@ class AuthServices {
       }
 
       // ✅ Generate new tokens
-      const tokens = await this.createTokens(user);
+      const tokens = await this.createTokens(email);
 
       // ✅ Set new cookies
       res.cookie("access_token", tokens.access_token, {
@@ -394,7 +393,7 @@ class AuthServices {
         throw new NotFoundError("User not found");
       }
       delete (user as { password?: string }).password;
-      const tokens = await this.createTokens(user);
+      const tokens = await this.createTokens(email);
       await this.setTokensInRedis(tokens, email);
 
       return {
