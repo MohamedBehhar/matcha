@@ -19,8 +19,12 @@ class UserControllers {
   @handleResponse()
   public async me(req: Request, res: Response) {
     // Get the access token from cookies
-    console.log("req.cookies", req.cookies);
     const accessToken = req.cookies.access_token;
+    console.log(
+      "----------- Access token: --------\n",
+      accessToken,
+      "-- - - - - - - - - -\n"
+    );
 
     if (!accessToken) {
       throw new UnauthorizedError("Access token not found");

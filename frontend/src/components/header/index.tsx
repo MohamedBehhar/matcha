@@ -20,10 +20,10 @@ import {
 import { FaPowerOff } from "react-icons/fa6";
 import { getUser } from "@/api/methods/user";
 import userImg from "@/assets/images/user.png";
+import { logout } from "@/api/methods/auth";
 
 export default function Header() {
   const [user, setUser] = useState(null);
-  const logout = useUserStore((state) => state.logout);
   const [notifications, setNotifications] = useState([]);
   const [notificationsCount, setNotificationsCount] = useState(0);
   const id = localStorage.getItem("id") || "";
@@ -133,10 +133,7 @@ export default function Header() {
           <Button
             className="bg-red-primary text-white rounded-full"
             onClick={() => {
-              localStorage.removeItem("access_token");
-              localStorage.removeItem("refresh_token");
               logout();
-              window.location.href = "/signin";
             }}
           >
             <FaPowerOff />

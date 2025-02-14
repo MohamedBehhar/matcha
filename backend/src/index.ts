@@ -59,7 +59,7 @@ pool
     console.log("test", err);
   });
 app.use("/api/auth", authRoutes);
-// app.use(authMiddleware);
+app.use(authMiddleware);
 app.use("/api/user", userRoutes);
 app.use("/api/interests", interstsRoutes);
 app.use("/api/interactions", usersInteractionsRoutes);

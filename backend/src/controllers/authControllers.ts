@@ -31,23 +31,13 @@ class AuthControllers {
     const user = await authServices.singIn(body, res);
     return user as unknown as void;
   }
-  @handleResponse()
-  public async logout(req: Request, res: Response) {
-    const body: {
-      refresh_token: string | undefined;
-    } = RefreshTYPE.validate(req.body);
-    if (!body.refresh_token) throw new Error("Invalid token");
-    await authServices.logout(body.refresh_token);
-    return { message: "Logout successful" } as unknown as void;
+
+  public async logout(req: Request, res: Response, next: NextFunction) {
+    return await authServices.logout(req, res, next);
   }
-  @handleResponse()
-  public async refresh(req: Request, res: Response) {
-    const body: {
-      refresh_token: string | undefined;
-    } = RefreshTYPE.validate(req.body);
-    if (!body.refresh_token) throw new Error("Invalid token");
-    const user = await authServices.refresh(body.refresh_token);
-    return user as unknown as void;
+  // @handleResponse()
+  public async refresh(req: Request, res: Response, next: NextFunction) {
+    await authServices.refresh(req, res, next);
   }
 
   @handleResponse()

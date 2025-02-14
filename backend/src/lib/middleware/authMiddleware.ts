@@ -3,31 +3,29 @@ import { ForbiddenError, UnauthorizedError } from "../customError";
 import authServices from "../../services/authServices";
 import env from "../../utils/env";
 
-const authMiddleware = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+const authMiddleware = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    console.log("- - - - -  - - - -authMiddleware- - - -  -- - - -");
-    const authHeader = req.headers.authorization as string;
+    console.log("---- Auth Middleware ----");
 
-    const token = authHeader.split(" ")[1].trim();
-    console.log("token", token, typeof token);
-    if (token == 'null' || token == 'undefined') {
-        console.log("- - - - - - - - no token");
+    const token = req.cookies?.access_token; // ✅ Read from cookies
+    if (!token) {
+      console.log("No token found in cookies");
       throw new ForbiddenError("Forbidden");
     }
+
     const email = await authServices.verifyToken(
       token,
       env.JWT_SECRET as string,
       "access"
     );
+
     if (!email) {
       throw new UnauthorizedError("Unauthorized");
     }
-    req.headers.email = email;
-    next();
+
+    req.headers.email = email; // ✅ Attach email to request
+    next(); // ✅ Proceed to next middleware
+
   } catch (err) {
     next(err);
   }

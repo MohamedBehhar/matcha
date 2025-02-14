@@ -68,6 +68,20 @@ const resetPassword = async (password: string, token: string) => {
   }
 };
 
+const logout = async () => {
+  try {
+    await instance.post(
+      "/auth/logout",
+      {},
+      {
+        withCredentials: true,
+      }
+    );
+  } catch (error) {
+    throw error;
+  }
+};
+
 export {
   signUp,
   signIn,
@@ -75,4 +89,5 @@ export {
   refreshToken,
   resetPassword,
   forgotPassword,
+  logout,
 };
