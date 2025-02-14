@@ -31,8 +31,8 @@ class AuthServices {
     this.verifyEmail = this.verifyEmail.bind(this);
     this.configureGoogleStrategy();
   }
-  private accessTokenMaxAge = 60 * 30;
-  private refreshTokenMaxAge = 60 * 60;
+  private accessTokenMaxAge = 1000 * 10;
+  private refreshTokenMaxAge = 1000 * 60 * 2;
 
   private configureGoogleStrategy() {
     passport.use(
@@ -267,13 +267,13 @@ class AuthServices {
       httpOnly: true,
       secure: false,
       sameSite: "lax",
-      maxAge: 1000 * 60 * 60 * 24,
+      maxAge: this.accessTokenMaxAge,
     });
     res.cookie("refresh_token", tokens.refresh_token, {
       httpOnly: true,
       secure: false,
       sameSite: "lax",
-      maxAge: 1000 * 60 * 60 * 24,
+      maxAge: this.refreshTokenMaxAge,
     });
 
     if (true == user.is_verified) {
@@ -285,20 +285,29 @@ class AuthServices {
     } else throw new ForbiddenError("Account not verified");
   }
 
-  public async logout(access_token: string): Promise<void> {
+  public async logout(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
     try {
-      const email = await this.verifyToken(
-        access_token,
-        process.env.JWT_SECRET as string,
-        "access"
-      );
-      if (!email) {
-        throw new UnauthorizedError("Invalid token");
-      }
-      await deleteKey(`access_token_${email}`);
-      await deleteKey(`refresh_token_${email}`);
+      res.cookie("access_token", "", {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        maxAge: 0, // ✅ Immediately expires the cookie
+      });
+
+      res.cookie("refresh_token", "", {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        maxAge: 0, // ✅ Immediately expires the cookie
+      });
+
+      res.status(200).json({ message: "Logged out successfully" });
     } catch (err) {
-      throw err;
+      next(err);
     }
   }
 
@@ -319,35 +328,50 @@ class AuthServices {
     }
   }
 
-  public async refresh(refresh_token: string): Promise<{
-    access_token: string;
-    refresh_token: string;
-  }> {
+  public async refresh(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
     try {
+      const refresh_token = req.cookies?.refresh_token; // ✅ Read from cookies
+      if (!refresh_token) {
+        throw new ForbiddenError("No refresh token provided");
+      }
+
       const email = await this.verifyToken(
         refresh_token,
         process.env.REFRESH_SECRET as string,
         "refresh"
       );
+
       if (!email) {
         throw new ForbiddenError("Invalid token");
       }
-      if (!email) {
-        throw new UnauthorizedError("Invalid token");
-      }
+
       const user = await pool
         .query("SELECT * FROM users WHERE email = $1", [email])
-        .then((result: any) => {
-          return result.rows[0];
-        });
+        .then((result: any) => result.rows[0]);
+
       if (!user) {
         throw new NotFoundError("User not found");
       }
+
+      // ✅ Generate new tokens
       const tokens = await this.createTokens(user);
-      await this.setTokensInRedis(tokens, email);
-      return tokens;
+
+      // ✅ Set new cookies
+      res.cookie("access_token", tokens.access_token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        maxAge: this.accessTokenMaxAge,
+      });
+
+      // ✅ Send response instead of `next()`
+      res.json({ success: true });
     } catch (err) {
-      throw err;
+      next(err); // ✅ Pass error to global error handler
     }
   }
 
