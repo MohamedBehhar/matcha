@@ -24,7 +24,7 @@ const updateUserDto = Schema.object({
 const updateUserLocationDto = Schema.object({
     latitude: Schema.number().required(),
     longitude: Schema.number().required(),
-    userId: Schema.string().required(),
+    userId:  Schema.number().required(),
 });
 
 export { createUserDto, updateUserDto, updateUserLocationDto };

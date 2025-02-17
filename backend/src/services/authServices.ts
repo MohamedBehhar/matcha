@@ -31,8 +31,8 @@ class AuthServices {
     this.verifyEmail = this.verifyEmail.bind(this);
     this.configureGoogleStrategy();
   }
-  private accessTokenMaxAge = 1000 * 10;
-  private refreshTokenMaxAge = 1000 * 60;
+  private accessTokenMaxAge = 1000 * 60 * 10;
+  private refreshTokenMaxAge = 1000 * 60 * 30;
 
   private configureGoogleStrategy() {
     passport.use(

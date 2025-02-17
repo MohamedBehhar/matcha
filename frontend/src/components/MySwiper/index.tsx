@@ -15,6 +15,7 @@ import {
   useMap,
 } from "react-leaflet";
 import { getUser } from "@/api/methods/user";
+import useUserStore from "@/store/userStore";
 
 function ZoomHandler({ zoom }: { zoom: number }) {
   const map = useMap();
@@ -29,14 +30,12 @@ function Index() {
   const opacity = useTransform(x, [-200, 0, 200], [0, 1, 0]);
   const rotate = useTransform(x, [-200, 0, 200], [-45, 0, 45]);
   const [zoom, setZoom] = useState(12);
-  const user_id = localStorage.getItem("id");
-  const id = localStorage.getItem("id");
   const [users, setUsers] = useState([]);
   const [ageGap, setAgeGap] = useState(5);
   const [distance, setDistance] = useState(5);
   const [interests, setInterests] = useState([]);
   const [selectedInterests, setSelectedInterests] = useState([]);
-  const [user, setUser] = useState(null);
+  const { user, setUserInfos } = useUserStore();
 
   const fetchInterests = async () => {
     try {
@@ -46,11 +45,14 @@ function Index() {
       console.error(error);
     }
   };
-  const [position, setPosition] = useState([0, 0]);
+  const [position, setPosition] = useState([
+    user?.latitude || 0,
+    user?.longitude || 0,
+  ]);
   const getUserInfo = async () => {
     try {
       const response = await getUser();
-      setUser(response);
+      setUserInfos(response);
       setPosition([response.latitude, response.longitude]);
     } catch (error) {
       console.error(error);
@@ -77,7 +79,7 @@ function Index() {
       const response = await getMatches(
         user?.latitude,
         user?.longitude,
-        id,
+        user?.id,
         ageGap,
         distance * 1000,
         selectedInterests.map((interest: string) => interest.id).join(",") || ""
@@ -90,9 +92,9 @@ function Index() {
 
   const handleDragEnd = async (id: string) => {
     if (x.get() > 100) {
-      await likeAUser({ user_id, liked_id: id });
+      await likeAUser({ user_id: user?.id, liked_id: id });
     } else if (x.get() < 100) {
-      await unlikeAUser({ user_id, disliked_id: id });
+      await unlikeAUser({ user_id: user?.id, disliked_id: id });
     }
     await getNewUsers();
   };
@@ -121,7 +123,7 @@ function Index() {
       >
         {user ? (
           <div className="h-[400px] mb-2 rounded-md overflow-hidden">
-            <MapContainer
+            {/* <MapContainer
               center={position}
               zoom={zoom}
               style={{ height: "100%", width: "100%" }}
@@ -139,7 +141,7 @@ function Index() {
                 pathOptions={{ color: "blue", fillOpacity: 0.2 }}
               />
               <ZoomHandler zoom={zoom} />
-            </MapContainer>
+            </MapContainer> */}
           </div>
         ) : (
           <div className=" row-span-2 flex items-center justify-center flex-col gap-4  ">

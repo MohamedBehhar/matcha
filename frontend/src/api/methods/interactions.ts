@@ -31,6 +31,7 @@ const getMatches = async (
   if (!user_id) {
     throw new Error("User id is required");
   }
+  console.log("user_id", user_id);
   try {
     const response = await instance.get(
       `/interactions/matches?user_id=${user_id}&latitude=${latitude}&longitude=${longitude}&distance=${distance}&age_gap=${ageGap}&interests=${interests}`
