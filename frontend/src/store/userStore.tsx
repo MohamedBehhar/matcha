@@ -1,14 +1,19 @@
 import { create } from "zustand";
 
 type User = {
-  id: number;
+  id: number | null;
   email: string;
   username: string;
   first_name: string;
   last_name: string;
   is_authenticated: boolean;
-  latitude?: number;
-  longitude?: number;
+  latitude?: number | null;
+  longitude?: number | null;
+  bio?: string;
+  sexual_preference ?: string;
+  gender ?: string;
+  date_of_birth ?: string;
+  interests ?: string[];
 };
 
 type State = {
@@ -23,18 +28,22 @@ type Actions = {
 
 const useUserStore = create<State & Actions>((set) => ({
   user: {
-    id: -1,
+    id: null,
     email: "",
     username: "",
     first_name: "",
     last_name: "",
+    bio: "",
+    sexual_preference: "",
+    gender: "",
+    date_of_birth: "",
     is_authenticated: false,
-    latitude: 0,
-    longitude: 0,
+    latitude: null,
+    longitude: null,
+    interests: [],
   },
   setUserInfos: (user: User) => {
-    set({ user })
-  
+    set({ user });
   },
   logUser: (user: User) =>
     set({
@@ -45,21 +54,31 @@ const useUserStore = create<State & Actions>((set) => ({
         first_name: user.first_name,
         last_name: user.last_name,
         is_authenticated: true,
-        latitude: user.latitude || 0,
-        longitude: user.longitude || 0,
+        latitude: user.latitude || null,
+        longitude: user.longitude || null,
+        bio: user.bio || "",
+        sexual_preference: user.sexual_preference || "",
+        gender: user.gender || "",
+        date_of_birth: user.date_of_birth || "",
+        interests: user.interests || [],
       },
     }),
   logout: () =>
     set({
       user: {
-        id: -1,
+        id: null,
         email: "",
         username: "",
         first_name: "",
         last_name: "",
         is_authenticated: false,
-        latitude: 0,
-        longitude: 0,
+        latitude: null,
+        longitude: null,
+        bio: "",
+        sexual_preference: "",
+        gender: "",
+        date_of_birth: "",
+        interests: [],
       },
     }),
 }));

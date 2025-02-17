@@ -19,43 +19,45 @@ import toast from "react-hot-toast";
 import { Textarea } from "@/components/ui/textArea";
 import { s } from "node_modules/vite/dist/node/types.d-aGj9QkWt";
 import { set } from "date-fns";
+import useUserStore from "@/store/userStore";
+import { se } from "date-fns/locale";
 
 function ProfileSetting() {
   const [interests, setInterests] = useState([]);
   const [selectedInterests, setSelectedInterests] = useState([]);
   const [selectedImages, setSelectedImages] = useState([]);
-  const [userInfo, setUserInfo] = useState({});
   const [birthDate, setBirthDate] = useState("");
   const [profilePicture, setProfilePicture] = useState("");
+  const { user, setUserInfos } = useUserStore();
 
-  const id = localStorage.getItem("id");
   const getInfo = async () => {
     try {
-      if (!id) return;
-      const user = await getUserById(id);
-      const interests = await getInterests();
-      const images = await getUserImages(id);
-      setUserInfo(user);
-      setProfilePicture(user.profile_picture);
-      setInterests(interests);
-      setSelectedInterests(user.interests);
+      if (!user?.id) return;
+
+      const userData = await getUserById(user.id);
+      const interestsData = await getInterests();
+      const userImages = await getUserImages(String(user.id));
+
+      setUserInfos(userData);
+      setProfilePicture(userData.profile_picture);
+      setInterests(interestsData);
+      setSelectedInterests(userData.interests || []);
       setBirthDate(
-        user.date_of_birth
-          ? new Date(user.date_of_birth).toISOString().split("T")[0]
+        userData.date_of_birth
+          ? new Date(userData.date_of_birth).toISOString().split("T")[0]
           : ""
       );
-      for (const image of images) {
-        console.log("image: ", image instanceof File);
-      }
-      setSelectedImages(images);
+
+      setSelectedImages(userImages);
     } catch (error) {
-      console.log(error);
+      console.error("Error fetching user data:", error);
     }
   };
 
   useEffect(() => {
+    if (!user?.id) return; // ✅ Ensures the effect runs only when user.id is available
     getInfo();
-  }, []);
+  }, [user?.id]); // ✅ Re-runs if user.id c
 
   interface Interest {
     id: number;
@@ -102,7 +104,7 @@ function ProfileSetting() {
   const [location, setLocation] = useState(null);
   const [error, setError] = useState("");
 
-  const updateLocation = async (id: string, data: any) => {
+  const updateLocation = async (id: number, data: any) => {
     try {
       const response = await updateUserLocation(id, data);
       return response.data;
@@ -115,18 +117,20 @@ function ProfileSetting() {
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
-          setLocation({
+          if (!user.id) return;
+          setUserInfos({
+            ...user,
             latitude: position.coords.latitude,
             longitude: position.coords.longitude,
           });
-          updateLocation(id || "", {
+          updateLocation(user.id, {
             latitude: position.coords.latitude,
             longitude: position.coords.longitude,
-            userId: id,
+            userId: user.id,
           });
           setError(null);
         },
-        ( error) => {
+        (error) => {
           setError("Unable to retrieve location.");
         }
       );
@@ -141,7 +145,7 @@ function ProfileSetting() {
       formData.append("images", image);
     });
     try {
-      const response = await addUserImages(formData, id || "");
+      const response = await addUserImages(formData, user.id || "");
       setSelectedImages(response);
     } catch (error) {
       throw error;
@@ -170,12 +174,11 @@ function ProfileSetting() {
       "interests",
       JSON.stringify(selectedInterests.map((interest) => interest.id))
     );
-
-    if (!id) return;
+    if (!user.id) return;
     await handleAddUserImages();
-    await updateUser(formData, id)
+    await updateUser(formData, user.id + "")
       .then((data) => {
-        console.log(data);
+        setUserInfos(data);
         toast.success("Profile updated successfully");
       })
       .catch((error) => {
@@ -183,6 +186,7 @@ function ProfileSetting() {
         toast.error("Failed to update profile");
       });
   };
+  const [loading, setLoading] = useState(true);
 
   return (
     <div className="container flex flex-col items-center justify-center">
@@ -190,24 +194,21 @@ function ProfileSetting() {
       {error && <div className="text-red-500 text-sm">{error}</div>}
       <div className="flex items-center justify-center  mb-2 rounded-full w-[200px]">
         {profilePicture ? (
-          <div className=" relative ">
+          <div className="relative">
+            {loading && <p>Loading...</p>} {/* Placeholder while loading */}
             <img
               src={
                 profilePicture instanceof File
                   ? URL.createObjectURL(profilePicture)
-                  : `http://localhost:3000/${userInfo.profile_picture}`
+                  : `http://localhost:3000/${user.profile_picture}`
               }
               alt="profile"
-              className="flex-1 w-[200px] aspect-square object-cover  rounded-full"
-              onError={(e: any) => {
-                console.log({ e });
-                e.target.onerror = null;
-                e.target.src = userImg;
+              className="flex-1 w-[200px] aspect-square object-cover rounded-full"
+              onError={(e) => {
+                e.currentTarget.onerror = null;
+                e.currentTarget.src = userImg;
               }}
-            />
-            <FaRegEdit
-              className="absolute top-0 right-0"
-              onClick={() => setProfilePicture("")}
+              onLoad={() => setLoading(false)} // Hide loader when image loads
             />
           </div>
         ) : (
@@ -240,41 +241,41 @@ function ProfileSetting() {
             type="text"
             name="first_name"
             placeholder="First Name"
-            defaultValue={userInfo.first_name}
+            defaultValue={user.first_name}
           />
           <Input
             name="last_name"
             type="text"
             placeholder="Last Name"
-            defaultValue={userInfo.last_name}
+            defaultValue={user.last_name}
           />
           <Input
             name="email"
             type="email"
             placeholder="Email"
-            defaultValue={userInfo.email}
+            defaultValue={user.email}
           />
           <Input
             name="username"
             type="text"
             placeholder="Username"
-            defaultValue={userInfo.username || ""}
+            defaultValue={user.username || ""}
           />
           <MySelect
             options={["male", "female"]}
             placeholder="Gender"
             name="gender"
-            value={userInfo.gender}
-            onChange={(value) => setUserInfo({ ...userInfo, gender: value })}
+            value={user.gender}
+            onChange={(value) => setUserInfos({ ...user, gender: value })}
           />
 
           <MySelect
             options={["bisexual", "heterosexual", "homosexual"]}
             placeholder="Sexual Preference"
             name="sexual_preference"
-            value={userInfo.sexual_preference}
+            value={user.sexual_preference}
             onChange={(value) =>
-              setUserInfo({ ...userInfo, sexual_preference: value })
+              setUserInfos({ ...user, sexual_preference: value })
             }
           />
           {/* <DatePickerDemo
@@ -300,7 +301,7 @@ function ProfileSetting() {
         <Textarea
           name="bio"
           placeholder="Bio"
-          defaultValue={userInfo.bio}
+          defaultValue={user.bio}
           className="mb-4"
           maxLength={500}
           rows={5}
