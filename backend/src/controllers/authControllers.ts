@@ -46,7 +46,7 @@ class AuthControllers {
       token: string | undefined;
     } = verifyTokenType.validate(req.params);
     if (!body.token) throw new Error("Invalid token");
-    const user = await authServices.verifyEmail(body.token);
+    const user = await authServices.verifyEmail(body.token, res);
     return user as unknown as void;
   }
 
