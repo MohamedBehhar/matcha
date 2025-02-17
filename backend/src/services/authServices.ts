@@ -189,7 +189,7 @@ class AuthServices {
     }
   }
 
-  public async calculateAge(birthDate: Date): Promise<number> {
+  public calculateAge(birthDate: Date): number {
     const ageDifMs = Date.now() - birthDate.getTime();
     const ageDate = new Date(ageDifMs);
     return Math.abs(ageDate.getUTCFullYear() - 1970);
@@ -333,7 +333,7 @@ class AuthServices {
     next: NextFunction
   ): Promise<void> {
     try {
-      const refresh_token = req.cookies?.refresh_token; // ✅ Read from cookies
+      const refresh_token = req.cookies?.refresh_token;
       if (!refresh_token) {
         throw new ForbiddenError("No refresh token provided");
       }
@@ -356,7 +356,6 @@ class AuthServices {
         throw new NotFoundError("User not found");
       }
 
-      // ✅ Generate new tokens
       const tokens = await this.createTokens(email);
 
       // ✅ Set new cookies
@@ -367,18 +366,22 @@ class AuthServices {
         maxAge: this.accessTokenMaxAge,
       });
 
-      // ✅ Send response instead of `next()`
       res.json({ success: true });
     } catch (err) {
       next(err); // ✅ Pass error to global error handler
     }
   }
 
-  public async verifyEmail(token: string): Promise<verifyEmailReturn | null> {
+  public async verifyEmail(
+    token: string,
+    res: Response
+  ): Promise<verifyEmailReturn | null> {
     try {
+      console.log("- - - - - - - - - - -> ", token);
       const { email } = jwt.verify(token, process.env.JWT_SECRET as string) as {
         email: string;
       };
+      console.log("- - - - - - - - - - -> ", email);
       if (!email) {
         throw new UnauthorizedError("Invalid token");
       }
@@ -394,7 +397,19 @@ class AuthServices {
       }
       delete (user as { password?: string }).password;
       const tokens = await this.createTokens(email);
-      await this.setTokensInRedis(tokens, email);
+      res.cookie("access_token", tokens.access_token, {
+        httpOnly: true,
+        secure: false,
+        sameSite: "lax",
+        maxAge: this.accessTokenMaxAge,
+      });
+
+      res.cookie("refresh_token", tokens.refresh_token, {
+        httpOnly: true,
+        secure: false,
+        sameSite: "lax",
+        maxAge: this.refreshTokenMaxAge,
+      });
 
       return {
         id: user.id,
