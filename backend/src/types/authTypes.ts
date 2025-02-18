@@ -61,7 +61,6 @@ const signUpType = Schema.object({
   first_name: Schema.string().required(),
   last_name: Schema.string().required(),
   username: Schema.string().required(),
-  date_of_birth: Schema.string().required(),
 });
 
 

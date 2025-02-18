@@ -36,7 +36,7 @@ CREATE TABLE users
 (
     id SERIAL PRIMARY KEY,
     username VARCHAR(50) NOT NULL,
-    is_required_data_filled BOOLEAN DEFAULT FALSE,
+    is_data_complete BOOLEAN DEFAULT FALSE,
     google_id VARCHAR(255),
     facebookid VARCHAR(255),
     auth_provider auth_provider DEFAULT 'local',

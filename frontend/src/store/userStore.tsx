@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { getUser } from "@/api/methods/user";
 
 type User = {
   id: number | null;
@@ -14,14 +15,16 @@ type User = {
   gender ?: string;
   date_of_birth ?: string;
   interests ?: string[];
+  is_data_complete?: boolean;
 };
 
 type State = {
   user: User;
-  setUserInfos: (user: User) => void; // Changed user from string to User object
+  setUserInfos: (user: User) => void; 
 };
 
 type Actions = {
+  
   logout: () => void;
   logUser: (user: User) => void;
 };
@@ -41,6 +44,7 @@ const useUserStore = create<State & Actions>((set) => ({
     latitude: null,
     longitude: null,
     interests: [],
+    is_data_complete: false,
   },
   setUserInfos: (user: User) => {
     set({ user });
@@ -61,6 +65,7 @@ const useUserStore = create<State & Actions>((set) => ({
         gender: user.gender || "",
         date_of_birth: user.date_of_birth || "",
         interests: user.interests || [],
+        is_data_complete: user.is_data_complete || false,
       },
     }),
   logout: () =>

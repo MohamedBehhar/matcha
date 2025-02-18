@@ -7,10 +7,20 @@ export default {
 	theme: {
 		extend: {
 			colors: {
+				grey: {
+					primary: '#f5f7fa',
+					secondary: '#e4e7eb',
+					tertiary: '#c7d1d8',
+				},
 				red: {
 					primary: '#fe3c72',
 					secondary: '#fd5564',
 					tertiary: '#ef4a75',
+				},
+				blue: {
+					primary: '#3c72fe',
+					secondary: '#3c72fe',
+					tertiary: '#3c72fe',
 				},
 				background: 'hsl(var(--background))',
 				foreground: 'hsl(var(--foreground))',
@@ -84,5 +94,5 @@ export default {
 			}
 		}
 	},
-	plugins: [tailwindcssAnimate],
+	plugins: [require("tailwindcss-animated")],
 };

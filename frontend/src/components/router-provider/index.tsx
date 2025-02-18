@@ -19,6 +19,7 @@ import {
   RouteObject,
   RouterProvider as Provider,
 } from "react-router-dom";
+import CompleteProfile from "@/pages/completeProfile";
 
 const routes: RouteObject[] = [
   {
@@ -62,6 +63,10 @@ const routes: RouteObject[] = [
             element: <HomePage />,
           },
           {
+            path: "complete-profile",
+            element: <CompleteProfile />,
+          },
+          {
             path: "about",
             element: <AboutPage />,
           },
@@ -76,10 +81,11 @@ const routes: RouteObject[] = [
           {
             path: "match-making",
             element: <MatchMaking />,
-          }, {
+          },
+          {
             path: "profile/:userid",
             element: <ProfilePage />,
-          }
+          },
         ],
       },
     ],

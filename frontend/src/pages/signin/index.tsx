@@ -30,7 +30,7 @@ function index() {
       setUserInfos(response);
       logUser(response);
       console.log(response);
-      if (response.isDataComplete) {
+      if (response.is_data_complete) {
         navigate("/");
       } else {
         navigate("/profile-settings");
