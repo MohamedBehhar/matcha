@@ -1,29 +1,21 @@
 import { Navigate, Outlet, useLocation } from "react-router-dom";
-import { useEffect, useState } from "react";
-import { getUser } from "@/api/methods/user";
+import CompleteProfile from "@/pages/completeProfile";
+import useUserStore from "@/store/userStore";
+import Header from "../header";
 
 const ProtectedRoutes = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const { user } = useUserStore();
   const location = useLocation();
 
-  useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        await getUser();
-        setIsAuthenticated(true);
-      } catch (error) {
-        setIsAuthenticated(false);
-      }
-    };
-
-    checkAuth();
-  }, []);
-
-  if (isAuthenticated === null) {
-    return <p>Loading...</p>; // 👈 Show a loading state while checking auth
+  if (!user) {
+    return <Navigate to="/signin" replace state={{ from: location }} />;
   }
 
-  return isAuthenticated ? <Outlet /> : <Navigate to="/signin" state={{ from: location }} />;
+  if (!user.is_data_complete) {
+    return <CompleteProfile />;
+  }
+
+  return <Outlet />;
 };
 
 export default ProtectedRoutes;

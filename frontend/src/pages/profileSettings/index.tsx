@@ -1,10 +1,9 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import MySelect from "@/components/ui/MySelect";
 import { getInterests } from "@/api/methods/interest";
 import { MdOutlineDeleteForever } from "react-icons/md";
-import { FaRegEdit } from "react-icons/fa";
 import {
   updateUser,
   getUserById,
@@ -17,10 +16,8 @@ import userImg from "@/assets/images/user.png";
 import { FaRegStar } from "react-icons/fa6";
 import toast from "react-hot-toast";
 import { Textarea } from "@/components/ui/textArea";
-import { s } from "node_modules/vite/dist/node/types.d-aGj9QkWt";
 import { set } from "date-fns";
 import useUserStore from "@/store/userStore";
-import { se } from "date-fns/locale";
 
 function ProfileSetting() {
   const [interests, setInterests] = useState([]);

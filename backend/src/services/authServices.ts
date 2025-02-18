@@ -199,10 +199,8 @@ class AuthServices {
     try {
       const body = signUpType.validate(data);
       const hashedPassword = await bcrypt.hash(body.password, 10);
-      const age = await this.calculateAge(new Date(body.date_of_birth));
       const newUser = await orm.create("users", {
         ...body,
-        age,
         password: hashedPassword,
         is_verified: false,
       });
@@ -254,8 +252,8 @@ class AuthServices {
     if (false == user.is_verified) {
       throw new ForbiddenError("Account not verified");
     }
-    // const isMatch = await bcrypt.compare(data.password, user.password);
-    const isMatch = data.password === user.password;
+    const isMatch = await bcrypt.compare(data.password, user.password);
+    // const isMatch = data.password === user.password;
     if (!isMatch) {
       throw new UnauthorizedError("Invalid password");
     }
