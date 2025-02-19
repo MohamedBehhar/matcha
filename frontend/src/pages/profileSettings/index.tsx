@@ -192,7 +192,6 @@ function ProfileSetting() {
       <div className="flex items-center justify-center  mb-2 rounded-full w-[200px]">
         {profilePicture ? (
           <div className="relative">
-            {loading && <p>Loading...</p>} {/* Placeholder while loading */}
             <img
               src={
                 profilePicture instanceof File
@@ -205,7 +204,6 @@ function ProfileSetting() {
                 e.currentTarget.onerror = null;
                 e.currentTarget.src = userImg;
               }}
-              onLoad={() => setLoading(false)} // Hide loader when image loads
             />
           </div>
         ) : (
