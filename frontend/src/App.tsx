@@ -19,7 +19,7 @@ function App() {
     getUserInfos();
   }, [setUserInfos]);
   return (
-    <main className=" flex flex-col">
+    <main className=" flex ">
       <Toaster />
       <Header />
 

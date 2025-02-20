@@ -118,9 +118,9 @@ export default function Header() {
   return (
     <>
       {user.id ? (
-        <header className=" container relative ">
-          <nav className="flex flex-col absolute left-0 top-5  container h-full ">
-            <ul className="flex flex-col gap-5 [&>*:hover]:text-primary [&>*]:transition-colors font-semibold w-fit items-center text-gray-300">
+        <header className="  relative w-[70px]  h-screen  ">
+          <nav className="flex flex-col absolute left-0 top-5  w-full h-full ">
+            <ul className="flex flex-col gap-5 [&>*:hover]:text-primary [&>*]:transition-colors font-semibold  items-center text-gray-300">
               <li>
                 <Link
                   to="/profile"

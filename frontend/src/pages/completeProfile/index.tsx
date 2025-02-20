@@ -129,9 +129,7 @@ const Step3 = ({ user, setUserInfos, incrementStep }: StepProps) => (
     <div className="w-full flex flex-col justify-center items-center gap-10">
       <RadioGroup
         defaultValue={user.sexual_preference}
-        onChange={(value) =>
-          setUserInfos({ ...user, sexual_preference: value })
-        }
+        onChange={(e: any) => console.log(e.target.value)}
         className="flex flex-col gap-4"
       >
         <div className="flex items-center space-x-2">
@@ -290,6 +288,7 @@ const CompleteProfile = () => {
         <h1 className="text-3xl font-bold text-gray-400">
           {stepTitle[step - 1]}
         </h1>
+        {user.sexual_preference}
         <div className="h-[200px] w-full flex items-center justify-center">
           <AnimatePresence mode="wait">
             {step === 1 && (

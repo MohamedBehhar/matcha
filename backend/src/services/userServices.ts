@@ -62,7 +62,18 @@ class UserService {
   public async update(data: any, id: string) {
     const body = updateUserDto.validate(data);
     const age = await authServices.calculateAge(new Date(body.date_of_birth));
-    return await orm.update("users", id, { ...body, age });
+    if (
+      body.date_of_birth &&
+      body.gender &&
+      body.sexual_preference &&
+      body.profile_picture
+    ) {
+      return await orm.update("users", id, {
+        ...body,
+        age,
+        is_data_complete: true,
+      });
+    }
   }
 
   public async addUserImage(userId: string, file: any) {
