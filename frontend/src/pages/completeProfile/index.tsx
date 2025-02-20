@@ -15,6 +15,8 @@ import { Label } from "@/components/ui/label";
 import useUserStore from "@/store/userStore";
 import userImg from "@/assets/images/user.png";
 import { updateUser } from "@/api/methods/user";
+import { FiChevronsLeft } from "react-icons/fi";
+import { FiChevronsRight } from "react-icons/fi";
 
 // Define TypeScript interfaces
 interface User {
@@ -55,16 +57,18 @@ const AnimatedStep = ({ children }: { children: React.ReactNode }) => (
 
 const NextButton = ({ incrementStep }: { incrementStep: () => void }) => {
   return (
-    <AnimatedStep>
-      <Button
-        Button
-        type="button"
-        onClick={incrementStep}
-        className="absolute right-4 bottom-4"
-      >
-        <FaAngleDoubleRight size={24} />
-      </Button>
-    </AnimatedStep>
+    <motion.button
+      type="button"
+      initial={{ opacity: 0, x: -20 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: 20 }}
+      transition={{ duration: 0.3 }}
+      Button
+      onClick={incrementStep}
+      className="justify-self-end"
+    >
+      <FiChevronsRight size={24} />
+    </motion.button>
   );
 };
 
@@ -87,7 +91,6 @@ const Step1 = ({ birthDate, setBirthDate, incrementStep }: Step1Props) => {
           onChange={(e) => setBirthDate(e.target.value)}
         />
       </div>
-      {birthDate && NextButton({ incrementStep })}
     </AnimatedStep>
   );
 };
@@ -96,9 +99,6 @@ const Step1 = ({ birthDate, setBirthDate, incrementStep }: Step1Props) => {
 const Step2 = ({ user, setUserInfos, incrementStep }: StepProps) => (
   <AnimatedStep>
     <div className="w-full flex flex-col justify-center items-center gap-10">
-      <h1 className="text-3xl font-bold text-grey-secondary">
-        Select Your Gender
-      </h1>
       <div className="flex justify-center gap-4">
         <Button
           className={`w-36 h-36 hover:scale-110 ease-linear flex flex-col gap-2 ${
@@ -127,14 +127,12 @@ const Step2 = ({ user, setUserInfos, incrementStep }: StepProps) => (
 const Step3 = ({ user, setUserInfos, incrementStep }: StepProps) => (
   <AnimatedStep>
     <div className="w-full flex flex-col justify-center items-center gap-10">
-      <h1 className="text-3xl font-bold" style={{ color: "#333" }}>
-        Interested In
-      </h1>
       <RadioGroup
         defaultValue={user.sexual_preference}
         onChange={(value) =>
           setUserInfos({ ...user, sexual_preference: value })
         }
+        className="flex flex-col gap-4"
       >
         <div className="flex items-center space-x-2">
           <RadioGroupItem value="heterosexual" id="r1" />
@@ -193,7 +191,6 @@ const Step5 = ({ profilePicture, setProfilePicture }: Step5Props) => {
   return (
     <AnimatedStep>
       <div className="w-full flex justify-center items-center flex-col gap-4">
-        <h1 className="text-3xl font-bold mb-4">Add a profile picture</h1>
         <div className="flex items-center justify-center mb-2 rounded-full w-[200px]">
           {profilePicture ? (
             <div className="relative">
@@ -230,44 +227,6 @@ const Step5 = ({ profilePicture, setProfilePicture }: Step5Props) => {
   );
 };
 
-// Confirmation Step
-const ConfirmationStep = ({
-  user,
-  birthDate,
-  profilePicture,
-}: {
-  user: User;
-  birthDate: string;
-  profilePicture: File | null;
-}) => (
-  <AnimatedStep>
-    <div className="w-full flex flex-col items-center gap-4">
-      <h1 className="text-3xl font-bold">Confirm Your Details</h1>
-      <div className="text-left">
-        <p>
-          <strong>Birthdate:</strong> {birthDate}
-        </p>
-        <p>
-          <strong>Gender:</strong> {user.gender}
-        </p>
-        <p>
-          <strong>Interested In:</strong> {user.sexual_preference}
-        </p>
-        <p>
-          <strong>Bio:</strong> {user.bio}
-        </p>
-        {profilePicture && (
-          <img
-            src={URL.createObjectURL(profilePicture)}
-            alt="profile"
-            className="w-24 h-24 rounded-full mt-2"
-          />
-        )}
-      </div>
-    </div>
-  </AnimatedStep>
-);
-
 // Progress Indicator
 const ProgressIndicator = ({ step }: { step: number }) => (
   <div className="flex gap-2 mb-6">
@@ -300,8 +259,10 @@ const CompleteProfile = () => {
     formData.append("sexual_preference", user.sexual_preference || "");
     formData.append("bio", user.bio || "");
     if (profilePicture instanceof File) {
-      formData.append("profilePicture", profilePicture);
+      formData.append("profile_picture", profilePicture);
     }
+
+    console.log(formData);
 
     try {
       const response = await updateUser(formData, user.id + "");
@@ -312,86 +273,85 @@ const CompleteProfile = () => {
       alert("An error occurred. Please try again later.");
     }
   };
+  const stepTitle = [
+    "Select your birthdate",
+    "Indicate your gender",
+    "Select your sexual preference",
+    "Add a bio",
+    "Upload a profile picture",
+  ];
 
   return (
-    <div>
+    <div className="h-screen flex justify-center ">
       <form
-        className="container flex flex-col items-center pt-10 h-screen gap-6 relative border"
+        className=" flex flex-col items-center pt-10  gap-6 relative  min-w-[400px]"
         onSubmit={handleSubmit}
       >
-        {/* <ProgressIndicator step={step} /> */}
-        <AnimatePresence mode="wait">
-          {step === 1 && (
-            <>
-              <Step1
-                birthDate={birthDate}
-                setBirthDate={setBirthDate}
+        <h1 className="text-3xl font-bold text-gray-400">
+          {stepTitle[step - 1]}
+        </h1>
+        <div className="h-[200px] w-full flex items-center justify-center">
+          <AnimatePresence mode="wait">
+            {step === 1 && (
+              <>
+                <Step1
+                  birthDate={birthDate}
+                  setBirthDate={setBirthDate}
+                  incrementStep={incrementStep}
+                />
+              </>
+            )}
+            {step === 2 && (
+              <Step2
+                user={user}
+                setUserInfos={setUserInfos}
                 incrementStep={incrementStep}
               />
-              <Button
-                type="button"
-                onClick={incrementStep}
-                className="absolute right-4 bottom-4"
-              >
-                <FaAngleDoubleRight size={24} />
-              </Button>
-            </>
-          )}
-          {step === 2 && (
-            <Step2
-              user={user}
-              setUserInfos={setUserInfos}
-              incrementStep={incrementStep}
-            />
-          )}
-          {step === 3 && (
-            <Step3
-              user={user}
-              setUserInfos={setUserInfos}
-              incrementStep={incrementStep}
-            />
-          )}
-          {step === 4 && (
-            <Step4
-              user={user}
-              setUserInfos={setUserInfos}
-              incrementStep={incrementStep}
-            />
-          )}
-          {step === 5 && (
-            <Step5
-              profilePicture={profilePicture}
-              setProfilePicture={setProfilePicture}
-            />
-          )}
-          {/* {step === 6 && (
-            <ConfirmationStep
-              user={user}
-              birthDate={birthDate}
-              profilePicture={profilePicture}
-            />
-          )} */}
-        </AnimatePresence>
-
-        {/* Navigation Buttons */}
-        <div className="flex gap-4 mt-4">
-          {step > 1 && step < 6 && (
-            <Button type="button" onClick={decrementStep}>
-              Back
-            </Button>
-          )}
-          {step < 5 ? (
-            <Button type="button" onClick={incrementStep}>
-              Next
-            </Button>
-          ) : step === 5 ? (
-            <Button type="button" onClick={incrementStep}>
-              Review
-            </Button>
-          ) : (
-            <Button type="submit">Finish</Button>
-          )}
+            )}
+            {step === 3 && (
+              <Step3
+                user={user}
+                setUserInfos={setUserInfos}
+                incrementStep={incrementStep}
+              />
+            )}
+            {step === 4 && (
+              <Step4
+                user={user}
+                setUserInfos={setUserInfos}
+                incrementStep={incrementStep}
+              />
+            )}
+            {step === 5 && (
+              <Step5
+                profilePicture={profilePicture}
+                setProfilePicture={setProfilePicture}
+              />
+            )}
+          </AnimatePresence>
         </div>
+        <div className="grid grid-cols-2  text-gray-300  w-full">
+          {step > 1 && (
+            <motion.button
+              type="button"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
+              transition={{ duration: 0.3 }}
+              Button
+              onClick={decrementStep}
+              className="justify-self-start"
+            >
+              <FiChevronsLeft size={24} />
+            </motion.button>
+          )}
+          {step < 5 && <NextButton incrementStep={incrementStep} />}
+        </div>
+        {profilePicture && (
+          <Button type="submit" className="items">
+            Submit
+          </Button>
+        )}
       </form>
     </div>
   );
