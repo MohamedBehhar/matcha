@@ -10,10 +10,10 @@ const ProtectedRoutes = () => {
   if (!user) {
     return <Navigate to="/signin" replace state={{ from: location }} />;
   }
-
-  if (!user.is_data_complete) {
-    return <CompleteProfile />;
-  }
+  // alert('hhhhh ' + user.is_data_complete);
+  // if (!user.is_data_complete) {
+  //   return <CompleteProfile />;
+  // }
 
   return <Outlet />;
 };

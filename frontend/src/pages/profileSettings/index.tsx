@@ -186,8 +186,7 @@ function ProfileSetting() {
   const [loading, setLoading] = useState(true);
 
   return (
-    <div className="container flex flex-col items-center justify-center">
-      <h1 className="text-3xl font-bold text-center my-5">Profile Setting</h1>
+    <div className="container flex flex-col items-center mt-5">
       {error && <div className="text-red-500 text-sm">{error}</div>}
       <div className="flex items-center justify-center  mb-2 rounded-full w-[200px]">
         {profilePicture ? (
@@ -228,7 +227,7 @@ function ProfileSetting() {
         <FaRegStar />
       </div>
       <form
-        className="w-full max-w-[800px] border p-4 rounded-md"
+        className="w-full max-w-[800px]  p-4 rounded-md"
         onSubmit={handleSubmit}
       >
         <div className="grid md:grid-cols-3 sm:grid-cols-2 gap-5 w-full mb-4">
