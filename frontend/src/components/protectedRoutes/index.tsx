@@ -7,6 +7,8 @@ const ProtectedRoutes = () => {
   const { user } = useUserStore();
   const location = useLocation();
 
+  console.log(user);
+
   if (!user) {
     return <Navigate to="/signin" replace state={{ from: location }} />;
   }
