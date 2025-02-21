@@ -2,19 +2,32 @@ import React from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import SignupImg from "@/assets/images/signupImg.svg?react";
-import PeopleAround from "@/assets/images/people-around.svg?react";
 import { signIn, forgotPassword } from "@/api/methods/auth";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
 import useUserStore from "@/store/userStore";
+import { useEffect } from "react";
+import HeartLoader from "@/components/HeartLoader";
+
 function index() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [email, setEmail] = useState("");
+  const [showSignin, setShowSignin] = useState(false);
   const setUserInfos = useUserStore((state) => state.setUserInfos);
   const logUser = useUserStore((state) => state.logUser);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowSignin(true);
+    }, 1000); // Show the sign-in form after 2 seconds
+
+    return () => clearTimeout(timer);
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
@@ -29,7 +42,6 @@ function index() {
       localStorage.setItem("id", response.id);
       setUserInfos(response);
       logUser(response);
-      console.log(response);
       if (response.is_data_complete) {
         navigate("/");
       } else {
@@ -44,7 +56,6 @@ function index() {
   const handleForgotPassword = async () => {
     try {
       await forgotPassword(email);
-      // redirect to forgot password page
       navigate("/forgot-password");
     } catch (error) {
       console.log(error);
@@ -52,51 +63,64 @@ function index() {
   };
 
   return (
-    <div className="container flex flex-col items-center justify-center h-screen ">
-      {error && <div className="text-red-500 text-sm">{error}</div>}
-      <div className="flex items-center w-full p-4  rounded-md">
-        <SignupImg className="flex-1 fill-red-primary" />
-        <form onSubmit={handleSubmit} className="flex-1">
-          <Input
-            name="email"
-            type="email"
-            placeholder="Email"
-            className="mb-4"
-            onChange={(e) => setEmail(e.target.value)}
-          />
+    <div className="container flex flex-col items-center justify-center h-screen">
+      {!showSignin ? (
+        <HeartLoader />
+      ) : (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5 }}
+          exit={{ opacity: 0 }}
+          className="container flex flex-col items-center justify-center h-screen"
+        >
+          {error && <div className="text-red-500 text-sm">{error}</div>}
+          <div className="flex items-center w-full p-4 rounded-md">
+            <SignupImg className="flex-1 fill-red-primary" />
+            <form onSubmit={handleSubmit} className="flex-1">
+              <Input
+                name="email"
+                type="email"
+                placeholder="Email"
+                className="mb-4"
+                onChange={(e) => setEmail(e.target.value)}
+              />
 
-          <Input
-            name="password"
-            type="password"
-            placeholder="Password"
-            className=""
-          />
-          <button
-            type="button"
-            className="mb-4 text-red-primary text-sm bg-transparent p-0 hover:none"
-            onClick={handleForgotPassword}
-          >
-            Forgot Password?
-          </button>
-          <Button type="submit" className="w-full bg-red-primary text-white">
-            {isLoading ? "Loading..." : "Sign In"}
+              <Input name="password" type="password" placeholder="Password" />
+              <button
+                type="button"
+                className="mb-4 text-red-primary text-sm bg-transparent p-0 hover:none"
+                onClick={handleForgotPassword}
+              >
+                Forgot Password?
+              </button>
+              <Button
+                type="submit"
+                className="w-full bg-red-primary text-white"
+              >
+                {isLoading ? "Loading..." : "Sign In"}
+              </Button>
+            </form>
+          </div>
+          <div>
+            <p>
+              Don't have an account?{" "}
+              <Link to="/signup" className="text-red-primary">
+                Sign Up
+              </Link>
+            </p>
+          </div>
+
+          <Button className="mt-4 bg-red-primary text-white">
+            <a
+              href="http://localhost:3000/api/auth/google"
+              style={{ color: "white", textDecoration: "none" }}
+            >
+              Sign In with Google
+            </a>
           </Button>
-        </form>
-      </div>
-      <div>
-        <p>
-          Don't have an account?{" "}
-          <Link to="/signup" className="text-red-primary">
-            Sign Up
-          </Link>
-        </p>
-      </div>
-
-      <Button className="mt-4 bg-red-primary text-white">
-      <a href="http://localhost:3000/api/auth/google" style={{ color: "white", textDecoration: "none" }}>
-        Sign In with Google
-      </a>
-    </Button>
+        </motion.div>
+      )}
     </div>
   );
 }
