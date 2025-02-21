@@ -1,6 +1,4 @@
-import axios from "axios";
 import instance from "../axios";
-import { tr } from "date-fns/locale";
 
 const getUser = async () => {
   try {

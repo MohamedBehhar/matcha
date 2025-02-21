@@ -12,7 +12,7 @@ const signUp = async (signUpInput: SignUpInput) => {
     return response.data;
   } catch (error) {
     throw error;
-  }
+  } 
 };
 
 const signIn = async (signInInput: signInInput) => {
@@ -23,7 +23,7 @@ const signIn = async (signInInput: signInInput) => {
     return response.data;
   } catch (error) {
     throw error;
-  }
+  } 
 };
 
 const verifyEmail = async (token: string) => {
