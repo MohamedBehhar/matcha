@@ -1,6 +1,4 @@
-import axios from "axios";
 import instance from "../axios";
-import { tr } from "date-fns/locale";
 
 const getUser = async () => {
   try {
@@ -20,7 +18,7 @@ const updateUser = async (formData: FormData, id: string) => {
   }
 };
 
-const getUserById = async (id: string) => {
+const getUserById = async (id: number) => {
   try {
     const response = await instance.get(`/user/${id}`);
     return response.data;
@@ -29,7 +27,7 @@ const getUserById = async (id: string) => {
   }
 };
 
-const updateUserLocation = async (id: string | null, data: any) => {
+const updateUserLocation = async (id: number | null, data: any) => {
   if (!id) return;
   try {
     const response = await instance.patch(`/user/${id}/location`, data);

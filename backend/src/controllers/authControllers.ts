@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from "express"; 
+import { Request, Response, NextFunction } from "express";
 import authServices from "../services/authServices";
 import {
   RefreshTYPE,
@@ -28,26 +28,16 @@ class AuthControllers {
   @handleResponse()
   public async signIn(req: Request, res: Response) {
     const body: signInInput = signInType.validate(req.body);
-    const user = await authServices.singIn(body);
+    const user = await authServices.singIn(body, res);
     return user as unknown as void;
   }
-  @handleResponse()
-  public async logout(req: Request, res: Response) {
-    const body: {
-      refresh_token: string | undefined;
-    } = RefreshTYPE.validate(req.body);
-    if (!body.refresh_token) throw new Error("Invalid token");
-    await authServices.logout(body.refresh_token);
-    return { message: "Logout successful" } as unknown as void;
+
+  public async logout(req: Request, res: Response, next: NextFunction) {
+    return await authServices.logout(req, res, next);
   }
-  @handleResponse()
-  public async refresh(req: Request, res: Response) {
-    const body: {
-      refresh_token: string | undefined;
-    } = RefreshTYPE.validate(req.body);
-    if (!body.refresh_token) throw new Error("Invalid token");
-    const user = await authServices.refresh(body.refresh_token);
-    return user as unknown as void;
+  // @handleResponse()
+  public async refresh(req: Request, res: Response, next: NextFunction) {
+    await authServices.refresh(req, res, next);
   }
 
   @handleResponse()
@@ -56,7 +46,7 @@ class AuthControllers {
       token: string | undefined;
     } = verifyTokenType.validate(req.params);
     if (!body.token) throw new Error("Invalid token");
-    const user = await authServices.verifyEmail(body.token);
+    const user = await authServices.verifyEmail(body.token, res);
     return user as unknown as void;
   }
 
@@ -67,7 +57,7 @@ class AuthControllers {
     } = forgotPasswordType.validate(req.body);
     if (!body.email) throw new Error("Invalid email");
     const user = await authServices.forgotPassword(body.email);
-    console.log('- - - user: ',user);
+    console.log("- - - user: ", user);
     return user as unknown as void;
   }
 
@@ -78,20 +68,21 @@ class AuthControllers {
       password: string | undefined;
     } = resetPasswordType.validate(req.body);
     console.log(body);
-    if (!body.token || !body.password) throw new Error("Invalid token or password");
+    if (!body.token || !body.password)
+      throw new Error("Invalid token or password");
     const user = await authServices.resetPassword(body.token, body.password);
     return user as unknown as void;
   }
 
-    // Google OAuth Login
-    public googleLogin(req: Request, res: Response, next: NextFunction) {
-      authServices.googleLogin()(req, res, next);
-    }
-  
-    // Google OAuth Callback
-    public googleCallback(req: Request, res: Response, next: NextFunction) {
-      authServices.googleCallback()(req, res, next);
-    }
+  // Google OAuth Login
+  public googleLogin(req: Request, res: Response, next: NextFunction) {
+    authServices.googleLogin()(req, res, next);
+  }
+
+  // Google OAuth Callback
+  public googleCallback(req: Request, res: Response, next: NextFunction) {
+    return authServices.googleCallback(req, res, next);
+  }
 }
 
 export default new AuthControllers();

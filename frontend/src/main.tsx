@@ -10,6 +10,6 @@ body.classList.add(theme);
 
 createRoot(document.getElementById("root")!).render(
   // <StrictMode>
-    <RouterProvider />
+  <RouterProvider />
   // </StrictMode>
 );

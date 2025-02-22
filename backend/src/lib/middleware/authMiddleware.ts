@@ -9,25 +9,56 @@ const authMiddleware = async (
   next: NextFunction
 ) => {
   try {
-    console.log("- - - - -  - - - -authMiddleware- - - -  -- - - -");
-    const authHeader = req.headers.authorization as string;
+    console.log("---- Auth Middleware ----");
 
-    const token = authHeader.split(" ")[1].trim();
-    console.log("token", token, typeof token);
-    if (token == 'null' || token == 'undefined') {
-        console.log("- - - - - - - - no token");
-      throw new ForbiddenError("Forbidden");
+    let accessToken = req.cookies?.access_token;
+    const refreshToken = req.cookies?.refresh_token; // ✅ Get refresh token
+
+    console.log("Cookies:", req.cookies);
+
+    if (!accessToken) {
+      console.log("No access token found, trying refresh token...");
+
+      if (!refreshToken) {
+        console.log("No refresh token found.");
+        throw new ForbiddenError("Forbidden");
+      }
+
+      const email = await authServices.verifyToken(
+        refreshToken,
+        env.JWT_SECRET as string,
+        "refresh"
+      );
+
+      if (!email) {
+        console.log("Invalid refresh token.");
+        throw new UnauthorizedError("Unauthorized");
+      }
+
+      console.log("Refresh token is valid. Generating new access token...");
+      const tokens = await authServices.createTokens(email);
+
+      res.cookie("access_token", tokens.access_token, {
+        httpOnly: true,
+        secure: false,
+        sameSite: "lax",
+        maxAge: 1000 * 60 * 15, // 15 minutes
+      });
+
+      accessToken = tokens.access_token; 
     }
+
     const email = await authServices.verifyToken(
-      token,
+      accessToken,
       env.JWT_SECRET as string,
       "access"
     );
+
     if (!email) {
       throw new UnauthorizedError("Unauthorized");
     }
-    req.headers.email = email;
-    next();
+
+    next(); 
   } catch (err) {
     next(err);
   }

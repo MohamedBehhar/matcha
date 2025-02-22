@@ -11,6 +11,7 @@ router.post("/logout", AuthControllers.logout);
 router.get("/verify/:token?", AuthControllers.verifyEmail);
 router.post("/forgot-password", AuthControllers.forgotPassword);
 router.post("/reset-password", AuthControllers.resetPassword);
+router.post('/logout', AuthControllers.logout);
 
 router.get("/google", AuthControllers.googleLogin); // Initiate Google OAuth
 router.get("/google/callback", AuthControllers.googleCallback); // Handle Google OAuth callback

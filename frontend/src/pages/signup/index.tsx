@@ -68,7 +68,7 @@ function index() {
             placeholder="Password"
             className="mb-4"
           />
-          <input
+          {/* <input
             type="date"
             id="date_of_birth"
             name="date_of_birth"
@@ -80,7 +80,7 @@ function index() {
             }
             className="w-full p-2 border rounded-md bg-transparent padding-2 mb-4"
             onChange={(e) => setBirthDate(e.target.value)}
-          />{" "}
+          />{" "} */}
           <Button type="submit" className="w-full bg-red-primary text-white">
             {isLoading ? "Loading..." : "Sign Up"}
           </Button>

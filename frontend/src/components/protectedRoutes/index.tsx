@@ -1,29 +1,23 @@
 import { Navigate, Outlet, useLocation } from "react-router-dom";
-import { jwtDecode } from "jwt-decode";
-import { getUser } from "@/api/methods/user";
+import CompleteProfile from "@/pages/completeProfile";
+import useUserStore from "@/store/userStore";
+import Header from "../header";
 
 const ProtectedRoutes = () => {
-  try{
-  const token = localStorage.getItem("access_token");
-  if (token === null) {
-    return <Navigate to="/" />;
-  }
-  const decoded = jwtDecode(token);
-  const isExpired = decoded.exp * 1000 < Date.now();
-
-  if (isExpired) {
-    getUser();
-  }
-
+  const { user } = useUserStore();
   const location = useLocation();
-  if (token !== "undefined" && token !== null) {
-    return <Outlet />;
-  }
 
-  return <Navigate to="/signin" state={{ from: location }} />;
-  } catch (error) {
-    return <Navigate to="/signin" />;
+  console.log(user);
+
+  if (!user) {
+    return <Navigate to="/signin" replace state={{ from: location }} />;
   }
+  // alert('hhhhh ' + user.is_data_complete);
+  // if (!user.is_data_complete) {
+  //   return <CompleteProfile />;
+  // }
+
+  return <Outlet />;
 };
 
 export default ProtectedRoutes;

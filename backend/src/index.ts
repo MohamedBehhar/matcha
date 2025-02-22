@@ -18,30 +18,38 @@ import notificationsServices from "./services/notificationsServices";
 import { addSocketIdToRedis, deleteSocketIdFromRedis } from "./utils/redis";
 import session from "express-session";
 import passport from "passport";
+import cookieParser from "cookie-parser";
 
 const PORT = 3000;
 const app = express();
 const server = http.createServer(app);
 const upload = multer();
 
-app.use(cors());
+app.use(
+  cors({
+    origin: "http://localhost:5173", // ✅ Replace with your frontend URL
+    credentials: true, // ✅ Required for cookies
+  })
+);
+app.use(cookieParser());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-app.use(session({
-  secret: 'secret',
-  resave: false,
-  saveUninitialized: true,
-}));
+app.use(
+  session({
+    secret: "secret",
+    resave: false,
+    saveUninitialized: true,
+  })
+);
 
 // Initialize Passport
 app.use(passport.initialize());
 app.use(passport.session());
 
-
 const userMap = new Map<string, string>();
 
-app.use(express.static(path.join(__dirname, '../public')))
+app.use(express.static(path.join(__dirname, "../public")));
 pool
   .connect()
   .then(() => {
@@ -51,7 +59,7 @@ pool
     console.log("test", err);
   });
 app.use("/api/auth", authRoutes);
-// app.use(authMiddleware);
+app.use(authMiddleware);
 app.use("/api/user", userRoutes);
 app.use("/api/interests", interstsRoutes);
 app.use("/api/interactions", usersInteractionsRoutes);
@@ -64,7 +72,7 @@ const socket = new Server(server, {
 });
 
 socket.on("connection", (socket) => {
-  console.log("a user connected", socket.id );
+  console.log("a user connected", socket.id);
   socket.on("disconnect", () => {
     deleteSocketIdFromRedis(socket.id);
   });

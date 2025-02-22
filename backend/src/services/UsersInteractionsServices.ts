@@ -161,6 +161,8 @@ class UsersInteractionsServices {
       where: { id: user_id },
     });
 
+    console.log("User's sexual preference:", user);
+
     const query = `
     SELECT 
         u.id, 

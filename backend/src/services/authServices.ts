@@ -20,7 +20,7 @@ import {
 
 import passport from "passport";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
-
+import { Response, NextFunction, Request } from "express";
 
 class AuthServices {
   constructor() {
@@ -31,15 +31,15 @@ class AuthServices {
     this.verifyEmail = this.verifyEmail.bind(this);
     this.configureGoogleStrategy();
   }
-  private accessTokenMaxAge = 60 * 30;
-  private refreshTokenMaxAge = 60 * 60;
+  private accessTokenMaxAge = 1000 * 60 * 10;
+  private refreshTokenMaxAge = 1000 * 60 * 30;
 
   private configureGoogleStrategy() {
     passport.use(
       new GoogleStrategy(
         {
-          clientID: GOOGLE_CLIENT_ID,
-          clientSecret: GOOGLE_CLIENT_SECRET,
+          clientID: process.env.GOOGLE_CLIENT_ID as string,
+          clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
           callbackURL: "http://localhost:3000/api/auth/google/callback",
         },
         async (accessToken, refreshToken, profile, cb) => {
@@ -54,14 +54,15 @@ class AuthServices {
     );
 
     passport.serializeUser((user: any, cb) => {
-      cb(null, user.email);
+      cb(null, user.google_id);
     });
 
-    passport.deserializeUser(async (googleId: string, cb) => {
+    passport.deserializeUser(async (google_id: string, cb) => {
       try {
-        const user = await this.findUserByGoogleId(googleId);
+        const user = await this.findUserByGoogleId(google_id);
         cb(null, user);
       } catch (err) {
+        console.log(err);
         cb(err);
       }
     });
@@ -70,25 +71,39 @@ class AuthServices {
   // Find or create a user using Google profile
   public async findOrCreateUser(profile: any): Promise<User> {
     const user = await orm.findOne("users", {
-      where: { googleId: profile.id },
+      where: { google_id: profile.id },
     });
     if (user) {
       return user;
     } else {
+      const emailExists = await orm.findOne("users", {
+        where: { email: profile.emails?.[0].value },
+      });
+      if (emailExists) {
+        throw new ConflictError("Email already exists");
+      }
       const newUser = await orm.create("users", {
-        googleId: profile.id,
+        google_id: profile.id,
         email: profile.emails?.[0].value,
-        displayName: profile.displayName,
+        username: profile.displayName,
+        first_name: profile.name?.givenName,
+        last_name: profile.name?.familyName,
         is_verified: true,
         is_authenticated: true,
+        auth_provider: "google",
+        password: null,
       });
-      return newUser;
+      const tokens = await this.createTokens(newUser.email as string);
+      return {
+        ...newUser,
+        ...tokens,
+      };
     }
   }
 
   // Find a user by Google ID
-  public async findUserByGoogleId(googleId: string): Promise<User | null> {
-    return await orm.findOne("users", { where: { googleId } });
+  public async findUserByGoogleId(google_id: string): Promise<User | null> {
+    return await orm.findOne("users", { where: { google_id } });
   }
 
   // Google OAuth Login
@@ -97,31 +112,50 @@ class AuthServices {
   }
 
   // Google OAuth Callback
-  public googleCallback() {
-    return passport.authenticate("google", {
-      failureRedirect: "/login",
-      successRedirect: "http://localhost:5173",
-    });
+  public googleCallback(req: Request, res: Response, next: NextFunction) {
+    return passport.authenticate("google", async (err: any, user: any) => {
+      if (err || !user) {
+        return res.redirect(
+          "http://localhost:5173/login?error=Authentication failed"
+        );
+      }
+
+      try {
+        const tokens = await this.createTokens(user.email as string);
+
+        res.cookie("access_token", tokens.access_token, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: "strict",
+          maxAge: 1000 * 60 * 60 * 24,
+        });
+
+        res.redirect("http://localhost:5173");
+      } catch (error) {
+        res.redirect(
+          "http://localhost:5173/login?error=Token generation failed"
+        );
+      }
+    })(req, res, next);
   }
 
-  public async createTokens(user: User): Promise<Tokens> {
-    console.log("createTokens=> ", process.env.JWT_SECRET);
+  public async createTokens(email: string): Promise<Tokens> {
     const access_token = jwt.sign(
-      { email: user.email, id: user.id },
+      { email: email },
       process.env.JWT_SECRET as string,
       {
         expiresIn: this.accessTokenMaxAge,
       }
     );
     const refresh_token = jwt.sign(
-      { email: user.email, id: user.id },
+      { email: email },
       process.env.REFRESH_SECRET as string,
       {
         expiresIn: this.refreshTokenMaxAge,
       }
     );
 
-    await this.setTokensInRedis({ access_token, refresh_token }, user.email);
+    await this.setTokensInRedis({ access_token, refresh_token }, email);
 
     return { access_token, refresh_token };
   }
@@ -155,7 +189,7 @@ class AuthServices {
     }
   }
 
-  public async calculateAge(birthDate: Date): Promise<number> {
+  public calculateAge(birthDate: Date): number {
     const ageDifMs = Date.now() - birthDate.getTime();
     const ageDate = new Date(ageDifMs);
     return Math.abs(ageDate.getUTCFullYear() - 1970);
@@ -165,10 +199,8 @@ class AuthServices {
     try {
       const body = signUpType.validate(data);
       const hashedPassword = await bcrypt.hash(body.password, 10);
-      const age = await this.calculateAge(new Date(body.date_of_birth));
       const newUser = await orm.create("users", {
         ...body,
-        age,
         password: hashedPassword,
         is_verified: false,
       });
@@ -204,10 +236,13 @@ class AuthServices {
     }
   }
 
-  public async singIn(data: {
-    email: string;
-    password: string;
-  }): Promise<User | undefined> {
+  public async singIn(
+    data: {
+      email: string;
+      password: string;
+    },
+    res: Response
+  ): Promise<User | undefined> {
     console.log(data);
     const user = await orm.findOne("users", { where: { email: data.email } });
     if (!user) {
@@ -217,14 +252,26 @@ class AuthServices {
     if (false == user.is_verified) {
       throw new ForbiddenError("Account not verified");
     }
-    // const isMatch = await bcrypt.compare(data.password, user.password);
-    const isMatch = data.password === user.password;
+    const isMatch = await bcrypt.compare(data.password, user.password);
+    // const isMatch = data.password === user.password;
     if (!isMatch) {
       throw new UnauthorizedError("Invalid password");
     }
     await orm.update("users", user.id, { is_authenticated: true });
 
-    const tokens = await this.createTokens(user);
+    const tokens = await this.createTokens(user.email as string);
+    res.cookie("access_token", tokens.access_token, {
+      httpOnly: true,
+      secure: false,
+      sameSite: "lax",
+      maxAge: this.accessTokenMaxAge,
+    });
+    res.cookie("refresh_token", tokens.refresh_token, {
+      httpOnly: true,
+      secure: false,
+      sameSite: "lax",
+      maxAge: this.refreshTokenMaxAge,
+    });
 
     if (true == user.is_verified) {
       delete (user as { password?: string }).password;
@@ -235,20 +282,29 @@ class AuthServices {
     } else throw new ForbiddenError("Account not verified");
   }
 
-  public async logout(access_token: string): Promise<void> {
+  public async logout(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
     try {
-      const email = await this.verifyToken(
-        access_token,
-        process.env.JWT_SECRET as string,
-        "access"
-      );
-      if (!email) {
-        throw new UnauthorizedError("Invalid token");
-      }
-      await deleteKey(`access_token_${email}`);
-      await deleteKey(`refresh_token_${email}`);
+      res.cookie("access_token", "", {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        maxAge: 0, // ✅ Immediately expires the cookie
+      });
+
+      res.cookie("refresh_token", "", {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        maxAge: 0, // ✅ Immediately expires the cookie
+      });
+
+      res.status(200).json({ message: "Logged out successfully" });
     } catch (err) {
-      throw err;
+      next(err);
     }
   }
 
@@ -269,43 +325,61 @@ class AuthServices {
     }
   }
 
-  public async refresh(refresh_token: string): Promise<{
-    access_token: string;
-    refresh_token: string;
-  }> {
+  public async refresh(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
     try {
+      const refresh_token = req.cookies?.refresh_token;
+      if (!refresh_token) {
+        throw new ForbiddenError("No refresh token provided");
+      }
+
       const email = await this.verifyToken(
         refresh_token,
         process.env.REFRESH_SECRET as string,
         "refresh"
       );
+
       if (!email) {
         throw new ForbiddenError("Invalid token");
       }
-      if (!email) {
-        throw new UnauthorizedError("Invalid token");
-      }
+
       const user = await pool
         .query("SELECT * FROM users WHERE email = $1", [email])
-        .then((result: any) => {
-          return result.rows[0];
-        });
+        .then((result: any) => result.rows[0]);
+
       if (!user) {
         throw new NotFoundError("User not found");
       }
-      const tokens = await this.createTokens(user);
-      await this.setTokensInRedis(tokens, email);
-      return tokens;
+
+      const tokens = await this.createTokens(email);
+
+      // ✅ Set new cookies
+      res.cookie("access_token", tokens.access_token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        maxAge: this.accessTokenMaxAge,
+      });
+
+      res.json({ success: true });
     } catch (err) {
-      throw err;
+      next(err); // ✅ Pass error to global error handler
     }
   }
 
-  public async verifyEmail(token: string): Promise<verifyEmailReturn | null> {
+  public async verifyEmail(
+    token: string,
+    res: Response
+  ): Promise<verifyEmailReturn | null> {
     try {
+      console.log("- - - - - - - - - - -> ", token);
       const { email } = jwt.verify(token, process.env.JWT_SECRET as string) as {
         email: string;
       };
+      console.log("- - - - - - - - - - -> ", email);
       if (!email) {
         throw new UnauthorizedError("Invalid token");
       }
@@ -320,8 +394,20 @@ class AuthServices {
         throw new NotFoundError("User not found");
       }
       delete (user as { password?: string }).password;
-      const tokens = await this.createTokens(user);
-      await this.setTokensInRedis(tokens, email);
+      const tokens = await this.createTokens(email);
+      res.cookie("access_token", tokens.access_token, {
+        httpOnly: true,
+        secure: false,
+        sameSite: "lax",
+        maxAge: this.accessTokenMaxAge,
+      });
+
+      res.cookie("refresh_token", tokens.refresh_token, {
+        httpOnly: true,
+        secure: false,
+        sameSite: "lax",
+        maxAge: this.refreshTokenMaxAge,
+      });
 
       return {
         id: user.id,

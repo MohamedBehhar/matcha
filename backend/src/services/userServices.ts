@@ -61,7 +61,19 @@ class UserService {
 
   public async update(data: any, id: string) {
     const body = updateUserDto.validate(data);
-    return await orm.update("users", id, body);
+    const age = await authServices.calculateAge(new Date(body.date_of_birth));
+    if (
+      body.date_of_birth &&
+      body.gender &&
+      body.sexual_preference &&
+      body.profile_picture
+    ) {
+      return await orm.update("users", id, {
+        ...body,
+        age,
+        is_data_complete: true,
+      });
+    }
   }
 
   public async addUserImage(userId: string, file: any) {
@@ -163,9 +175,10 @@ class UserService {
       user.sexual_preference == null ||
       userInterests.length <= 2
     ) {
-      await orm.update("users", id, { is_required_data_filled: false });
+      await orm.update("users", id, { is_data_complete: false });
     } else {
-      await orm.update("users", id, { is_required_data_filled: true });
+      console.log("- - - - - - - - - - - - - - - - ", user);
+      await orm.update("users", id, { is_data_complete: true });
       await orm.querySql(
         `UPDATE users SET age = EXTRACT(YEAR FROM AGE(date_of_birth)) WHERE id = $1`,
         [id]

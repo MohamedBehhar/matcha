@@ -1,56 +1,32 @@
 import axios from "axios";
 
-export const getToken = () => localStorage.getItem("access_token");
-export const getrefresh_token = () => localStorage.getItem("refresh_token");
-
 const instance = axios.create({
-	baseURL: "http://localhost:3000/api",
+  baseURL: "http://localhost:3000/api",
+  withCredentials: true, // ✅ Ensures cookies are sent
 });
 
-instance.interceptors.request.use(
-	(config : any) => {
-		config.headers.Authorization = `Bearer ${getToken()}`;
-		return config;
-	},
-	(error:any) => {
-		return Promise.reject(error);
-	}
-);
-
 instance.interceptors.response.use(
-	(response :any) => {
-		return response;
-	},
-	async (error:any) => {
-		const originalRequest = error.config;
-		if (error?.response?.status === 403) {
-			localStorage.removeItem("access_token");
-			localStorage.removeItem("refresh_token");
-			localStorage.removeItem("id");
-			window.location.href = "/signin";
-		}
-		if (error?.response?.status === 401 && !originalRequest._retry) {
-			try {
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config;
 
-				const response = await instance.post("/auth/refresh",
-					{
-						refresh_token: getrefresh_token(),
-					}
-				);
-				if (!response.data.accessToken) {
-					throw new Error("No access token provided");
-				}
-				localStorage.setItem("access_token", response.data.accessToken);
-				originalRequest.headers.Authorization = `Bearer ${response.data.accessToken}`;
-				originalRequest._retry = true;
-				return axios(originalRequest);
-			} catch (refreshError) {
-				throw refreshError;
-			}
-		}
+    if (error?.response?.status === 403) {
+      window.location.href = "/signin";
+    }
 
-		return Promise.reject(error);
-	}
+    if (error?.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true; // ✅ Prevents infinite loops
+
+      try {
+        await instance.post("/auth/refresh"); // ✅ New token stored in HttpOnly cookie
+        return instance(originalRequest); // ✅ Retry failed request
+      } catch (refreshError) {
+        return Promise.reject(refreshError);
+      }
+    }
+
+    return Promise.reject(error);
+  }
 );
 
 export default instance;
