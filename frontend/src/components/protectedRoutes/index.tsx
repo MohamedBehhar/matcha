@@ -1,21 +1,31 @@
 import { Navigate, Outlet, useLocation } from "react-router-dom";
-import CompleteProfile from "@/pages/completeProfile";
 import useUserStore from "@/store/userStore";
-import Header from "../header";
+import { useEffect, useState } from "react";
 
 const ProtectedRoutes = () => {
-  const { user } = useUserStore();
+  const { user, fetchUserData } = useUserStore();
   const location = useLocation();
+  const [loading, setLoading] = useState(true);
 
-  console.log(user);
+  useEffect(() => {
+    const fetchData = async () => {
+      await fetchUserData();
+      setLoading(false);
+    };
+    fetchData();
+  }, [fetchUserData]);
 
-  if (!user) {
+  if (loading) {
+    return <div>Loading...</div>; // Add a loading state
+  }
+
+  if (!user || !user.is_authenticated) {
     return <Navigate to="/signin" replace state={{ from: location }} />;
   }
-  // alert('hhhhh ' + user.is_data_complete);
-  // if (!user.is_data_complete) {
-  //   return <CompleteProfile />;
-  // }
+
+  if (!user.is_data_complete) {
+    return <Navigate to="/complete-profile" replace />;
+  }
 
   return <Outlet />;
 };

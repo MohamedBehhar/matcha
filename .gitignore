@@ -4,3 +4,5 @@ backend/public
 */node_modules
 .codegpt
 node_modules
+
+backend/.env

@@ -22,22 +22,10 @@ import { useLocation } from "react-router-dom";
 
 export default function Header() {
   const location = useLocation();
-  const { user, setUserInfos } = useUserStore();
+  const { user } = useUserStore();
   const [notifications, setNotifications] = useState([]);
   const [notificationsCount, setNotificationsCount] = useState(0);
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const userData = await getUser();
-        setUserInfos(userData); // Set user in store
-      } catch (error) {
-        console.error("Failed to fetch user:", error);
-        toast.error("Failed to load user data.");
-      }
-    };
 
-    fetchUser();
-  }, [setUserInfos]);
 
   useEffect(() => {
     if (!user?.id) return; // Prevents API calls if user is not set
@@ -57,7 +45,7 @@ export default function Header() {
     };
 
     fetchNotificationsData();
-  }, [user.id]); // Runs only when user.id is available
+  }, [user?.id]); // Runs only when user.id is available
 
   // Socket listeners
   useEffect(() => {
@@ -86,7 +74,7 @@ export default function Header() {
       socket.off("match", handleMatch);
       socket.off("notification", handleNotification);
     };
-  }, [user.id]);
+  }, [user?.id]);
 
   // Fetch notifications and count
   const fetchNotifications = async () => {
@@ -117,7 +105,7 @@ export default function Header() {
 
   return (
     <>
-      {user.id ? (
+      {user?.id ? (
         <header className="  relative w-[70px]  h-screen  ">
           <nav className="flex flex-col absolute left-0 top-5  w-full h-full ">
             <ul className="flex flex-col gap-5 [&>*:hover]:text-primary [&>*]:transition-colors font-semibold  items-center text-gray-300">
