@@ -1,5 +1,6 @@
 import { create } from "zustand";
-import { getUser } from "@/api/methods/user"; // Ensure this function fetches the user
+import { getUser } from "@/api/methods/user";
+import { useLoadingStore } from "@/store/loadingStore"; // Import loading store
 
 type User = {
   id: number | null;
@@ -31,6 +32,9 @@ const useUserStore = create<State>((set) => ({
   setUserInfos: (user: User) => set({ user }),
 
   fetchUserData: async () => {
+    const { setLoading } = useLoadingStore.getState(); // Access loading store state
+    setLoading(true); // Start loading
+
     try {
       const user = await getUser();
       if (user) {
@@ -38,6 +42,8 @@ const useUserStore = create<State>((set) => ({
       }
     } catch (error) {
       console.error("Failed to fetch user data:", error);
+    } finally {
+      setLoading(false); // Stop loading
     }
   },
 

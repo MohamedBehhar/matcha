@@ -19,13 +19,18 @@ import { FaUserCircle } from "react-icons/fa";
 import { IoMdNotifications } from "react-icons/io";
 import { IoChatbubbleSharp } from "react-icons/io5";
 import { useLocation } from "react-router-dom";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "../ui/dropDown";
 
 export default function Header() {
   const location = useLocation();
   const { user } = useUserStore();
   const [notifications, setNotifications] = useState([]);
   const [notificationsCount, setNotificationsCount] = useState(0);
-
 
   useEffect(() => {
     if (!user?.id) return; // Prevents API calls if user is not set
@@ -111,7 +116,7 @@ export default function Header() {
             <ul className="flex flex-col gap-5 [&>*:hover]:text-primary [&>*]:transition-colors font-semibold  items-center text-gray-300">
               <li>
                 <Link
-                  to="/profile"
+                  to={`/my-profile`}
                   className={
                     location.pathname === "/profile" ? "text-red-primary" : ""
                   }
@@ -157,13 +162,38 @@ export default function Header() {
               <li>
                 <Link
                   to="/notifications"
-                  className={
-                    location.pathname === "/notifications"
-                      ? "text-red-primary scale-110"
-                      : ""
-                  }
+                  className={` relative
+                    ${
+                      location.pathname === "/notifications"
+                        ? "text-red-primary scale-110"
+                        : ""
+                    }`}
                 >
-                  <IoMdNotifications size={24} />
+                  <DropdownMenu>
+                    <DropdownMenuTrigger>
+                      <div className="flex items-center justify-center cursor-pointer relative">
+                        {notificationsCount > 0 && (
+                          <div className="circle bg-red-500 w-4 absolute top-1 left-4 aspect-square rounded-[50%]">
+                            <p className="text-xs flex justify-center items-center h-full">
+                              {notificationsCount}
+                            </p>
+                          </div>
+                        )}
+                        <IoMdNotifications size={24} />
+                      </div>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                      {notifications.length > 0 ? (
+                        notifications.map((notification) => (
+                          <DropdownMenuItem key={notification.id}>
+                            {notification.content}
+                          </DropdownMenuItem>
+                        ))
+                      ) : (
+                        <DropdownMenuItem>No notifications</DropdownMenuItem>
+                      )}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </Link>
               </li>
               <li>
@@ -192,31 +222,7 @@ export default function Header() {
             {/* <ThemeSwitcher /> */}
 
             {/* Notifications Dropdown */}
-            {/* <DropdownMenu>
-              <DropdownMenuTrigger>
-                <div className="flex items-center justify-center cursor-pointer relative">
-                  {notificationsCount > 0 && (
-                    <div className="circle bg-red-500 w-4 absolute top-1 left-4 aspect-square rounded-[50%]">
-                      <p className="text-xs flex justify-center items-center h-full">
-                        {notificationsCount}
-                      </p>
-                    </div>
-                  )}
-                  <CiBellOn size={32} />
-                </div>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                {notifications.length > 0 ? (
-                  notifications.map((notification) => (
-                    <DropdownMenuItem key={notification.id}>
-                      {notification.content}
-                    </DropdownMenuItem>
-                  ))
-                ) : (
-                  <DropdownMenuItem>No notifications</DropdownMenuItem>
-                )}
-              </DropdownMenuContent>
-            </DropdownMenu> */}
+
             {/* Logout Button */}
           </nav>
           <Toaster /> {/* Added Toaster for toast notifications */}

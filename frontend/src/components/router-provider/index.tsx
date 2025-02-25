@@ -13,6 +13,7 @@ import ResetPasswordPage from "@/pages/ResetPassword";
 import MatchMaking from "@/pages/matchMaking";
 import ForgotPasswordPage from "@/pages/forgotPassword";
 import ProfilePage from "@/pages/profile";
+import MyProfile from "@/pages/myProfile";
 import WelecomePage from "@/pages/welcome";
 import {
   createBrowserRouter,
@@ -51,6 +52,10 @@ const routes: RouteObject[] = [
     element: <WelecomePage />,
   },
   {
+    path: "complete-profile",
+    element: <CompleteProfile />,
+  },
+  {
     element: <App />,
     children: [
       {
@@ -60,10 +65,6 @@ const routes: RouteObject[] = [
           {
             path: "/home",
             element: <HomePage />,
-          },
-          {
-            path: "complete-profile",
-            element: <CompleteProfile />,
           },
           {
             path: "about",
@@ -82,8 +83,12 @@ const routes: RouteObject[] = [
             element: <MatchMaking />,
           },
           {
-            path: "profile/:userid",
+            path: "profile/:user_id",
             element: <ProfilePage />,
+          },
+          {
+            path: "my-profile",
+            element: <MyProfile />,
           },
         ],
       },

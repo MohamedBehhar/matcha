@@ -18,6 +18,7 @@ import toast from "react-hot-toast";
 import { Textarea } from "@/components/ui/textArea";
 import { set } from "date-fns";
 import useUserStore from "@/store/userStore";
+import { FaEdit } from "react-icons/fa";
 
 function ProfileSetting() {
   const [interests, setInterests] = useState([]);
@@ -191,6 +192,15 @@ function ProfileSetting() {
       <div className="flex items-center justify-center  mb-2 rounded-full w-[200px]">
         {profilePicture ? (
           <div className="relative">
+            <label className="cursor-pointer absolute right-0 top-0  rounded-full p-1">
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handelProfilePicture}
+                className="hidden"
+              />
+              <FaEdit size={20} />
+            </label>
             <img
               src={
                 profilePicture instanceof File
@@ -219,13 +229,7 @@ function ProfileSetting() {
           </label>
         )}
       </div>
-      <div className="rating mb-4 flex gap-1 items-center">
-        <FaRegStar />
-        <FaRegStar />
-        <FaRegStar />
-        <FaRegStar />
-        <FaRegStar />
-      </div>
+
       <form
         className="w-full max-w-[800px]  p-4 rounded-md"
         onSubmit={handleSubmit}

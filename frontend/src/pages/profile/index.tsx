@@ -18,19 +18,21 @@ import {
   blockAUser,
 } from "@/api/methods/interactions";
 import { socket } from "@/utils/socket";
+import useUserStore from "@/store/userStore";
 
 function index() {
-  const [user, setUser] = useState<any>(null);
+  const { user, setUserInfos } = useUserStore();
   const [userInterests, setUserInterests] = useState<any>(null);
   const [liked, setLiked] = useState(false);
   const url = window.location.href;
   const target_id = url.split("/").pop() || "";
-  const user_id = localStorage.getItem("id") || "";
+  const user_id = user?.id || "";
+  const [targetData, setTargetData] = useState<any>(null);
 
   const handelGetUserInfo = async () => {
     try {
       const data = await getUserById(target_id);
-      setUser(data);
+      setTargetData(data);
     } catch (error) {
       console.error("Error getting user:", error);
     }
@@ -45,8 +47,9 @@ function index() {
   };
 
   const handelCheckLike = async () => {
+    if (!user_id) return;
     try {
-      const response = await checkLike(user_id, target_id);
+      const response = await checkLike(user_id + "", target_id);
       console.log("response", response);
       setLiked(response.liked);
     } catch (error) {
@@ -81,7 +84,7 @@ function index() {
               className="flex gap-2"
               onClick={async () => {
                 try {
-                  await blockAUser({ user_id,  target_id });
+                  await blockAUser({ user_id, target_id });
                   handelCheckLike();
                 } catch (error) {
                   console.error("Error blocking user:", error);
@@ -152,8 +155,8 @@ function index() {
         >
           <img
             src={
-              user?.profile_picture
-                ? `http://localhost:3000/${user?.profile_picture}`
+              targetData?.profile_picture
+                ? `http://localhost:3000/${targetData?.profile_picture}`
                 : UserImg
             }
             alt="profile"
@@ -162,16 +165,16 @@ function index() {
           <div className="flex items-end justify-center gap-1 text-4xl">
             <FaRegUser />
             <p className="mb-0">
-              {user?.username + ", "} {user?.age}
+              {targetData?.username + ", "} {targetData?.age}
             </p>
           </div>
           <p className="text-gray-400">{liked ? "true" : "false"}</p>
           <div className="flex justify-center gap-1 items-center text-xl">
-            {user?.gender == "male" ? <IoMdMale /> : <IoFemale />}
-            <p>{user?.gender}</p>, <p>{user?.sexual_preference}</p>
+            {targetData?.gender == "male" ? <IoMdMale /> : <IoFemale />}
+            <p>{targetData?.gender}</p>, <p>{targetData?.sexual_preference}</p>
           </div>
           <p className="text-gray-400 border border-gray-600 rounded-md p-1 italic">
-            {user?.bio}
+            {targetData?.bio}
           </p>
           <div>
             <div className="flex flex-wrap gap-2 justify-center">
@@ -188,7 +191,7 @@ function index() {
         </div>
         <div className="activities col-span-8 ">
           <div className="flex flex-col  items-center justify-center gap-2 p-1">
-            {user?.images?.map((image: any) => (
+            {targetData?.images?.map((image: any) => (
               <img
                 src={`http://localhost:3000/${image.url}`}
                 alt="profile"
