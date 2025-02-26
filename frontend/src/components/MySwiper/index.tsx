@@ -1,7 +1,12 @@
 import { getMatches } from "@/api/methods/interactions";
 import { useEffect, useState } from "react";
 import userImg from "@/assets/images/user.png";
-import { motion, useMotionValue, useTransform } from "framer-motion";
+import {
+  motion,
+  useMotionValue,
+  useTransform,
+  AnimatePresence,
+} from "framer-motion";
 import { likeAUser, unlikeAUser } from "@/api/methods/interactions";
 import { Button } from "@/components/ui/button";
 import { getInterests } from "@/api/methods/interest";
@@ -16,6 +21,10 @@ import {
 } from "react-leaflet";
 import { getUser, updateUserLocation } from "@/api/methods/user";
 import useUserStore from "@/store/userStore";
+import { IoMdMale } from "react-icons/io";
+import { IoMdFemale } from "react-icons/io";
+import { IoMale } from "react-icons/io5";
+import { FaCircleMinus, FaCirclePlus } from "react-icons/fa6";
 
 function ZoomHandler({ zoom }: { zoom: number }) {
   const map = useMap();
@@ -78,7 +87,7 @@ function Index() {
     if (distance <= 80) return 7;
     return 6.5; // Far view
   };
-
+  const [isFocused, setIsFocused] = useState(false);
   useEffect(() => {
     setZoom(calculateZoom(distance));
   }, [distance]);
@@ -99,13 +108,21 @@ function Index() {
       console.error(error);
     }
   };
+  useEffect(() => {
+    getNewUsers();
+  }, [ageGap, distance]);
 
-  const handleDragEnd = async (id: string) => {
-    if (x.get() > 100) {
+  const handleDragEnd = async (id: string | number) => {
+    if (!id) return;
+
+    const currentX = x.get();
+
+    if (currentX > 100) {
       await likeAUser({ user_id: user?.id, liked_id: id });
-    } else if (x.get() < 100) {
+    } else if (currentX < -100) {
       await unlikeAUser({ user_id: user?.id, disliked_id: id });
     }
+
     await getNewUsers();
   };
 
@@ -123,23 +140,30 @@ function Index() {
     handleFetchData();
   }, []);
 
+  const handleIncrementAge = () => setAgeGap((prev) => Math.min(prev + 1, 100));
+  const handleDecrementAge = () => setAgeGap((prev) => Math.max(prev - 1, 0));
+
   return (
     <>
       {user && user?.location ? (
         <div className="   grid grid-cols-12 gap-3">
           <form
-            className="filters  border rounded-md w-full p-4 mx-auto mt-10  gap-4 min-h-[400px] col-span-5"
+            className="filters   rounded-md w-full p-4 mx-auto mt-10  gap-4 min-h-[400px] col-span-5"
             onSubmit={(e) => {
               e.preventDefault();
               getNewUsers();
             }}
           >
-            {user ? (
-              <div className="h-[400px] mb-2 rounded-md overflow-hidden">
+            <div className="h-[400px] flex flex-col  rounded-md overflow-hidden  ">
+              <div className="h-[80%] rounded-lg">
                 <MapContainer
                   center={position}
                   zoom={zoom}
-                  style={{ height: "100%", width: "100%" }}
+                  style={{
+                    height: "100%",
+                    width: "100%",
+                    borderRadius: "10px",
+                  }}
                 >
                   <TileLayer
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -156,33 +180,13 @@ function Index() {
                   <ZoomHandler zoom={zoom} />
                 </MapContainer>
               </div>
-            ) : (
-              <div className=" row-span-2 flex items-center justify-center flex-col gap-4  ">
-                <h1 className="text-3xl font-bold text-center">
-                  Please enable location access
-                </h1>
-                <Link to="/profile" className="text-center text-red-tertiary">
-                  Go to profile
-                </Link>
-              </div>
-            )}
-
-            <div className=" row-span-2 flex flex-col gap-2">
-              <div className="filter flex-1 border p-2 rounded-md flex items-center gap-5">
-                <label htmlFor="age-gap">Age Gap</label>
-                <input
-                  type="range"
-                  id="age-gap"
-                  min="0"
-                  max="20"
-                  value={ageGap}
-                  onChange={(e) => setAgeGap(Number(e.target.value))}
-                  className="flex-1"
-                />
-                <p>{ageGap} years</p>
-              </div>
-              <div className="filter flex-1 border p-2 rounded-md flex items-center gap-5">
-                <label htmlFor="distance">Distance</label>
+              <div className="filter flex-1  p-2 rounded-md flex items-center gap-5 w-full  mt-1">
+                <label
+                  htmlFor="distance"
+                  className="text-red-primary text-2xl font-semibold"
+                >
+                  Distance
+                </label>
                 <input
                   type="range"
                   id="distance"
@@ -194,6 +198,45 @@ function Index() {
                 />
                 <p>{distance} km</p>
               </div>
+            </div>
+
+            <div className=" row-span-2 flex flex-col gap-2 ">
+              <div className="filter flex-1  rounded-md flex items-center gap-5 ">
+                <h1 className="text-red-primary text-2xl font-semiboldy">
+                  Age gap
+                </h1>
+                <motion.button
+                  whileTap={{ scale: 0.8 }}
+                  className=" text-white p-2 rounded-full w-10 h-10 flex items-center justify-center"
+                  onClick={handleDecrementAge}
+                >
+                  <FaCircleMinus size={30} />
+                </motion.button>
+
+                {/* Animated Value */}
+                <AnimatePresence mode="popLayout">
+                  <motion.div
+                    key={ageGap}
+                    initial={{ y: -10, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    exit={{ y: 10, opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="text-2xl font-bold   "
+                  >
+                    {ageGap}
+                  </motion.div>
+                </AnimatePresence>
+
+                {/* Plus Button */}
+                <motion.button
+                  whileTap={{ scale: 0.8 }}
+                  className=" text-white p-2 rounded-full w-10 h-10 flex items-center justify-center"
+                  onClick={handleIncrementAge}
+                >
+                  <FaCirclePlus size={30} />
+                </motion.button>
+              </div>
+
               <div>
                 <h2 className="text-xl font-bold">
                   Select cummon interests to match with
@@ -241,62 +284,32 @@ function Index() {
             </div>
           </form>
 
-          <div className=" grid place-content-center  border rounded-md col-span-7 mt-10">
+          <div className=" grid place-content-center   rounded-md col-span-7 mt-10">
             {users.length > 0 &&
               users.map((user) => (
-                // <motion.div
-                //   key={user.id}
-                //   className=" card w-[400px] h-[600px] border border-white rounded-md bg-white text-gray-700 shadow-md p-5"
-                //   style={{
-                //     gridRow: 1,
-                //     gridColumn: 1,
-                //     opacity: opacity,
-                //     x,
-                //     rotate,
-                //   }}
-                //   drag="x"
-                //   dragConstraints={{ left: 0, right: 0 }}
-                //   onDragEnd={() => handleDragEnd(user.id)}
-                // >
-                //   <Link to={`/profile/${user.id}`} key={user.id}>
-                //     <img
-                //       src={`http://localhost:3000/${user.profile_picture}`}
-                //       alt="profile"
-                //       className={`w-full  object-cover rounded-full aspect-square `} // Apply blur directly to the front card
-                //       onError={(e: any) => {
-                //         console.log(e);
-                //         e.target.onerror = null;
-                //         e.target.src = userImg;
-                //       }}
-                //     />
-                //     <div className="info p-1">
-                //       <h1 className="text-xl font-semibold text-center">
-                //         {user.username}, {user.age}, {user.gender}
-                //       </h1>
-                //       <p className="text-xl text-center ">
-                //         Distance: {user.distance} km
-                //       </p>
-                //       <p className="text-sm text-center truncate">{user.bio}</p>
-                //     </div>
-                //   </Link>
-                // </motion.div>
-                <div
+                <motion.div
                   key={user.id}
-                  className=" card w-[400px] h-[600px]  rounded-lg  
-               text-gray-700  flex flex-col justify-end"
+                  className="w-[400px] h-[600px] rounded-[1rem] bg-white text-gray-700 shadow-md flex flex-col justify-end overflow-hidden"
                   style={{
-                    backgroundImage: `url("http://localhost:3000/${user.profile_picture}")`, // Ensure quotes
+                    gridRow: 1,
+                    gridColumn: 1,
+                    opacity,
+                    x,
+                    rotate,
+                    backgroundImage: `url("http://localhost:3000/${user.profile_picture}")`,
                     backgroundSize: "cover",
                     backgroundRepeat: "no-repeat",
                     backgroundPosition: "center",
                   }}
+                  drag="x"
+                  dragConstraints={{ left: 0, right: 0 }}
+                  onDragEnd={handleDragEnd(user?.id)} // Detect swipe end
                 >
                   <div
                     style={{
-                      backgroundColor: "rgba(0,0,0,0.5)",
                       background:
                         "linear-gradient(0deg, rgba(0,0,0,0.5) 70%, rgba(0,0,0,0) 100%)",
-                      height: "30%",
+                      height: "40%",
                       display: "flex",
                       flexDirection: "column",
                       justifyContent: "flex-end",
@@ -304,42 +317,51 @@ function Index() {
                     }}
                   >
                     <div className="info p-1">
-                      <h1 className="text-xl font-semibold  text-white">
-                        {user?.username}, {user?.age}
-                      </h1>
+                      <div className="text-2xl  font-bold text-white flex items-center justify-between mb-1">
+                        <h1>
+                          {user?.username}, {user?.age}
+                        </h1>
+                        <span>
+                          {user?.gender == "male" ? (
+                            <IoMale size={30} color="blue" />
+                          ) : (
+                            <IoMdFemale size={30} color="pink" />
+                          )}
+                        </span>
+                      </div>
                       {user?.interests.map((interest) => (
-                        <p className="text-xs text-gray-500 p-1 bg-white w-fit rounded-lg">
+                        <span
+                          key={interest.name}
+                          className="text-xs text-gray-500 p-1 bg-white w-fit rounded-lg mr-1"
+                        >
                           #{interest.name}
-                        </p>
+                        </span>
                       ))}
-                      <p className="text-xl  text-white">
+                      <p className="text-xl text-white">
                         Distance: {user?.distance} km
                       </p>
-                      <p className="text-sm  text-white truncate">
-                        {user?.bio}
-                      </p>
+                      <p className="text-sm text-white truncate">{user?.bio}</p>
                     </div>
-                    <div
-                      className="flex justify-between gap-4"
-                      style={{ marginTop: "1rem" }}
-                    >
-                      <Button
-                        type="button"
-                        className="bg-red-tertiary text-white"
-                        onClick={() => handleDragEnd(user.id)}
+                    <div className="flex justify-between gap-4 mt-4">
+                      <button
+                        className="bg-red-500 text-white px-4 py-2 rounded-lg"
+                        onClick={() =>
+                          handleDragEnd(null, { offset: { x: -200 } })
+                        }
                       >
                         Dislike
-                      </Button>
-                      <Button
-                        type="button"
-                        className="bg-red-tertiary text-white"
-                        onClick={() => handleDragEnd(user.id)}
+                      </button>
+                      <button
+                        className="bg-green-500 text-white px-4 py-2 rounded-lg"
+                        onClick={() =>
+                          handleDragEnd(null, { offset: { x: 200 } })
+                        }
                       >
                         Like
-                      </Button>
+                      </button>
                     </div>
                   </div>
-                </div>
+                </motion.div>
               ))}
             {users.length === 0 && (
               <h1 className="text-3xl font-semibold text-center">
