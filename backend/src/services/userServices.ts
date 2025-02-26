@@ -61,19 +61,15 @@ class UserService {
 
   public async update(data: any, id: string) {
     const body = updateUserDto.validate(data);
-    const age = await authServices.calculateAge(new Date(body.date_of_birth));
     if (
       body.date_of_birth &&
       body.gender &&
       body.sexual_preference &&
       body.profile_picture
     ) {
-      return await orm.update("users", id, {
-        ...body,
-        age,
-        is_data_complete: true,
-      });
+      this.profileCompleted(id);
     }
+    return await orm.update("users", id, body);
   }
 
   public async addUserImage(userId: string, file: any) {
@@ -157,33 +153,11 @@ class UserService {
   }
 
   public async profileCompleted(id: string) {
-    const user = await orm.findOne("users", { where: { id } });
-    const userInterests = await orm.querySql(
-      `
-      SELECT * FROM user_interests WHERE user_id = $1
-    `,
+    await orm.update("users", id, { is_data_complete: true });
+    await orm.querySql(
+      `UPDATE users SET age = EXTRACT(YEAR FROM AGE(date_of_birth)) WHERE id = $1`,
       [id]
     );
-    if (!user) {
-      throw new Error("User not found");
-    }
-    if (
-      user.bio == null ||
-      user.profile_picture == null ||
-      user.date_of_birth == null ||
-      user.gender == null ||
-      user.sexual_preference == null ||
-      userInterests.length <= 2
-    ) {
-      await orm.update("users", id, { is_data_complete: false });
-    } else {
-      console.log("- - - - - - - - - - - - - - - - ", user);
-      await orm.update("users", id, { is_data_complete: true });
-      await orm.querySql(
-        `UPDATE users SET age = EXTRACT(YEAR FROM AGE(date_of_birth)) WHERE id = $1`,
-        [id]
-      );
-    }
   }
 
   public async deleteImage(imageId: string) {

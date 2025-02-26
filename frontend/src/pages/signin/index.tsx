@@ -118,10 +118,10 @@ function index() {
             {isLoading ? <HeartLoader /> : "Sign In"}
           </motion.button>
           <div className="flex flex-col gap-2 md:flex-row items-center justify-center   w-full  mt-10">
-            <motion.button
+            <motion.div
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.95 }}
-              className="w-full max-w-[200px] border border-white py-2 rounded-md "
+              className="w-full max-w-[200px] border border-white py-2 rounded-md  "
             >
               <a
                 href="http://localhost:3000/api/auth/google"
@@ -136,18 +136,18 @@ function index() {
               >
                 <FcGoogle size={20} /> Sign In with Google
               </a>
-            </motion.button>
+            </motion.div>
             <div>Or</div>
 
-            <motion.button
+            <motion.div
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.95 }}
-              className="w-full max-w-[200px] border border-red-primary py-2 rounded-md "
+              className="w-full max-w-[200px] border border-red-primary py-2 rounded-md text-center"
             >
               <Link to="/signup" className="text-red-primary font-semibold w-">
                 Sign Up
               </Link>
-            </motion.button>
+            </motion.div>
           </div>
         </motion.form>
       </div>

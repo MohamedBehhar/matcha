@@ -189,11 +189,8 @@ class AuthServices {
     }
   }
 
-  public calculateAge(birthDate: Date): number {
-    const ageDifMs = Date.now() - birthDate.getTime();
-    const ageDate = new Date(ageDifMs);
-    return Math.abs(ageDate.getUTCFullYear() - 1970);
-  }
+
+  
 
   public async signUp(data: SignUpInput): Promise<Record<string, unknown>> {
     try {

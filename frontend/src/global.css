@@ -119,6 +119,7 @@ body {
 .container {
   @apply mx-auto px-4;
   max-width: 1200px;
+  margin-top: 1rem;
 }
 
 .card {

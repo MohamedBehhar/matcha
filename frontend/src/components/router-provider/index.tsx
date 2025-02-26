@@ -63,7 +63,7 @@ const routes: RouteObject[] = [
         element: <ProtectedRoutes />,
         children: [
           {
-            path: "/home",
+            path: "/",
             element: <HomePage />,
           },
           {
