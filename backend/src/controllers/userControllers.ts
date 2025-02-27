@@ -64,6 +64,7 @@ class UserControllers {
 
   @handleResponse()
   public async updateUserLocation(req: Request, res: Response) {
+    console.log("updateUserLocation=> ", req.body);
     const body = updateUserLocationDto.validate(req.body);
     console.log(body);
     return (await userServices.updateUserLocation(

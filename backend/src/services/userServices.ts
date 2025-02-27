@@ -138,7 +138,7 @@ class UserService {
   public async updateUserLocation(id: string, data: any) {
     return await orm.querySql(
       `UPDATE users SET location = ST_SetSRID(ST_MakePoint($1, $2), 4326), longitude = $1, latitude = $2 WHERE id = $3 RETURNING *`,
-      [data.longitude, data.latitude, data.userId]
+      [data.longitude, data.latitude, id]
     );
   }
 

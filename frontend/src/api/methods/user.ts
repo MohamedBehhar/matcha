@@ -27,7 +27,7 @@ const getUserById = async (id: number) => {
   }
 };
 
-const updateUserLocation = async (id: number | null, data: any) => {
+const updateUserLocation = async (id: number , data: any) => {
   if (!id) return;
   try {
     const response = await instance.patch(`/user/${id}/location`, data);

@@ -11,6 +11,7 @@ type User = {
   is_authenticated: boolean;
   latitude?: number | null;
   longitude?: number | null;
+  location?: string;
   bio?: string;
   sexual_preference?: string;
   gender?: string;

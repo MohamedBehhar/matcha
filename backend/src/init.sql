@@ -240,4 +240,6 @@ CREATE TABLE users
             CURRENT_TIMESTAMP
     );
     
-    
+    CREATE INDEX idx_users_location ON users USING GIST(location);
+CREATE INDEX idx_user_interests_user_id ON user_interests(user_id);
+CREATE INDEX idx_user_interests_interest_id ON user_interests(interest_id);

@@ -26,7 +26,7 @@ function ProfileSetting() {
   const [selectedImages, setSelectedImages] = useState([]);
   const [birthDate, setBirthDate] = useState("");
   const [profilePicture, setProfilePicture] = useState("");
-  const { user, setUserInfos } = useUserStore();
+  const { user, setUserInfos, fetchUserData } = useUserStore();
 
   const getInfo = async () => {
     try {
@@ -99,7 +99,6 @@ function ProfileSetting() {
     setProfilePicture(file);
   };
 
-  const [location, setLocation] = useState(null);
   const [error, setError] = useState("");
 
   const updateLocation = async (id: number, data: any) => {
@@ -108,6 +107,8 @@ function ProfileSetting() {
       return response.data;
     } catch (error) {
       throw error;
+    } finally {
+      fetchUserData();
     }
   };
 

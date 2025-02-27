@@ -1,5 +1,5 @@
 import { getMatches } from "@/api/methods/interactions";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import userImg from "@/assets/images/user.png";
 import {
   motion,
@@ -44,8 +44,10 @@ function Index() {
   const [distance, setDistance] = useState(5);
   const [interests, setInterests] = useState([]);
   const [selectedInterests, setSelectedInterests] = useState([]);
-  const { user, setUserInfos } = useUserStore();
-
+  const { user, setUserInfos, fetchUserData } = useUserStore();
+  useEffect(() => {
+    fetchUserData;
+  }, []);
   const fetchInterests = async () => {
     try {
       const response = await getInterests();
@@ -69,12 +71,14 @@ function Index() {
   };
 
   const updateLocation = async (id: number, data: any) => {
-    if (!id) return;
+    alert("Updating location + " + id);
     try {
       const response = await updateUserLocation(id, data);
       return response.data;
     } catch (error) {
       throw error;
+    } finally {
+      fetchUserData();
     }
   };
 
@@ -92,34 +96,49 @@ function Index() {
     setZoom(calculateZoom(distance));
   }, [distance]);
 
-  const getNewUsers = async () => {
+  const getNewUsers = useCallback(async () => {
     if (!user) return;
     try {
       const response = await getMatches(
-        user?.latitude,
-        user?.longitude,
-        user?.id,
+        user.latitude,
+        user.longitude,
+        user.id,
         ageGap,
         distance * 1000,
-        selectedInterests.map((interest: string) => interest.id).join(",") || ""
+        selectedInterests.map((interest) => interest.id).join(",") || ""
       );
-      setUsers(response);
+      // Only update state if response has changed
+      setUsers((prevUsers) =>
+        JSON.stringify(prevUsers) !== JSON.stringify(response)
+          ? response
+          : prevUsers
+      );
     } catch (error) {
       console.error(error);
     }
+  }, [user, ageGap, distance, selectedInterests, getMatches]);
+
+  const handleDistanceChange = (e) => {
+    const newDistance = Number(e.target.value);
+    setDistance((prev) => (prev !== newDistance ? newDistance : prev));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    await getNewUsers();
   };
   useEffect(() => {
     getNewUsers();
   }, [ageGap, distance]);
 
-  const handleDragEnd = async (id: string | number) => {
+  const handleDragEnd = async (id: string | number, type?: string) => {
     if (!id) return;
 
     const currentX = x.get();
 
-    if (currentX > 100) {
+    if (currentX > 50 || "like" === type) {
       await likeAUser({ user_id: user?.id, liked_id: id });
-    } else if (currentX < -100) {
+    } else if (currentX < -50 || "dislike" === type) {
       await unlikeAUser({ user_id: user?.id, disliked_id: id });
     }
 
@@ -129,12 +148,7 @@ function Index() {
   const handleFetchData = async () => {
     await getUserInfo();
     await fetchInterests();
-    await getNewUsers();
   };
-
-  useEffect(() => {
-    getNewUsers();
-  }, [position]);
 
   useEffect(() => {
     handleFetchData();
@@ -149,10 +163,7 @@ function Index() {
         <div className="   grid grid-cols-12 gap-3">
           <form
             className="filters   rounded-md w-full p-4 mx-auto mt-10  gap-4 min-h-[400px] col-span-5"
-            onSubmit={(e) => {
-              e.preventDefault();
-              getNewUsers();
-            }}
+            onSubmit={handleSubmit}
           >
             <div className="h-[400px] flex flex-col  rounded-md overflow-hidden  ">
               <div className="h-[80%] rounded-lg">
@@ -193,7 +204,7 @@ function Index() {
                   min="0"
                   max="100"
                   value={distance}
-                  onChange={(e) => setDistance(Number(e.target.value))}
+                  onChange={handleDistanceChange}
                   className="flex-1"
                 />
                 <p>{distance} km</p>
@@ -289,7 +300,7 @@ function Index() {
               users.map((user) => (
                 <motion.div
                   key={user.id}
-                  className="w-[400px] h-[600px] rounded-[1rem] bg-white text-gray-700 shadow-md flex flex-col justify-end overflow-hidden"
+                  className="w-[400px] h-[600px] rounded-[1rem] bg-white text-gray-700 shadow-md flex flex-col justify-end overflow-hidden relative"
                   style={{
                     gridRow: 1,
                     gridColumn: 1,
@@ -303,8 +314,20 @@ function Index() {
                   }}
                   drag="x"
                   dragConstraints={{ left: 0, right: 0 }}
-                  onDragEnd={handleDragEnd(user?.id)} // Detect swipe end
+                  onDragEnd={() => handleDragEnd(user.id)}
                 >
+                  {user.pictures && user.pictures.length > 0 && (
+                    <div className="absolute top-0 left-0 right-0 flex justify-center gap-2 p-2">
+                      {user.pictures.map((picture) => (
+                        <img
+                          key={picture.id}
+                          src={`http://localhost:3000/${picture.url}`}
+                          alt={user.username}
+                          className="w-10 h-10 rounded-full border-2 border-white"
+                        />
+                      ))}
+                    </div>
+                  )}
                   <div
                     style={{
                       background:
@@ -345,17 +368,13 @@ function Index() {
                     <div className="flex justify-between gap-4 mt-4">
                       <button
                         className="bg-red-500 text-white px-4 py-2 rounded-lg"
-                        onClick={() =>
-                          handleDragEnd(null, { offset: { x: -200 } })
-                        }
+                        onClick={() => handleDragEnd(user?.id, "dislike")}
                       >
                         Dislike
                       </button>
                       <button
                         className="bg-green-500 text-white px-4 py-2 rounded-lg"
-                        onClick={() =>
-                          handleDragEnd(null, { offset: { x: 200 } })
-                        }
+                        onClick={() => handleDragEnd(user?.id, "like")}
                       >
                         Like
                       </button>
@@ -375,6 +394,7 @@ function Index() {
           className="flex items-center justify-center gap-4 flex-col h-[400px]"
           style={{ marginTop: "10rem" }}
         >
+          {user?.location}
           <p>Please enable location</p>
           <button
             onClick={() => {
@@ -385,6 +405,7 @@ function Index() {
                       position.coords.latitude,
                       position.coords.longitude,
                     ]);
+                    alert("Location enabled " + user?.id);
                     updateLocation(user?.id, {
                       latitude: position.coords.latitude,
                       longitude: position.coords.longitude,

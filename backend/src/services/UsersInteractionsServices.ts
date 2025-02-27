@@ -165,81 +165,76 @@ class UsersInteractionsServices {
 
     const query = `
     SELECT 
-    u.id, 
-    u.username, 
-    u.email, 
-    u.age, 
-    u.bio, 
-    u.first_name, 
-    u.last_name, 
-    u.rating, 
-    u.gender, 
-    u.sexual_preference, 
-    u.latitude, 
-    u.longitude,
-    u.profile_picture,
-    CEIL(
-        ST_Distance(
-            ST_GeogFromText('SRID=4326;POINT(' || $2 || ' ' || $1 || ')'),
-            u.location
-        ) / 1000
-    ) AS distance,
-    COALESCE(
-        JSON_AGG(
-            json_build_object('id', i.id, 'name', i.name)
-        ) FILTER (WHERE i.id IS NOT NULL), 
-        '[]'
-    ) AS interests
-FROM 
-    users u
-LEFT JOIN user_interests ui ON ui.user_id = u.id
-LEFT JOIN interests i ON i.id = ui.interest_id
-WHERE 
-    ST_DWithin(
-        ST_GeogFromText('SRID=4326;POINT(' || $2 || ' ' || $1 || ')'),
-        u.location,
-        $3
-    )
-    AND NOT EXISTS (
-      SELECT 1
-      FROM user_interactions interactions
-      WHERE interactions.user_id = $4
-      AND interactions.target_user_id = u.id
-      AND interactions.interaction_type IN ('like', 'dislike', 'block')
-    )
-    AND u.id != $4 
-    AND u.age BETWEEN $5 AND $6
-    AND (
-        CASE 
-            WHEN $7 = 'bisexual' THEN TRUE
-            WHEN $7 = 'heterosexual' AND $8 = 'male' THEN (u.gender = 'female' AND u.sexual_preference IN ('heterosexual', 'bisexual'))
-            WHEN $7 = 'heterosexual' AND $8 = 'female' THEN (u.gender = 'male' AND u.sexual_preference IN ('heterosexual', 'bisexual'))
-            WHEN $7 = 'homosexual' AND $8 = 'male' THEN (u.gender = 'male' AND u.sexual_preference IN ('homosexual', 'bisexual'))
-            WHEN $7 = 'homosexual' AND $8 = 'female' THEN (u.gender = 'female' AND u.sexual_preference IN ('homosexual', 'bisexual'))
-            ELSE FALSE
-        END
-    )
-    AND (
-        $9::integer[] IS NULL OR EXISTS (
-            SELECT 1
-            FROM user_interests ui2
-            WHERE ui2.user_id = u.id
-            AND ui2.interest_id = ANY($9::integer[])
+        u.id, 
+        u.username, 
+        u.email, 
+        u.age, 
+        u.bio, 
+        u.first_name, 
+        u.last_name, 
+        u.rating, 
+        u.gender, 
+        u.sexual_preference, 
+        u.latitude, 
+        u.longitude,
+        u.profile_picture,
+        CEIL(
+            ST_Distance(
+                ST_SetSRID(ST_MakePoint($2, $1), 4326),
+                u.location
+            ) / 1000
+        ) AS distance,
+        COALESCE(
+            JSON_AGG(
+                json_build_object('id', i.id, 'name', i.name)
+            ) FILTER (WHERE i.id IS NOT NULL), 
+            '[]'
+        ) AS interests
+    FROM 
+        users u
+    LEFT JOIN user_interests ui ON ui.user_id = u.id
+    LEFT JOIN interests i ON i.id = ui.interest_id
+    LEFT JOIN images img ON img.user_id = u.id
+    WHERE 
+        ST_DWithin(
+            ST_SetSRID(ST_MakePoint($2, $1), 4326),
+            u.location,
+            $3
         )
-    )
-GROUP BY u.id
-ORDER BY distance ASC;
-
+        AND NOT EXISTS (
+            SELECT 1
+            FROM user_interactions interactions
+            WHERE interactions.user_id = $4
+            AND interactions.target_user_id = u.id
+            AND interactions.interaction_type IN ('like', 'dislike', 'block')
+        )
+        AND u.id != $4 
+        AND u.age BETWEEN $5 AND $6
+        AND (
+            ($7 = 'bisexual') OR
+            ($7 = 'heterosexual' AND $8 = 'male' AND u.gender = 'female' AND u.sexual_preference IN ('heterosexual', 'bisexual')) OR
+            ($7 = 'heterosexual' AND $8 = 'female' AND u.gender = 'male' AND u.sexual_preference IN ('heterosexual', 'bisexual')) OR
+            ($7 = 'homosexual' AND $8 = 'male' AND u.gender = 'male' AND u.sexual_preference IN ('homosexual', 'bisexual')) OR
+            ($7 = 'homosexual' AND $8 = 'female' AND u.gender = 'female' AND u.sexual_preference IN ('homosexual', 'bisexual'))
+        )
+        AND (
+            $9::integer[] IS NULL 
+            OR array_length($9::integer[], 1) = 0 
+            OR EXISTS (
+                SELECT 1
+                FROM user_interests ui2
+                WHERE ui2.user_id = u.id
+                AND ui2.interest_id = ANY($9::integer[])
+            )
+        )      
+    GROUP BY u.id
+    ORDER BY distance ASC;
 `;
 
-    const min_age = user?.age - age_gap;
-    const max_age = user?.age + age_gap;
-
-    console.log("User's sexual preference:", user?.sexual_preference);
-    console.log("User's gender:", user?.gender);
-
-    try {
-      const { rows } = await pool.query(query, [
+const min_age = user?.age - age_gap;
+const max_age = user?.age + age_gap;
+try {
+    const { rows } = await pool.query(query, [
         latitude,
         longitude,
         distance,
@@ -249,11 +244,11 @@ ORDER BY distance ASC;
         user?.sexual_preference,
         user?.gender,
         interests,
-      ]);
-      return rows;
-    } catch (error) {
-      console.error("Error executing query:", error);
-    }
+    ]);
+    return rows;
+} catch (error) {
+    console.error("Error executing query:", error);
+}
   }
 
   public async checkLike(user_id: string, target_id: string) {

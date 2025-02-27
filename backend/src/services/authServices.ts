@@ -127,8 +127,10 @@ class AuthServices {
           httpOnly: true,
           secure: process.env.NODE_ENV === "production",
           sameSite: "strict",
-          maxAge: 1000 * 60 * 60 * 24,
+          maxAge: this.accessTokenMaxAge,
         });
+
+
 
         res.redirect("http://localhost:5173");
       } catch (error) {
@@ -188,9 +190,6 @@ class AuthServices {
       return null;
     }
   }
-
-
-  
 
   public async signUp(data: SignUpInput): Promise<Record<string, unknown>> {
     try {
