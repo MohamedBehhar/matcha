@@ -191,10 +191,10 @@ function Index() {
                   <ZoomHandler zoom={zoom} />
                 </MapContainer>
               </div>
-              <div className="filter flex-1  p-2 rounded-md flex items-center gap-5 w-full  mt-1">
+              <div className="filter flex-1  rounded-md flex items-center gap-5 w-full  mt-1">
                 <label
                   htmlFor="distance"
-                  className="text-red-primary text-2xl font-semibold"
+                  className="text-red-primary text-2xl font-semibold  "
                 >
                   Distance
                 </label>
@@ -207,13 +207,24 @@ function Index() {
                   onChange={handleDistanceChange}
                   className="flex-1"
                 />
-                <p>{distance} km</p>
+                <AnimatePresence mode="popLayout">
+                  <motion.div
+                    key={distance}
+                    initial={{ y: -10, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    exit={{ y: 10, opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className=" font-bold  flex items-center  w-fit justify-end min-w-[70px]"
+                  >
+                    {distance} Km
+                  </motion.div>
+                </AnimatePresence>
               </div>
             </div>
 
             <div className=" row-span-2 flex flex-col gap-2 ">
-              <div className="filter flex-1  rounded-md flex items-center gap-5 ">
-                <h1 className="text-red-primary text-2xl font-semiboldy">
+              {/* <div className="filter flex-1  rounded-md flex items-center gap-5 ">
+                <h1 className="text-red-primary text-2xl font-semiboldy  border">
                   Age gap
                 </h1>
                 <motion.button
@@ -224,7 +235,6 @@ function Index() {
                   <FaCircleMinus size={30} />
                 </motion.button>
 
-                {/* Animated Value */}
                 <AnimatePresence mode="popLayout">
                   <motion.div
                     key={ageGap}
@@ -238,7 +248,6 @@ function Index() {
                   </motion.div>
                 </AnimatePresence>
 
-                {/* Plus Button */}
                 <motion.button
                   whileTap={{ scale: 0.8 }}
                   className=" text-white p-2 rounded-full w-10 h-10 flex items-center justify-center"
@@ -246,28 +255,51 @@ function Index() {
                 >
                   <FaCirclePlus size={30} />
                 </motion.button>
-              </div>
+              </div> */}
 
+              <div className="filter flex-1   rounded-md flex items-center gap-5 w-full  mt-1">
+                <label
+                  htmlFor="age"
+                  className="text-red-primary text-2xl font-semibold  "
+                >
+                  Age Gap
+                </label>
+                <input
+                  type="range"
+                  id="age"
+                  min="0"
+                  max="100"
+                  value={ageGap}
+                  onChange={(e) => setAgeGap(Number(e.target.value))}
+                  className="flex-1"
+                />
+                <AnimatePresence mode="popLayout">
+                  <motion.div
+                    key={ageGap}
+                    initial={{ y: -10, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    exit={{ y: 10, opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className=" font-bold  flex items-center  w-fit justify-between min-w-[70px]"
+                  >
+                    {ageGap} Years
+                  </motion.div>
+                </AnimatePresence>
+              </div>
               <div>
                 <h2 className="text-xl font-bold">
                   Select cummon interests to match with
                 </h2>
-                <div className="flex gap-2 items-center flex-wrap">
-                  {selectedInterests.map((interest: Interest) => (
-                    <Button
-                      key={interest.id}
-                      type="button"
-                      className="bg-red-tertiary text-white"
-                    >
-                      #{interest.name}
-                    </Button>
-                  ))}
-                </div>
+
                 {interests.map((interest) => (
                   <button
                     key={interest.id}
                     type="button"
-                    className="bg-gray-300 m-1 text-gray-800 px-2 py-1 rounded-md text-xs"
+                    className={`${
+                      selectedInterests.includes(interest)
+                        ? "bg-red-tertiary text-white"
+                        : "bg-gray-200 text-gray-700"
+                    } bg-gray-300 m-1 text-gray-800 px-2 py-1 rounded-md text-xs`}
                     onClick={
                       selectedInterests.includes(interest)
                         ? () =>
@@ -295,7 +327,7 @@ function Index() {
             </div>
           </form>
 
-          <div className=" grid place-content-center   rounded-md col-span-7 mt-10">
+          <div className=" grid place-content-center   rounded-md col-span-6 border mt-10">
             {users.length > 0 &&
               users.map((user) => (
                 <motion.div

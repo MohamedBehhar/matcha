@@ -63,10 +63,9 @@ function index() {
   };
 
   return (
-    <div className="container flex flex-col items-center justify-center h-screen">
+    <div className="container flex flex-col items-center justify-center h-screen  ">
       {error && <div className="text-red-500 text-sm">{error}</div>}
-      <div className="flex flex-col lg:flex-row  items-center w-full p-4 rounded-md">
-        {/* Animated Signup Image */}
+      <div className="flex flex-col md:flex-row items-center  p-4 rounded-md w-full   ">
         <motion.div
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -75,18 +74,17 @@ function index() {
             ease: "easeOut",
             scale: { type: "spring", stiffness: 120, damping: 10 },
           }}
-          className="flex-1"
+          className="flex-1 "
         >
-          <SignupImg className="flex-1 fill-red-primary" />
+          <SignupImg className="w-full fill-red-primary" />
         </motion.div>
 
-        {/* Animated Form */}
         <motion.form
           initial={{ x: -100, opacity: 0 }}
           animate={{ x: 0, opacity: 1 }}
           transition={{ delay: 0.5, duration: 0.8, ease: "easeOut" }}
           onSubmit={handleSubmit}
-          className="flex-1 flex flex-col items-center justify-center gap-2"
+          className="flex-1 flex flex-col items-center justify-center gap-2  w-96  p-4 rounded-md"
         >
           <Input
             name="email"
@@ -117,39 +115,39 @@ function index() {
           >
             {isLoading ? <HeartLoader /> : "Sign In"}
           </motion.button>
-          <div className="flex flex-col gap-2 md:flex-row items-center justify-center   w-full  mt-10">
-            <motion.div
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.95 }}
-              className="w-full max-w-[200px] border border-white py-2 rounded-md  "
-            >
-              <a
-                href="http://localhost:3000/api/auth/google"
-                style={{
-                  color: "white",
-                  textDecoration: "none",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: "4px",
-                }}
-              >
-                <FcGoogle size={20} /> Sign In with Google
-              </a>
-            </motion.div>
-            <div>Or</div>
-
-            <motion.div
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.95 }}
-              className="w-full max-w-[200px] border border-red-primary py-2 rounded-md text-center"
-            >
-              <Link to="/signup" className="text-red-primary font-semibold w-">
-                Sign Up
-              </Link>
-            </motion.div>
-          </div>
         </motion.form>
+      </div>
+      <div className="flex flex-col   gap-4 sm:flex-row mt-20 sm:mt-0 items-center justify-center   w-full  ">
+        <motion.div
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.95 }}
+          className="w-full max-w-[200px] border border-white py-2 rounded-md  "
+        >
+          <a
+            href="http://localhost:3000/api/auth/google"
+            style={{
+              color: "white",
+              textDecoration: "none",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "4px",
+            }}
+          >
+            <FcGoogle size={20} /> Sign In with Google
+          </a>
+        </motion.div>
+        <div className="hidden  sm:visible   text-center text-gray-500">Or</div>
+
+        <motion.div
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.95 }}
+          className="w-full max-w-[200px] border border-red-primary py-2 rounded-md text-center"
+        >
+          <Link to="/signup" className="text-red-primary font-semibold w-">
+            Sign Up
+          </Link>
+        </motion.div>
       </div>
     </div>
   );

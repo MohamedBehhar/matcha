@@ -111,7 +111,7 @@ export default function Header() {
   return (
     <>
       {user?.id ? (
-        <header className="  relative w-[70px]  h-screen  ">
+        <header className="  relative w-[70px]  h-screen sm:visible ">
           <nav className="flex flex-col absolute left-0 top-5  w-full h-full ">
             <ul className="flex flex-col gap-5 [&>*:hover]:text-primary [&>*]:transition-colors font-semibold  items-center text-gray-300">
               <li>
@@ -169,9 +169,12 @@ export default function Header() {
                         : ""
                     }`}
                 >
-                  <DropdownMenu>
+                  <DropdownMenu
+                    className="flex items-center justify-center z-50"
+                    trigger="click"
+                  >
                     <DropdownMenuTrigger>
-                      <div className="flex items-center justify-center cursor-pointer relative">
+                      <div className="flex items-center justify-center cursor-pointer relative ">
                         {notificationsCount > 0 && (
                           <div className="circle bg-red-500 w-4 absolute top-1 left-4 aspect-square rounded-[50%]">
                             <p className="text-xs flex justify-center items-center h-full">
