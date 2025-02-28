@@ -23,6 +23,7 @@ import { useNavigate } from "react-router-dom";
 import { useLoadingStore } from "@/store/loadingStore";
 import { is } from "date-fns/locale";
 import HeartLoader from "@/components/HeartLoader";
+import { Calendar } from "@/components/ui/calendar";
 
 // Define TypeScript interfaces
 interface User {
@@ -79,6 +80,7 @@ const NextButton = ({ incrementStep }: { incrementStep: () => void }) => {
 
 // Step 1: Select Birthdate
 const Step1 = ({ birthDate, setBirthDate, incrementStep }: Step1Props) => {
+  const [date, setDate] = useState<Date | undefined>(new Date());
   return (
     <AnimatedStep>
       <div className="w-full flex flex-col justify-center items-center gap-10">
@@ -96,6 +98,13 @@ const Step1 = ({ birthDate, setBirthDate, incrementStep }: Step1Props) => {
           onChange={(e) => setBirthDate(e.target.value)}
         />
       </div>
+
+      {/* <Calendar
+        mode="single"
+        selected={date}
+        onSelect={setDate}
+        className="rounded-md border shadow"
+      /> */}
     </AnimatedStep>
   );
 };

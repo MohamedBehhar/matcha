@@ -15,6 +15,7 @@ import ForgotPasswordPage from "@/pages/forgotPassword";
 import ProfilePage from "@/pages/profile";
 import MyProfile from "@/pages/myProfile";
 import WelecomePage from "@/pages/welcome";
+import GoogleAuthFailed from "@/pages/googleAuthFailed";
 import {
   createBrowserRouter,
   RouteObject,
@@ -26,6 +27,10 @@ const routes: RouteObject[] = [
   {
     path: "/signup",
     element: <SignUpPage />,
+  },
+  {
+    path: "/google-auth-failed",
+    element: <GoogleAuthFailed />,
   },
   {
     path: "/signin",

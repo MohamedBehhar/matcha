@@ -31,8 +31,8 @@ class AuthServices {
     this.verifyEmail = this.verifyEmail.bind(this);
     this.configureGoogleStrategy();
   }
-  private accessTokenMaxAge = 1000 * 60 * 10;
-  private refreshTokenMaxAge = 1000 * 60 * 30;
+  private accessTokenMaxAge = 1000 * 60 * 30;
+  private refreshTokenMaxAge = 1000 * 60 * 120;
 
   private configureGoogleStrategy() {
     passport.use(
@@ -116,7 +116,7 @@ class AuthServices {
     return passport.authenticate("google", async (err: any, user: any) => {
       if (err || !user) {
         return res.redirect(
-          "http://localhost:5173/login?error=Authentication failed"
+          "http://localhost:5173/google-auth-failed"
         );
       }
 
