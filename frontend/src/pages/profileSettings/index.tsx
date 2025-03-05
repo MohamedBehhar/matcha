@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import MySelect from "@/components/ui/MySelect";
@@ -112,31 +112,42 @@ function ProfileSetting() {
     }
   };
 
-  const handleGetLocation = () => {
-    if ("geolocation" in navigator) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          if (!user.id) return;
-          setUserInfos({
-            ...user,
-            latitude: position.coords.latitude,
-            longitude: position.coords.longitude,
-          });
-          updateLocation(user.id, {
-            latitude: position.coords.latitude,
-            longitude: position.coords.longitude,
-            userId: user.id,
-          });
-          setError(null);
-        },
-        (error) => {
-          setError("Unable to retrieve location.");
-        }
-      );
-    } else {
+  const handleGetLocation = useCallback(() => {
+    if (!("geolocation" in navigator)) {
       setError("Geolocation is not supported by this browser.");
+      return;
     }
-  };
+
+    if (user?.latitude && user?.longitude) {
+      return; // User already has a location, no need to update
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        if (!user?.id) return;
+
+        const newLocation = {
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+        };
+
+        setUserInfos((prevUser) => ({
+          ...prevUser,
+          ...newLocation,
+        }));
+
+        updateLocation(user.id, {
+          ...newLocation,
+          userId: user.id,
+        });
+
+        setError(null);
+      },
+      () => {
+        setError("Unable to retrieve location.");
+      }
+    );
+  }, [user?.id, user?.latitude, user?.longitude, setUserInfos, updateLocation]);
 
   const handleAddUserImages = async () => {
     const formData = new FormData();
@@ -151,9 +162,15 @@ function ProfileSetting() {
     }
   };
 
+  const isLocationSet = useMemo(() => {
+    return user?.latitude !== undefined && user?.longitude !== undefined;
+  }, [user?.latitude, user?.longitude]);
+
   useEffect(() => {
-    handleGetLocation();
-  }, []);
+    if (!isLocationSet) {
+      handleGetLocation();
+    }
+  }, [isLocationSet, handleGetLocation]);
 
   const handleSubmit = async (event: any) => {
     event.preventDefault();
