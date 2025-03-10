@@ -19,6 +19,8 @@ import { Textarea } from "@/components/ui/textArea";
 import { set } from "date-fns";
 import useUserStore from "@/store/userStore";
 import { FaEdit } from "react-icons/fa";
+import { IoIosFemale, IoIosMale } from "react-icons/io";
+import { FaMale, FaFemale } from "react-icons/fa";
 
 function ProfileSetting() {
   const [interests, setInterests] = useState([]);
@@ -252,7 +254,12 @@ function ProfileSetting() {
         className="w-full max-w-[800px]  p-4 rounded-md"
         onSubmit={handleSubmit}
       >
-        <div className="grid md:grid-cols-3 sm:grid-cols-2 gap-5 w-full mb-4">
+        <div className="grid md:grid-cols-2 grid-cols-1 gap-5 w-full mb-4">
+          <div className="col-span-full w-full h-[1px] bg-gray-200 opacity-25 relative">
+            <div className="absolute top-[-10px] left-1/2 transform -translate-x-1/2 bg-black  text-sm ">
+              Personal Information
+            </div>
+          </div>
           <Input
             type="text"
             name="first_name"
@@ -277,7 +284,7 @@ function ProfileSetting() {
             placeholder="Username"
             defaultValue={user.username || ""}
           />
-          <MySelect
+          {/* <MySelect
             options={["male", "female"]}
             placeholder="Gender"
             name="gender"
@@ -293,7 +300,7 @@ function ProfileSetting() {
             onChange={(value) =>
               setUserInfos({ ...user, sexual_preference: value })
             }
-          />
+          /> */}
           {/* <DatePickerDemo
             name="date_of_birth"
             placeholder="Date of birth"
@@ -314,6 +321,68 @@ function ProfileSetting() {
             onChange={(e) => setBirthDate(e.target.value)}
           />
         </div>
+        <div className="grid md:grid-cols-2 grid-cols-1 gap-5 w-full mb-4">
+          <div className="col-span-full w-full h-[1px] bg-gray-200 opacity-25 relative">
+            <div className="absolute top-[-10px] left-1/2 transform -translate-x-1/2 bg-black  text-sm ">
+              Sexual Information
+            </div>
+          </div>
+          <div className="">
+            <h1>You Are </h1>
+            <div className="flex items-center gap-2">
+              <div
+                className={`flex items-center gap-2 ${
+                  user?.gender === "male" ? "border border-white" : ""
+                } p-2 rounded-md`}
+
+              >
+                <FaFemale className="text-red-primary text-4xl " />
+                
+              </div>
+              <div
+                className={`flex items-center gap-2 ${
+                  user?.gender === "female" ? "border border-white" : ""
+                } p-2 rounded-md`}
+              >
+                <FaMale className="text-blue-primary text-4xl" />
+              </div>
+            </div>
+          </div>
+          <div>
+            <h1>Your Sexual Preference</h1>
+            <div className="flex items-center gap-2">
+              <div
+                className={`flex items-center gap-2 ${
+                  user?.sexual_preference === "heterosexual"
+                    ? "bg-blue-100"
+                    : "bg-gray-100"
+                } p-2 rounded-md`}
+              >
+                <IoIosFemale className="text-red-primary text-4xl " />
+              </div>
+              <div
+                className={`flex items-center gap-2 ${
+                  user?.sexual_preference === "homosexual"
+                    ? "bg-blue-100"
+                    : "bg-gray-100"
+                } p-2 rounded-md`}
+              >
+                <IoIosMale className="text-blue-primary text-4xl" />
+              </div>
+              <div
+                className={`flex items-center gap-2 ${
+                  user?.sexual_preference === "bisexual"
+                    ? "bg-blue-100"
+                    : "bg-gray-100"
+                } p-2 rounded-md`}
+              >
+                <IoIosFemale className="text-red-primary text-4xl " />
+                <IoIosMale className="text-blue-primary text-4xl" />
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="grid md:grid-cols-2 grid-cols-1 gap-5 w-full mb-4"></div>
         <Textarea
           name="bio"
           placeholder="Bio"
