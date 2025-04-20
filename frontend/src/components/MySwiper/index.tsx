@@ -16,6 +16,7 @@ import {
 } from "react-leaflet";
 import { getUser } from "@/api/methods/user";
 import useUserStore from "@/store/userStore";
+import toast from "react-hot-toast";
 
 function ZoomHandler({ zoom }: { zoom: number }) {
   const map = useMap();
@@ -90,6 +91,23 @@ function Index() {
     }
   };
 
+  const like = async (id: string) => {
+    try {
+      await likeAUser({ user_id: user?.id, liked_id: id });
+      await getNewUsers();
+    } catch (error) {
+      toast.error("Error liking user");
+    }
+  };
+  const unlike = async (id: string) => {
+    try {
+      await unlikeAUser({ user_id: user?.id, disliked_id: id });
+      await getNewUsers();
+    } catch (error) {
+      toast.error("Error unliking user");
+    }
+  };
+
   const handleDragEnd = async (id: string) => {
     if (x.get() > 100) {
       await likeAUser({ user_id: user?.id, liked_id: id });
@@ -123,7 +141,7 @@ function Index() {
       >
         {user ? (
           <div className="h-[400px] mb-2 rounded-md overflow-hidden">
-            {/* <MapContainer
+            <MapContainer
               center={position}
               zoom={zoom}
               style={{ height: "100%", width: "100%" }}
@@ -141,7 +159,7 @@ function Index() {
                 pathOptions={{ color: "blue", fillOpacity: 0.2 }}
               />
               <ZoomHandler zoom={zoom} />
-            </MapContainer> */}
+            </MapContainer>
           </div>
         ) : (
           <div className=" row-span-2 flex items-center justify-center flex-col gap-4  ">
@@ -254,7 +272,7 @@ function Index() {
                 />
                 <div className="info p-1">
                   <h1 className="text-xl font-semibold text-center">
-                    {user.username}, {user.age}, {user.gender}
+                    {user.first_name}, {user.age}, {user.gender}
                   </h1>
                   <p className="text-xl text-center ">
                     Distance: {user.distance} km
@@ -262,6 +280,20 @@ function Index() {
                   <p className="text-sm text-center truncate">{user.bio}</p>
                 </div>
               </Link>
+              <div className="buttons flex items-center justify-between mt-4 gap-5">
+                <Button
+                  className="bg-gray-300 text-gray-800 flex-1"
+                  onClick={() => unlike(user.id)}
+                >
+                  dislike
+                </Button>
+                <Button
+                  className="bg-red-tertiary text-white flex-1"
+                  onClick={() => like(user.id)}
+                >
+                  like
+                </Button>
+              </div>
             </motion.div>
           ))}
         {users.length === 0 && (

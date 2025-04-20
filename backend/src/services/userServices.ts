@@ -62,6 +62,7 @@ class UserService {
   public async update(data: any, id: string) {
     const body = updateUserDto.validate(data);
     const age = await authServices.calculateAge(new Date(body.date_of_birth));
+    console.log("age111 : ", body);
     if (
       body.date_of_birth &&
       body.gender &&
@@ -73,6 +74,8 @@ class UserService {
         age,
         is_data_complete: true,
       });
+    } else {
+      return await orm.update("users", id, { ...body, age });
     }
   }
 

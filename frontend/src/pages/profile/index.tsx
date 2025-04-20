@@ -1,5 +1,3 @@
-import React from "react";
-import CoverImg from "@/assets/images/cover.png";
 import UserImg from "@/assets/images/user.png";
 import { getUserById, getUser } from "@/api/methods/user";
 import { getUserInterests } from "@/api/methods/interest";
@@ -18,21 +16,23 @@ import {
   blockAUser,
 } from "@/api/methods/interactions";
 import { socket } from "@/utils/socket";
+import useUserStore from "@/store/userStore";
 
 function index() {
-  const [user, setUser] = useState<any>(null);
+  const [userInfo, setUser] = useState<any>(null);
   const [userInterests, setUserInterests] = useState<any>(null);
   const [liked, setLiked] = useState(false);
+  const { user } = useUserStore();
+
   const url = window.location.href;
   const target_id = url.split("/").pop() || "";
-  const user_id = localStorage.getItem("id") || "";
 
   const handelGetUserInfo = async () => {
     try {
       const data = await getUserById(target_id);
       setUser(data);
     } catch (error) {
-      console.error("Error getting user:", error);
+      console.error("Error getting userInfo:", error);
     }
   };
   const handelGetUserInterests = async () => {
@@ -40,13 +40,13 @@ function index() {
       const data = await getUserInterests(target_id);
       setUserInterests(data);
     } catch (error) {
-      console.error("Error getting user interests:", error);
+      console.error("Error getting userInfo interests:", error);
     }
   };
 
   const handelCheckLike = async () => {
     try {
-      const response = await checkLike(user_id, target_id);
+      const response = await checkLike(user.id, target_id);
       console.log("response", response);
       setLiked(response.liked);
     } catch (error) {
@@ -66,10 +66,13 @@ function index() {
               className="flex gap-2"
               onClick={async () => {
                 try {
-                  await unlikeAUser({ user_id, disliked_id: target_id });
+                  await unlikeAUser({
+                    user_id: user.id,
+                    disliked_id: target_id,
+                  });
                   handelCheckLike();
                 } catch (error) {
-                  console.error("Error unliking user:", error);
+                  console.error("Error unliking userInfo:", error);
                 }
               }}
             >
@@ -81,10 +84,10 @@ function index() {
               className="flex gap-2"
               onClick={async () => {
                 try {
-                  await blockAUser({ user_id,  target_id });
+                  await blockAUser({ user_id: user.id, target_id });
                   handelCheckLike();
                 } catch (error) {
-                  console.error("Error blocking user:", error);
+                  console.error("Error blocking userInfo:", error);
                 }
               }}
             >
@@ -98,10 +101,10 @@ function index() {
               className="flex gap-2"
               onClick={async () => {
                 try {
-                  await likeAUser({ user_id, liked_id: target_id });
+                  await likeAUser({ user_id: user.id, liked_id: target_id });
                   handelCheckLike();
                 } catch (error) {
-                  console.error("Error liking user:", error);
+                  console.error("Error liking userInfo:", error);
                 }
               }}
             >
@@ -112,10 +115,10 @@ function index() {
               className="flex gap-2"
               onClick={async () => {
                 try {
-                  await blockAUser({ user_id, target_id });
+                  await blockAUser({ user_id: user.id, target_id });
                   handelCheckLike();
                 } catch (error) {
-                  console.error("Error blocking user:", error);
+                  console.error("Error blocking userInfo:", error);
                 }
               }}
             >
@@ -132,7 +135,7 @@ function index() {
     handelGetUserInfo();
     handelGetUserInterests();
     handelCheckLike();
-    socket.emit("newVisit", { user_id, visited_id: target_id });
+    socket.emit("newVisit", { user_id: user.id, visited_id: target_id });
   }, []);
   return (
     <div className="container  h-full mt-[100px] border-t border-gray-600">
@@ -152,8 +155,8 @@ function index() {
         >
           <img
             src={
-              user?.profile_picture
-                ? `http://localhost:3000/${user?.profile_picture}`
+              userInfo?.profile_picture
+                ? `http://localhost:3000/${userInfo?.profile_picture}`
                 : UserImg
             }
             alt="profile"
@@ -162,16 +165,16 @@ function index() {
           <div className="flex items-end justify-center gap-1 text-4xl">
             <FaRegUser />
             <p className="mb-0">
-              {user?.username + ", "} {user?.age}
+              {userInfo?.username + ", "} {userInfo?.age}
             </p>
           </div>
           <p className="text-gray-400">{liked ? "true" : "false"}</p>
           <div className="flex justify-center gap-1 items-center text-xl">
-            {user?.gender == "male" ? <IoMdMale /> : <IoFemale />}
-            <p>{user?.gender}</p>, <p>{user?.sexual_preference}</p>
+            {userInfo?.gender == "male" ? <IoMdMale /> : <IoFemale />}
+            <p>{userInfo?.gender}</p>, <p>{userInfo?.sexual_preference}</p>
           </div>
           <p className="text-gray-400 border border-gray-600 rounded-md p-1 italic">
-            {user?.bio}
+            {userInfo?.bio}
           </p>
           <div>
             <div className="flex flex-wrap gap-2 justify-center">
@@ -188,7 +191,7 @@ function index() {
         </div>
         <div className="activities col-span-8 ">
           <div className="flex flex-col  items-center justify-center gap-2 p-1">
-            {user?.images?.map((image: any) => (
+            {userInfo?.images?.map((image: any) => (
               <img
                 src={`http://localhost:3000/${image.url}`}
                 alt="profile"
