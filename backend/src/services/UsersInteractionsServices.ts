@@ -22,6 +22,7 @@ class UsersInteractionsServices {
 
     this.socket.on("newVisit", async (data: any) => {
       console.log("newVisit", data);
+
       await this.newVisit(data.user_id, data.visited_id);
     });
   }
