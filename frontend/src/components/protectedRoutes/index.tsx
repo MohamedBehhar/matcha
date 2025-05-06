@@ -1,5 +1,5 @@
 import { Navigate, Outlet, useLocation } from "react-router-dom";
-import CompleteProfile from "@/pages/completeProfile";
+import CompleteProfile from "@/pages/private/complete-profile";
 import useUserStore from "@/store/userStore";
 import Header from "../header";
 
