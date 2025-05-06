@@ -30,8 +30,8 @@ export const headerData = [
     icon: <IoMdNotifications size={28} />,
   },
   {
-    title: "Chat",
-    path: "/chat",
+    title: "Messages",
+    path: "/messages",
     typeImg: "icon",
     icon: <IoChatbubbleSharp size={28} />,
   },

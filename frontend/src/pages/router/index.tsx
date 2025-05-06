@@ -1,6 +1,7 @@
 import { lazy, Suspense } from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { LoadingPage } from "@/components/loading";
+import MessagesPage from "../private/messages";
 
 const GlobalLayout = lazy(() => import("../layout"));
 const LoginPage = lazy(() => import("../public/sign-in"));
@@ -35,6 +36,7 @@ export default function Router() {
               <Route path="/match-making" element={<MatchMaking />} />
               <Route path="/profile/:userid" element={<ProfilePage />} />
               <Route path="/complete-profile" element={<CompleteProfile />} />
+              <Route path="/messages" element={<MessagesPage />} />
             </Route>
             <Route path="/signin" element={<LoginPage />} />
             <Route path="/signup" element={<SignUpPage />} />
