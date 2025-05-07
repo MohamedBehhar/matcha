@@ -17,6 +17,8 @@ import toast from "react-hot-toast";
 function index() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const emailRef = React.useRef<HTMLInputElement>(null);
+
   const [email, setEmail] = useState("");
   const setUserInfos = useUserStore((state) => state.setUserInfos);
   const logUser = useUserStore((state) => state.logUser);
@@ -46,8 +48,6 @@ function index() {
     }
     setIsLoading(false);
   };
-
-  const emailRef = React.useRef<HTMLInputElement>(null);
 
   const handleForgotPassword = async () => {
     if (!email) {
