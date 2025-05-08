@@ -348,6 +348,8 @@ function MatchingPage() {
   // const opacity = useTransform(x, [-300, 0, 300], [0, 1, 0]);
   const rotate = useTransform(x, [-300, 0, 300], [-30, 0, 30]);
   const scale = useTransform(x, [-300, 0, 300], [0.8, 1, 0.8]);
+  // useTransform(x, [0, 100], [0, 1])
+  const LikeTransform = useTransform(x, [0, 100], [0, 1]);
 
   // State management
   const [zoom, setZoom] = useState(12);
@@ -675,7 +677,6 @@ function MatchingPage() {
                   </div>
                 </div>
               </div>
-
               <Button
                 type="submit"
                 className="w-full bg-red-500 hover:bg-red-600 text-white font-medium py-2"
@@ -700,7 +701,7 @@ function MatchingPage() {
             <AnimatePresence>
               <motion.div
                 key={currentUser.id}
-                className="absolute w-full max-w-xs"
+                className="absolute w-full max-w-xs "
                 initial={{ scale: 0.8, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.8, opacity: 0 }}
@@ -723,7 +724,7 @@ function MatchingPage() {
 
                   <motion.div
                     className="absolute right-5 top-5 bg-green-500 text-white p-2 rounded-full z-10"
-                    style={{ opacity: useTransform(x, [0, 100], [0, 1]) }}
+                    style={{ opacity: LikeTransform }}
                   >
                     <IoIosHeart size={24} />
                   </motion.div>
@@ -751,7 +752,7 @@ function MatchingPage() {
                     </div>
                   </div>
 
-                  <div className="p-4 space-y-3 bg-red-500">
+                  <div className="p-4 space-y-3">
                     <div className="flex items-center gap-2">
                       <Badge className="bg-gray-200 text-gray-700">
                         {currentUser.gender}

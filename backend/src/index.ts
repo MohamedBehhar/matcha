@@ -19,7 +19,7 @@ import { addSocketIdToRedis, deleteSocketIdFromRedis } from "./utils/redis";
 import session from "express-session";
 import passport from "passport";
 import cookieParser from "cookie-parser";
-
+import orm from "./lib/orm";
 const PORT = 3000;
 const app = express();
 const server = http.createServer(app);
@@ -72,21 +72,28 @@ const socket = new Server(server, {
 });
 
 socket.on("connection", (socket) => {
-  console.log("a user connected", socket.id);
+  const user_id = socket.handshake.query.user_id as string;
+  userMap.set(socket.id, user_id);
+  console.log("user_id", user_id);
+  userMap.set(socket.id, user_id);
+  addSocketIdToRedis(user_id, socket.id);
   socket.on("disconnect", () => {
     deleteSocketIdFromRedis(socket.id);
+    userMap.delete(socket.id);
   });
-  socket.on("join", (userId) => {
-    console.log("User joined", userId);
-    addSocketIdToRedis(userId, socket.id);
+  socket.on("message", async(msg) => {
+    console.log("message", msg);
+    const { user_id, message } = msg;
+    const socketId = userMap.get(user_id);
+    if (socketId) {
+      socket.to(socketId).emit("message", message);
+    } else {
+      console.log("User not connected");
+    }
   });
-  socket.on("chat message", (msg) => {
-    console.log("message: " + msg);
-    // socket.broadcast.emit('chat message', msg);
-  });
-  UsersInteractionsServices.initSocket(socket as unknown as any, userMap);
-  userServices.initSocket(socket as unknown as any);
-  notificationsServices.initSocket(socket as unknown as any, userMap);
+  // UsersInteractionsServices.initSocket(socket as unknown as any, userMap);
+  // userServices.initSocket(socket as unknown as any);
+  // notificationsServices.initSocket(socket as unknown as any, userMap);
 });
 
 socket.on("error", (err) => {

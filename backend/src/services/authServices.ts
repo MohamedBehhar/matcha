@@ -252,8 +252,8 @@ class AuthServices {
     if (false == user.is_verified) {
       throw new ForbiddenError("Account not verified");
     }
-    const isMatch = await bcrypt.compare(data.password, user.password);
-    // const isMatch = data.password === user.password;
+    // const isMatch = await bcrypt.compare(data.password, user.password);
+    const isMatch = data.password === user.password;
     if (!isMatch) {
       throw new UnauthorizedError("Invalid password");
     }
