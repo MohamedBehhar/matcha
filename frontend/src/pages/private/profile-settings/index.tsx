@@ -245,7 +245,6 @@ function ProfileSetting() {
       setUserInfos(updatedUser);
       toast.success("Profile updated successfully");
     } catch (error) {
-      console.error("Failed to update profile:", error);
       toast.error("Failed to update profile");
     } finally {
       setLoading(false);

@@ -65,7 +65,6 @@ export default function HomePage() {
 
   const getFallbackLocation = async () => {
     try {
-      alert(ip);
       const response = await fetch(
         "https://api.ipapi.com/api/" +
           ip +
