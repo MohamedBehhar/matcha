@@ -17,6 +17,7 @@ import { FaRegStar, FaStar } from "react-icons/fa";
 import toast from "react-hot-toast";
 import { Textarea } from "@/components/ui/textArea";
 import useUserStore from "@/store/userStore";
+import axios from "axios";
 
 function ProfileSetting() {
   // State management
@@ -33,82 +34,86 @@ function ProfileSetting() {
   const { user, setUserInfos } = useUserStore();
 
   // Fetch user and related data
-  const getInfo = useCallback(async () => {
+  useEffect(() => {
     if (!user?.id) return;
 
-    setLoading(true);
-    try {
-      const [userData, interestsData, userImages] = await Promise.all([
-        getUserById(user.id),
-        getInterests(),
-        getUserImages(String(user.id)),
-      ]);
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const [userData, interestsData, userImages] = await Promise.all([
+          getUserById(user.id),
+          getInterests(),
+          getUserImages(String(user.id)),
+        ]);
 
-      setUserInfos(userData);
-      setProfilePicture(userData.profile_picture);
-      setInterests(interestsData);
-      setSelectedInterests(userData.interests || []);
-      setBirthDate(
-        userData.date_of_birth
-          ? new Date(userData.date_of_birth).toISOString().split("T")[0]
-          : ""
-      );
-      setSelectedImages(userImages);
-      setRating(userData.rating || 0);
-    } catch (error) {
-      console.error("Error fetching user data:", error);
-      toast.error("Failed to load profile data");
-    } finally {
-      setLoading(false);
-    }
-  }, [user?.id, setUserInfos]);
+        setUserInfos(userData);
+        setProfilePicture(userData.profile_picture);
+        setInterests(interestsData);
+        setSelectedInterests(userData.interests || []);
+        setBirthDate(
+          userData.date_of_birth
+            ? new Date(userData.date_of_birth).toISOString().split("T")[0]
+            : ""
+        );
+        setSelectedImages(userImages);
+        setRating(userData.rating || 0);
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+        toast.error("Failed to load profile data");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  useEffect(() => {
-    if (user?.id) {
-      getInfo();
-    }
-  }, [user?.id, getInfo]);
+    const fetchLocation = () => {
+      const updateLocation = (latitude, longitude) => {
+        setUserInfos({
+          ...user,
+          latitude,
+          longitude,
+        });
 
-  // Handle user location
-  const handleGetLocation = useCallback(() => {
-    if (!user?.id) return;
+        updateUserLocation(user.id, {
+          latitude,
+          longitude,
+          userId: user.id,
+        }).catch((err) => {
+          console.error("Failed to update location:", err);
+          toast.error("Failed to update location");
+        });
+      };
 
-    if ("geolocation" in navigator) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const { latitude, longitude } = position.coords;
+      if ("geolocation" in navigator) {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            const { latitude, longitude } = position.coords;
+            updateLocation(latitude, longitude);
+            setError(null);
+          },
+          async () => {
+            try {
+              const { data } = await axios.get(
+                "https://ipinfo.io/json?access_key=d528a69471b1f2a9ce4d239c07857f2f"
+              );
+              if (data.loc) {
+                const [latitude, longitude] = data.loc.split(",");
+                updateLocation(parseFloat(latitude), parseFloat(longitude));
+                setError(null);
+              } else {
+                setError("Unable to retrieve location.");
+              }
+            } catch (err) {
+              console.error("Failed to fetch location from IP API:", err);
+              setError("Unable to retrieve location.");
+            }
+          }
+        );
+      }
+    };
 
-          setUserInfos({
-            ...user,
-            latitude,
-            longitude,
-          });
-
-          updateUserLocation(user.id, {
-            latitude,
-            longitude,
-            userId: user.id,
-          }).catch((err) => {
-            console.error("Failed to update location:", err);
-            toast.error("Failed to update location");
-          });
-
-          setError(null);
-        },
-        () => {
-          setError("Unable to retrieve location.");
-        }
-      );
-    } else {
-      setError("Geolocation is not supported by this browser.");
-    }
-  }, [user, setUserInfos]);
-
-  useEffect(() => {
-    if (user?.id) {
-      handleGetLocation();
-    }
-  }, [user?.id, handleGetLocation]);
+    fetchData();
+    fetchLocation();
+  }, [user?.id]);
 
   // Interest selection
   const handleInterestToggle = (interest) => {
