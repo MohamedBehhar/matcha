@@ -41,7 +41,9 @@ class UserService {
     }
     this.socket?.emit("me", email);
     const user = await orm.findOne("users", { where: { email } });
-    console.log(user);
+    if (!user) {
+      throw new UnauthorizedError("Unauthorized");
+    }
     return user;
   }
 

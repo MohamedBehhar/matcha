@@ -76,7 +76,6 @@ class UserControllers {
 
   @handleResponse()
   public async addImages(req: Request, res: Response) {
-    console.log("- - - - - - - - - - - - - hhh - - - - - - - ");
     const images = req.files as [];
     const userId = req.params.id;
     console.log("hhhh ", images);
