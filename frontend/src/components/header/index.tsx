@@ -129,7 +129,7 @@ export default function Header() {
                   <Link
                     to={item.path}
                     className={cn(
-                      "[&>*]:transition-colors hover:bg-red-500 hover:[&>*]:text-red-primary",
+                      "[&>*]:transition-colors hover:bg-red-500 hover:[&>*]:text-red-primary relative",
                       {
                         "text-primary": location.pathname !== item.path,
                         "text-red-primary": item.title === "Matches",
@@ -148,7 +148,15 @@ export default function Header() {
                         alt="User Profile"
                       />
                     ) : (
-                      item.icon
+                      <>
+                        {notificationsCount > 0 &&
+                          item.title === "Notifications" && (
+                            <span className="absolute top-0 right-[-5px] d-flex items-center justify-center bg-red-500 text-white rounded-full px-1 aspect-square text-xs">
+                              <p>{notificationsCount}</p>
+                            </span>
+                          )}
+                        {item.icon}
+                      </>
                     )}
                   </Link>
                 </div>
