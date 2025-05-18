@@ -42,7 +42,7 @@ CREATE TABLE users
     auth_provider auth_provider DEFAULT 'local',
     age INTEGER,
     profile_picture VARCHAR(255),
-    email VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL UNIQUE,
     date_of_birth DATE,
     password VARCHAR(255),
     first_name VARCHAR(50) NOT NULL,
