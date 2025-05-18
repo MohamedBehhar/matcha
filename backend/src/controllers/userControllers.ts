@@ -43,14 +43,11 @@ class UserControllers {
     if (req.file?.filename) {
       body.profile_picture = "/" + req.file?.filename || "";
     }
-    console.log("body from update ", req.params.id);
     const user = await userServices.update(body, req.params.id);
-    console.log("user from update ", user);
     if (req.body.interests) {
       const interests = JSON.parse(req.body.interests);
       await userServices.addUserInterests(req.params.id, interests);
     }
-    console.log(await userServices.profileCompleted(req.params.id));
     return user as unknown as void;
   }
 
@@ -78,7 +75,6 @@ class UserControllers {
   public async addImages(req: Request, res: Response) {
     const images = req.files as [];
     const userId = req.params.id;
-    console.log("hhhh ", images);
     for (const image of images) {
       await userServices.addUserImage(userId, image);
     }
