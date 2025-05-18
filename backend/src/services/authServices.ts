@@ -131,7 +131,7 @@ class AuthServices {
         });
         if (user.is_data_complete)
           res.redirect("http://localhost:5173/match-making");
-        else res.redirect("http://localhost:5173/profile-settings");
+        else res.redirect("http://localhost:5173/complete-profile");
       } catch (error) {
         res.redirect(
           "http://localhost:5173/login?error=Token generation failed"
@@ -199,6 +199,7 @@ class AuthServices {
   public async signUp(data: SignUpInput): Promise<Record<string, unknown>> {
     try {
       const body = signUpType.validate(data);
+      console.log("data: ", body);
       const hashedPassword = await bcrypt.hash(body.password, 10);
       const newUser = await orm.create("users", {
         ...body,
