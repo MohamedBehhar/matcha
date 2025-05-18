@@ -129,8 +129,9 @@ class AuthServices {
           sameSite: "strict",
           maxAge: 1000 * 60 * 60 * 24,
         });
-
-        res.redirect("http://localhost:5173");
+        if (user.is_data_complete)
+          res.redirect("http://localhost:5173/match-making");
+        else res.redirect("http://localhost:5173/profile-settings");
       } catch (error) {
         res.redirect(
           "http://localhost:5173/login?error=Token generation failed"
