@@ -39,9 +39,9 @@ function index() {
       setUserInfos(response);
       logUser(response);
       if (response.is_data_complete) {
-        navigate("/");
+        navigate("/match-making");
       } else {
-        navigate("/profile-settings");
+        navigate("/complete-profile");
       }
     } catch (error) {
       setError(error.response.data);
@@ -122,6 +122,7 @@ function index() {
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.95 }}
               className="w-full max-w-[200px] border border-white py-2 rounded-md "
+              type="button"
             >
               <a
                 href="http://localhost:3000/api/auth/google"
@@ -143,6 +144,7 @@ function index() {
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.95 }}
               className="w-full max-w-[200px] border border-red-primary py-2 rounded-md "
+              type="button"
             >
               <Link to="/signup" className="text-red-primary font-semibold w-">
                 Sign Up
