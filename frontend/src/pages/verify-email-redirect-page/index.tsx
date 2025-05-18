@@ -11,12 +11,12 @@ function index() {
     console.log(token);
     verifyEmail(token || "")
       .then((res) => {
-        console.log(res);
-        localStorage.setItem("access_token", res.access_token);
-        localStorage.setItem("refresh_token", res.refresh_token);
         localStorage.setItem("id", res.id);
-        navigate("/");
-        // navigate("/");
+        if (res.is_data_complete) {
+          navigate("/match-making");
+        } else {
+          navigate("/complete-profile");
+        }
       })
       .catch((err) => {
         console.error(err);
