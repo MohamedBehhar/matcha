@@ -1,49 +1,29 @@
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import {
-  FaMale,
-  FaFemale,
-  FaAngleDoubleRight,
-  FaRegEdit,
-} from "react-icons/fa";
+import { motion } from "framer-motion";
+import { FaMale, FaFemale } from "react-icons/fa";
 import { BsX } from "react-icons/bs";
 import { RiImageAddLine } from "react-icons/ri";
+import { FiChevronsRight } from "react-icons/fi";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textArea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radioGroup";
 import { Label } from "@/components/ui/label";
 import useUserStore from "@/store/userStore";
-import userImg from "@/assets/images/user.png";
 import { updateUser } from "@/api/methods/user";
-import { FiChevronsLeft } from "react-icons/fi";
-import { FiChevronsRight } from "react-icons/fi";
+import toast from "react-hot-toast";
+import { useNavigate } from "react-router";
 
-// Define TypeScript interfaces
+// Types
 interface User {
   gender: string;
   sexual_preference: string;
   bio: string;
 }
 
-interface StepProps {
-  user: User;
-  setUserInfos: (user: User) => void;
-  incrementStep: () => void;
-  decrementStep?: () => void;
-}
+// Steps Constants
+const TOTAL_STEPS = 5;
 
-interface Step1Props {
-  birthDate: string;
-  setBirthDate: (value: string) => void;
-  incrementStep: () => void;
-}
-
-interface Step5Props {
-  profilePicture: File | null;
-  setProfilePicture: (value: File | null) => void;
-}
-
-// Reusable AnimatedStep component
+// Reusable Animation Wrapper
 const AnimatedStep = ({ children }: { children: React.ReactNode }) => (
   <motion.div
     initial={{ opacity: 0, x: -20 }}
@@ -55,189 +35,197 @@ const AnimatedStep = ({ children }: { children: React.ReactNode }) => (
   </motion.div>
 );
 
-const NextButton = ({ incrementStep }: { incrementStep: () => void }) => {
-  return (
-    <motion.button
-      type="button"
-      initial={{ opacity: 0, x: -20 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: 20 }}
-      transition={{ duration: 0.3 }}
-      Button
-      onClick={incrementStep}
-      className="justify-self-end"
-    >
-      <FiChevronsRight size={24} />
-    </motion.button>
-  );
-};
-
-// Step 1: Select Birthdate
-const Step1 = ({ birthDate, setBirthDate, incrementStep }: Step1Props) => {
-  return (
-    <AnimatedStep>
-      <div className="w-full flex flex-col justify-center items-center gap-10">
-        <input
-          type="date"
-          id="date_of_birth"
-          name="date_of_birth"
-          value={birthDate}
-          max={
-            new Date(new Date().setFullYear(new Date().getFullYear() - 18))
-              .toISOString()
-              .split("T")[0]
-          }
-          className="p-2 border rounded-md bg-transparent padding-2 w-[240px] mb-4"
-          onChange={(e) => setBirthDate(e.target.value)}
-        />
-      </div>
-    </AnimatedStep>
-  );
-};
-
-// Step 2: Select Gender
-const Step2 = ({ user, setUserInfos, incrementStep }: StepProps) => (
-  <AnimatedStep>
-    <div className="w-full flex flex-col justify-center items-center gap-10">
-      <div className="flex justify-center gap-4">
-        <Button
-          className={`w-36 h-36 hover:scale-110 ease-linear flex flex-col gap-2 ${
-            user.gender === "female" ? "border border-white" : ""
-          }`}
-          variant="ghost"
-          onClick={() => setUserInfos({ ...user, gender: "female" })}
-        >
-          <FaFemale className="text-4xl text-red-primary" size={80} />
-        </Button>
-        <Button
-          className={`w-36 h-36 hover:scale-110 ease-linear flex flex-col gap-2 ${
-            user.gender === "male" ? "border border-white" : ""
-          }`}
-          variant="ghost"
-          onClick={() => setUserInfos({ ...user, gender: "male" })}
-        >
-          <FaMale className="text-4xl text-blue-primary" size={80} />
-        </Button>
-      </div>
-    </div>
-  </AnimatedStep>
-);
-
-// Step 3: Select Sexual Preference
-const Step3 = ({ user, setUserInfos, incrementStep }: StepProps) => (
-  <AnimatedStep>
-    <div className="w-full flex flex-col justify-center items-center gap-10">
-      <RadioGroup
-        defaultValue={user.sexual_preference}
-        onChange={(e: any) => console.log(e.target.value)}
-        className="flex flex-col gap-4"
-      >
-        <div className="flex items-center space-x-2">
-          <RadioGroupItem value="heterosexual" id="r1" />
-          <Label htmlFor="r1">Heterosexual</Label>
-        </div>
-        <div className="flex items-center space-x-2">
-          <RadioGroupItem value="bisexual" id="r2" />
-          <Label htmlFor="r2">Bisexual</Label>
-        </div>
-        <div className="flex items-center space-x-2">
-          <RadioGroupItem value="homosexual" id="r3" />
-          <Label htmlFor="r3">Homosexual</Label>
-        </div>
-      </RadioGroup>
-    </div>
-  </AnimatedStep>
-);
-
-// Step 4: Add Bio
-const Step4 = ({ user, setUserInfos, incrementStep }: StepProps) => (
-  <AnimatedStep>
-    <div className="w-full flex flex-col justify-center items-center gap-10">
-      <h1 className="text-3xl font-bold" style={{ color: "#333" }}>
-        Add a Bio
-      </h1>
-      <Textarea
-        name="bio"
-        placeholder="Bio"
-        defaultValue={user.bio}
-        className="mb-4 w-[300px]"
-        maxLength={500}
-        rows={5}
-        onChange={(e) => setUserInfos({ ...user, bio: e.target.value })}
-      />
-    </div>
-  </AnimatedStep>
-);
-
-// Step 5: Upload Profile Picture
-const Step5 = ({ profilePicture, setProfilePicture }: Step5Props) => {
-  const handleProfilePicture = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        alert("File size must be less than 5MB.");
-        return;
-      }
-      if (!file.type.startsWith("image/")) {
-        alert("Please upload an image file.");
-        return;
-      }
-      setProfilePicture(file);
-    }
-  };
-
-  return (
-    <AnimatedStep>
-      <div className="w-full flex justify-center items-center flex-col gap-4">
-        <div className="flex items-center justify-center mb-2 rounded-full w-[200px]">
-          {profilePicture ? (
-            <div className="relative">
-              <img
-                src={URL.createObjectURL(profilePicture)}
-                alt="profile"
-                className="flex-1 w-[200px] aspect-square object-cover rounded-full"
-                onError={(e) => {
-                  e.currentTarget.onerror = null;
-                  e.currentTarget.src = userImg;
-                }}
-              />
-              <button
-                className="absolute top-0 right-0 rounded-full p-1 bg-white"
-                onClick={() => setProfilePicture(null)}
-              >
-                <BsX size={20} />
-              </button>
-            </div>
-          ) : (
-            <label className="cursor-pointer flex flex-col items-center justify-center aspect-square rounded-full p-1 w-full">
-              <RiImageAddLine size={60} className="text-gray-600" />
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleProfilePicture}
-                className="hidden"
-              />
-            </label>
-          )}
-        </div>
-      </div>
-    </AnimatedStep>
-  );
-};
-
-// Progress Indicator
+// Progress Dots
 const ProgressIndicator = ({ step }: { step: number }) => (
   <div className="flex gap-2 mb-6">
-    {[1, 2, 3, 4, 5].map((s) => (
+    {Array.from({ length: TOTAL_STEPS }, (_, i) => (
       <div
-        key={s}
+        key={i}
         className={`w-4 h-4 rounded-full ${
-          s <= step ? "bg-red-primary" : "bg-gray-300"
+          i + 1 <= step ? "bg-red-primary" : "bg-gray-300"
         }`}
       />
     ))}
   </div>
 );
+
+// Next Button
+const NextButton = ({
+  onClick,
+  disabled = false,
+}: {
+  onClick: () => void;
+  disabled?: boolean;
+}) => (
+  <Button
+    onClick={onClick}
+    disabled={disabled}
+    className="flex items-center gap-2"
+    type="button"
+  >
+    Next <FiChevronsRight />
+  </Button>
+);
+
+// Step 1: Birthdate
+const Step1 = ({
+  birthDate,
+  setBirthDate,
+}: {
+  birthDate: string;
+  setBirthDate: (val: string) => void;
+}) => (
+  <AnimatedStep>
+    <div className="flex flex-col items-center gap-6">
+      <input
+        type="date"
+        value={birthDate}
+        max={
+          new Date(new Date().setFullYear(new Date().getFullYear() - 18))
+            .toISOString()
+            .split("T")[0]
+        }
+        onChange={(e) => setBirthDate(e.target.value)}
+        className="p-2 border rounded-md bg-transparent w-60"
+      />
+    </div>
+  </AnimatedStep>
+);
+
+// Step 2: Gender
+const Step2 = ({
+  user,
+  setUserInfos,
+}: {
+  user: User;
+  setUserInfos: (u: User) => void;
+}) => (
+  <AnimatedStep>
+    <div className="flex justify-center gap-4">
+      <Button
+        variant="ghost"
+        className={`w-36 h-36 flex flex-col items-center justify-center ${
+          user.gender === "female" ? "border border-white" : ""
+        }`}
+        onClick={() => setUserInfos({ ...user, gender: "female" })}
+        type="button"
+      >
+        <FaFemale size={80} className="text-red-primary" />
+        Female
+      </Button>
+      <Button
+        variant="ghost"
+        className={`w-36 h-36 flex flex-col items-center justify-center ${
+          user.gender === "male" ? "border border-white" : ""
+        }`}
+        onClick={() => setUserInfos({ ...user, gender: "male" })}
+        type="button"
+      >
+        <FaMale size={80} className="text-blue-primary" />
+        Male
+      </Button>
+    </div>
+  </AnimatedStep>
+);
+
+// Step 3: Sexual Preference
+const Step3 = ({
+  user,
+  setUserInfos,
+}: {
+  user: User;
+  setUserInfos: (u: User) => void;
+}) => (
+  <AnimatedStep>
+    <RadioGroup
+      value={user.sexual_preference}
+      onValueChange={(value) =>
+        setUserInfos({ ...user, sexual_preference: value })
+      }
+      className="flex flex-col gap-4"
+    >
+      {["heterosexual", "bisexual", "homosexual"].map((pref) => (
+        <div key={pref} className="flex items-center space-x-2">
+          <RadioGroupItem value={pref} id={pref} />
+          <Label htmlFor={pref} className="capitalize">
+            {pref}
+          </Label>
+        </div>
+      ))}
+    </RadioGroup>
+  </AnimatedStep>
+);
+
+// Step 4: Bio
+const Step4 = ({
+  user,
+  setUserInfos,
+}: {
+  user: User;
+  setUserInfos: (u: User) => void;
+}) => (
+  <AnimatedStep>
+    <div className="flex flex-col items-center gap-4">
+      <Textarea
+        placeholder="Tell us about yourself..."
+        value={user.bio}
+        onChange={(e) => setUserInfos({ ...user, bio: e.target.value })}
+        maxLength={500}
+        rows={5}
+        className="w-72"
+      />
+    </div>
+  </AnimatedStep>
+);
+
+// Step 5: Profile Picture
+const Step5 = ({
+  profilePicture,
+  setProfilePicture,
+}: {
+  profilePicture: File | null;
+  setProfilePicture: (f: File | null) => void;
+}) => {
+  const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) return alert("File too large (max 5MB)");
+    if (!file.type.startsWith("image/")) return alert("Upload an image file");
+    setProfilePicture(file);
+  };
+
+  return (
+    <AnimatedStep>
+      <div className="flex flex-col items-center gap-4">
+        {profilePicture ? (
+          <div className="relative">
+            <img
+              src={URL.createObjectURL(profilePicture)}
+              alt="profile"
+              className="w-52 h-52 object-cover rounded-full"
+            />
+            <button
+              className="absolute top-0 right-0 bg-white rounded-full p-1"
+              onClick={() => setProfilePicture(null)}
+            >
+              <BsX size={20} />
+            </button>
+          </div>
+        ) : (
+          <label className="cursor-pointer flex flex-col items-center justify-center border-2 border-dashed border-gray-400 rounded-full w-52 h-52">
+            <RiImageAddLine size={60} />
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleFile}
+              className="hidden"
+            />
+          </label>
+        )}
+      </div>
+    </AnimatedStep>
+  );
+};
 
 // Main Component
 const CompleteProfile = () => {
@@ -245,9 +233,11 @@ const CompleteProfile = () => {
   const [birthDate, setBirthDate] = useState("");
   const [step, setStep] = useState(1);
   const [profilePicture, setProfilePicture] = useState<File | null>(null);
+  const navigate = useNavigate();
 
-  const incrementStep = () => setStep((prev) => prev + 1);
-  const decrementStep = () => setStep((prev) => prev - 1);
+  const handleNext = () => {
+    if (step < TOTAL_STEPS) setStep((prev) => prev + 1);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -265,94 +255,45 @@ const CompleteProfile = () => {
     try {
       const response = await updateUser(formData, user.id + "");
       if (response) {
-        alert("Profile updated successfully.");
+        toast.success("Profile updated successfully!");
+        navigate("/match-making");
       }
     } catch (error) {
       alert("An error occurred. Please try again later.");
     }
   };
-  const stepTitle = [
-    "Select your birthdate",
-    "Indicate your gender",
-    "Select your sexual preference",
-    "Add a bio",
-    "Upload a profile picture",
-  ];
 
   return (
-    <div className="h-screen flex justify-center ">
-      <form
-        className=" flex flex-col items-center pt-10  gap-6 relative  min-w-[400px]"
-        onSubmit={handleSubmit}
-      >
-        <h1 className="text-3xl font-bold text-gray-400">
-          {stepTitle[step - 1]}
-        </h1>
-        {user.sexual_preference}
-        <div className="h-[200px] w-full flex items-center justify-center">
-          <AnimatePresence mode="wait">
-            {step === 1 && (
-              <>
-                <Step1
-                  birthDate={birthDate}
-                  setBirthDate={setBirthDate}
-                  incrementStep={incrementStep}
-                />
-              </>
-            )}
-            {step === 2 && (
-              <Step2
-                user={user}
-                setUserInfos={setUserInfos}
-                incrementStep={incrementStep}
-              />
-            )}
-            {step === 3 && (
-              <Step3
-                user={user}
-                setUserInfos={setUserInfos}
-                incrementStep={incrementStep}
-              />
-            )}
-            {step === 4 && (
-              <Step4
-                user={user}
-                setUserInfos={setUserInfos}
-                incrementStep={incrementStep}
-              />
-            )}
-            {step === 5 && (
-              <Step5
-                profilePicture={profilePicture}
-                setProfilePicture={setProfilePicture}
-              />
-            )}
-          </AnimatePresence>
-        </div>
-        <div className="grid grid-cols-2  text-gray-300  w-full">
-          {step > 1 && (
-            <motion.button
-              type="button"
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 20 }}
-              transition={{ duration: 0.3 }}
-              Button
-              onClick={decrementStep}
-              className="justify-self-start"
-            >
-              <FiChevronsLeft size={24} />
-            </motion.button>
-          )}
-          {step < 5 && <NextButton incrementStep={incrementStep} />}
-        </div>
-        {profilePicture && (
-          <Button type="submit" className="items">
-            Submit
-          </Button>
+    <form
+      onSubmit={handleSubmit}
+      className="flex flex-col items-center justify-center h-[70vh] gap-6"
+    >
+      <ProgressIndicator step={step} />
+
+      {step === 1 && (
+        <Step1 birthDate={birthDate} setBirthDate={setBirthDate} />
+      )}
+      {step === 2 && <Step2 user={user} setUserInfos={setUserInfos} />}
+      {step === 3 && <Step3 user={user} setUserInfos={setUserInfos} />}
+      {step === 4 && <Step4 user={user} setUserInfos={setUserInfos} />}
+      {step === 5 && (
+        <Step5
+          profilePicture={profilePicture}
+          setProfilePicture={setProfilePicture}
+        />
+      )}
+
+      <div className="mt-4">
+        {step < TOTAL_STEPS ? (
+          <NextButton
+            onClick={handleNext}
+            disabled={step === 1 && !birthDate}
+          />
+        ) : (
+          <Button type="submit">Finish</Button>
         )}
-      </form>
-    </div>
+      </div>
+    </form>
   );
 };
 
