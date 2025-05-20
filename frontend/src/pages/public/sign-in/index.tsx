@@ -63,9 +63,10 @@ function index() {
   };
 
   return (
-    <div className="container flex flex-col items-center justify-center h-screen">
-      {error && <div className="text-red-500 text-sm">{error}</div>}
-      <div className="flex flex-col lg:flex-row  items-center w-full p-4 rounded-md">
+    <div className="flex flex-col items-center justify-center min-h-screen px-4 bg-black-primary">
+      {error && <div className="text-red-500 text-sm mb-4">{error}</div>}
+
+      <div className="flex flex-col lg:flex-row items-center w-full max-w-5xl bg-black-secondary rounded-lg p-6 gap-8">
         {/* Animated Signup Image */}
         <motion.div
           initial={{ opacity: 0, scale: 0.8 }}
@@ -75,9 +76,9 @@ function index() {
             ease: "easeOut",
             scale: { type: "spring", stiffness: 120, damping: 10 },
           }}
-          className="flex-1"
+          className="w-full  max-w-[400px] "
         >
-          <SignupImg className="flex-1 fill-red-primary" />
+          <SignupImg className="w-full " />
         </motion.div>
 
         {/* Animated Form */}
@@ -86,25 +87,30 @@ function index() {
           animate={{ x: 0, opacity: 1 }}
           transition={{ delay: 0.5, duration: 0.8, ease: "easeOut" }}
           onSubmit={handleSubmit}
-          className="flex-1 flex flex-col items-center justify-center gap-2"
+          className="w-full max-w-[450px]   flex flex-col items-center gap-4"
         >
           <Input
             name="email"
             type="email"
             placeholder="Email"
-            className="mb-4"
+            className="w-full"
             onChange={(e) => setEmail(e.target.value)}
             ref={emailRef}
           />
 
-          <Input name="password" type="password" placeholder="Password" />
+          <Input
+            name="password"
+            type="password"
+            placeholder="Password"
+            className="w-full"
+          />
 
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.95 }}
             type="button"
-            className="mb-4 text-red-primary text-sm bg-transparent p-0 hover:none"
             onClick={handleForgotPassword}
+            className="text-red-primary text-sm hover:underline self-end"
           >
             Forgot Password?
           </motion.button>
@@ -113,26 +119,24 @@ function index() {
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.95 }}
             type="submit"
-            className="w-full max-w-[200px] bg-red-primary text-white py-2 rounded-md"
+            className="w-full bg-red-primary text-white py-2 rounded-md"
           >
             {isLoading ? <HeartLoader /> : "Sign In"}
           </motion.button>
-          <div className="flex flex-col gap-2 md:flex-row items-center justify-center   w-full  mt-10">
+
+          {/* Divider */}
+          <div className="w-full  h-px bg-gray-700 my-2"></div>
+
+          <div className="flex flex-col max-w-[300px] sm:max-w-[unset] md:flex-row items-center justify-center w-full gap-4">
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.95 }}
-              className="w-full max-w-[200px] border  py-2 rounded-md "
               type="button"
+              className="w-full md:w-auto flex items-center justify-center gap-2 bg-gray-600 py-2 px-4 rounded-md"
             >
               <a
                 href="http://localhost:3000/api/auth/google"
-                style={{
-                  textDecoration: "none",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: "4px",
-                }}
+                className="flex items-center gap-2"
               >
                 <FcGoogle size={20} /> Sign In with Google
               </a>
@@ -141,12 +145,10 @@ function index() {
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.95 }}
-              className="w-full max-w-[200px] border border-red-primary py-2 rounded-md "
               type="button"
+              className="w-full md:w-auto border border-red-primary text-red-primary font-semibold py-2 px-4 rounded-md"
             >
-              <Link to="/signup" className="text-red-primary font-semibold w-">
-                Sign Up
-              </Link>
+              <Link to="/signup">Sign Up</Link>
             </motion.button>
           </div>
         </motion.form>
