@@ -100,7 +100,7 @@ function index() {
           <Input name="password" type="password" placeholder="Password" />
 
           <motion.button
-            whileHover={{ scale: 1.1 }}
+            whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.95 }}
             type="button"
             className="mb-4 text-red-primary text-sm bg-transparent p-0 hover:none"
@@ -110,7 +110,7 @@ function index() {
           </motion.button>
 
           <motion.button
-            whileHover={{ scale: 1.1 }}
+            whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.95 }}
             type="submit"
             className="w-full max-w-[200px] bg-red-primary text-white py-2 rounded-md"
@@ -119,15 +119,14 @@ function index() {
           </motion.button>
           <div className="flex flex-col gap-2 md:flex-row items-center justify-center   w-full  mt-10">
             <motion.button
-              whileHover={{ scale: 1.1 }}
+              whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.95 }}
-              className="w-full max-w-[200px] border border-white py-2 rounded-md "
+              className="w-full max-w-[200px] border  py-2 rounded-md "
               type="button"
             >
               <a
                 href="http://localhost:3000/api/auth/google"
                 style={{
-                  color: "white",
                   textDecoration: "none",
                   display: "flex",
                   alignItems: "center",
@@ -138,10 +137,9 @@ function index() {
                 <FcGoogle size={20} /> Sign In with Google
               </a>
             </motion.button>
-            <div>Or</div>
 
             <motion.button
-              whileHover={{ scale: 1.1 }}
+              whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.95 }}
               className="w-full max-w-[200px] border border-red-primary py-2 rounded-md "
               type="button"

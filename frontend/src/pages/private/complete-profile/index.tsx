@@ -37,7 +37,7 @@ const AnimatedStep = ({ children }: { children: React.ReactNode }) => (
 
 // Progress Dots
 const ProgressIndicator = ({ step }: { step: number }) => (
-  <div className="flex gap-2 mb-6">
+  <div className="flex gap-8 mb-6 border justify-center items-center ">
     {Array.from({ length: TOTAL_STEPS }, (_, i) => (
       <div
         key={i}
@@ -46,6 +46,7 @@ const ProgressIndicator = ({ step }: { step: number }) => (
         }`}
       />
     ))}
+    <h1>{step.title}</h1>
   </div>
 );
 
@@ -232,11 +233,37 @@ const CompleteProfile = () => {
   const { user, setUserInfos } = useUserStore();
   const [birthDate, setBirthDate] = useState("");
   const [step, setStep] = useState(1);
+  const stepTitles = [
+    "Add your birthdate",
+    "Select your gender",
+    "Select your sexual preference",
+    "Write a short bio",
+    "Upload a profile picture",
+  ];
   const [profilePicture, setProfilePicture] = useState<File | null>(null);
   const navigate = useNavigate();
 
   const handleNext = () => {
     if (step < TOTAL_STEPS) setStep((prev) => prev + 1);
+  };
+
+  const isNextDisabled = () => {
+    switch (step) {
+      case 1:
+        return !birthDate;
+      case 2:
+        return !user.gender;
+      case 3:
+        return !user.sexual_preference;
+      case 4:
+        return !user.bio?.trim();
+      default:
+        return false;
+    }
+  };
+
+  const handlePrevious = () => {
+    if (step > 1) setStep((prev) => prev - 1);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -268,7 +295,13 @@ const CompleteProfile = () => {
       onSubmit={handleSubmit}
       className="flex flex-col items-center justify-center h-[70vh] gap-6"
     >
+      {Object.keys(user).map((key) => (
+        <div key={key} className="">
+          {user[key as keyof User]}
+        </div>
+      ))}
       <ProgressIndicator step={step} />
+      <h1 className="text-2xl font-bold text-center">{stepTitles[step - 1]}</h1>
 
       {step === 1 && (
         <Step1 birthDate={birthDate} setBirthDate={setBirthDate} />
@@ -283,14 +316,19 @@ const CompleteProfile = () => {
         />
       )}
 
-      <div className="mt-4">
+      <div className="mt-4 flex gap-4">
+        {step > 1 && (
+          <Button onClick={handlePrevious} type="button" variant="outline">
+            Previous
+          </Button>
+        )}
+
         {step < TOTAL_STEPS ? (
-          <NextButton
-            onClick={handleNext}
-            disabled={step === 1 && !birthDate}
-          />
+          <NextButton onClick={handleNext} disabled={isNextDisabled()} />
         ) : (
-          <Button type="submit">Finish</Button>
+          <Button type="submit" disabled={isNextDisabled()}>
+            Finish
+          </Button>
         )}
       </div>
     </form>
