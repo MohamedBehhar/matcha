@@ -1,7 +1,6 @@
 import instance from "../axios";
 
-const likeAUser = async (body: any) => {
-  console.log("body", body);
+const likeAUser = async (body) => {
   try {
     const response = await instance.post("/interactions/like", body);
     return response.data;
@@ -14,6 +13,22 @@ const unlikeAUser = async (body: any) => {
   console.log("body", body);
   try {
     const response = await instance.post("/interactions/unlike", body);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+
+
+
+
+const getFriends = async (user_id: string | null) => {
+  if (!user_id) {
+    throw new Error("User id is required");
+  }
+  try {
+    const response = await instance.get(`/interactions/friends/${user_id}`);
     return response.data;
   } catch (error) {
     throw error;
@@ -64,4 +79,4 @@ const blockAUser = async (body: any) => {
   }
 };
 
-export { likeAUser, unlikeAUser, getMatches, checkLike, blockAUser };
+export { likeAUser, unlikeAUser, getMatches, checkLike, blockAUser , getFriends };

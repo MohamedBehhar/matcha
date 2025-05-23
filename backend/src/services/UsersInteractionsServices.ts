@@ -282,6 +282,32 @@ class UsersInteractionsServices {
 
     return;
   }
+
+  public async getFriends(user_id: string) {
+    const friends = await orm.querySql(
+      `
+      SELECT u.id, u.username, u.email, u.age, u.bio, u.first_name, u.last_name, u.rating
+      FROM friendships f
+      JOIN users u ON (u.id = f.friend_id OR u.id = f.user_id)
+      WHERE (f.user_id = $1 OR f.friend_id = $1) AND u.id != $1
+      ORDER BY u.username
+    `,
+      [user_id]
+    );
+    const friendsWithDetails = await Promise.all(
+      friends.map(async (friend: any) => {
+        const user = await orm.findOne("users", {
+          where: { id: friend.id },
+        });
+        return {
+          ...friend,
+          profile_picture: user?.profile_picture,
+        };
+      }
+    )
+    );
+    return friendsWithDetails;
+  }
 }
 
 export default new UsersInteractionsServices();

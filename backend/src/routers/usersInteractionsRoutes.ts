@@ -8,5 +8,6 @@ router.post("/block", userInteractionsControllers.blockAUser);
 router.get("/matches", userInteractionsControllers.getMatches);
 router.get("/check-like/:user_id/:target_id", userInteractionsControllers.checkLike);
 router.post('/visit', userInteractionsControllers.newVisit);
+router.get('/friends/:user_id', userInteractionsControllers.getFriends);
 
 export default router;
