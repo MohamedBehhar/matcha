@@ -63,6 +63,12 @@ class UserInteractionsControllers {
 		const { user_id, visited_id } = req.body;
 		return await UsersInteractionsServices.newVisit(user_id, visited_id) as unknown as void;
 	}
+
+	@handleResponse()
+	public async getFriends(req: Request, res: Response) {
+		const { user_id } = req.params;
+		return await UsersInteractionsServices.getFriends(user_id as string) as unknown as void;
+	}
 }
 
 export default  new UserInteractionsControllers();
