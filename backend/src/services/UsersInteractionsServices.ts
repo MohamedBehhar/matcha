@@ -1,5 +1,5 @@
 import orm from "../lib/orm";
-import { Server } from "socket.io";
+import { Socket } from "socket.io";
 import pool from "../db/db";
 import notificationsServices from "./notificationsServices";
 import userServices from "./userServices";
@@ -7,7 +7,7 @@ import { getSocketIdFromRedis } from "../utils/redis";
 import notificationsEnum from "../types/notificationsType";
 
 class UsersInteractionsServices {
-  private socket: Server | undefined;
+  private socket: Socket | undefined;
   private userMap: Map<string, string> = new Map();
 
   constructor() {
@@ -16,7 +16,7 @@ class UsersInteractionsServices {
     this.getMatches = this.getMatches.bind(this);
   }
 
-  public initSocket(io: Server, userMap: Map<string, string>) {
+  public initSocket(io: Socket, userMap: Map<string, string>) {
     this.socket = io;
     this.userMap = userMap;
 
@@ -29,6 +29,8 @@ class UsersInteractionsServices {
 
   public async likeAUser(body: any) {
     const { user_id, liked_id } = body;
+    console.log("user_id", user_id);
+    console.log("liked_id", liked_id);
     const alreadyDisliked = await orm.findOne("user_interactions", {
       where: {
         user_id,
@@ -36,6 +38,7 @@ class UsersInteractionsServices {
         interaction_type: "dislike",
       },
     });
+    console.log("alreadyDisliked", alreadyDisliked);
     const user = await orm.findOne("users", { where: { id: user_id } });
     const liked = await orm.findOne("users", { where: { id: liked_id } });
 
@@ -303,8 +306,7 @@ class UsersInteractionsServices {
           ...friend,
           profile_picture: user?.profile_picture,
         };
-      }
-    )
+      })
     );
     return friendsWithDetails;
   }

@@ -1,10 +1,10 @@
 import orm from "../lib/orm";
-import { Server } from "socket.io";
+import { Socket } from "socket.io";
 import { getSocketIdFromRedis } from "../utils/redis";
 import notificationsEnum from "../types/notificationsType";
 
 class NotificationsServices {
-  private socket: Server | undefined;
+  private socket: Socket | undefined;
   private userMap: Map<string, string> = new Map();
 
   constructor() {
@@ -14,7 +14,7 @@ class NotificationsServices {
     this.markAsRead = this.markAsRead.bind(this);
   }
 
-  public initSocket(io: Server, userMap: Map<string, string>) {
+  public initSocket(io: Socket, userMap: Map<string, string>) {
     this.socket = io;
     this.userMap = userMap;
   }
@@ -27,8 +27,13 @@ class NotificationsServices {
   ): Promise<void> {
     const newNotification = await orm.querySql(
       `INSERT INTO notifications (user_id, content, sender_id, notification_type)
-      SELECT $1, $2, $3, $4
-      WHERE NOT EXISTS (SELECT 1 FROM notifications WHERE user_id = $1 AND content = $2 AND sender_id = $3 AND notification_type = $4)`,
+SELECT $1, $2, $3, $4
+WHERE NOT EXISTS (
+  SELECT 1 FROM notifications 
+  WHERE user_id = $1 AND content = $2 AND sender_id = $3 AND notification_type = $4
+)
+RETURNING *;
+`,
       [user_id, content, sender_id, notification_type]
     );
 

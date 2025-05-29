@@ -7,13 +7,13 @@ import {
 } from "../lib/customError";
 import authServices from "./authServices";
 import env from "../utils/env";
-import { Server } from "socket.io";
+import { Socket } from "socket.io";
 import { SignUpInput, signUpType, User } from "../types/authTypes";
 import { updateUserDto } from "../types/userTypes";
 import fs from "fs";
 
 class UserService {
-  private socket: Server | undefined;
+  private socket: Socket | undefined;
 
   constructor() {
     this.me = this.me.bind(this);
@@ -22,7 +22,7 @@ class UserService {
     this.delete = this.delete.bind(this);
   }
 
-  public initSocket(io: Server) {
+  public initSocket(io: Socket) {
     this.socket = io;
   }
 

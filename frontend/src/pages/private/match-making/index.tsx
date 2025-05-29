@@ -1,10 +1,10 @@
-import { getMatches } from "@/api/methods/interactions";
+import { getMatches, likeAUser, unlikeAUser } from "@/api/methods/interactions";
+import { getInterests } from "@/api/methods/interest";
+import { getUser } from "@/api/methods/user";
 import { useEffect, useState } from "react";
 import userImg from "@/assets/images/user.png";
 import { motion, useMotionValue, useTransform } from "framer-motion";
-import { likeAUser, unlikeAUser } from "@/api/methods/interactions";
 import { Button } from "@/components/ui/button";
-import { getInterests } from "@/api/methods/interest";
 import { Link } from "react-router-dom";
 import {
   MapContainer,
@@ -14,14 +14,14 @@ import {
   Circle,
   useMap,
 } from "react-leaflet";
-import { getUser } from "@/api/methods/user";
 import useUserStore from "@/store/userStore";
 import toast from "react-hot-toast";
+import { getNavigatorLocation } from "@/utils/locationHelper";
 
-function ZoomHandler({ zoom }: { zoom: number }) {
+function ZoomHandler({ zoom }) {
   const map = useMap();
   useEffect(() => {
-    map.setZoom(zoom); // Update zoom
+    map.setZoom(zoom);
   }, [zoom, map]);
   return null;
 }
@@ -30,6 +30,7 @@ function Index() {
   const x = useMotionValue(0);
   const opacity = useTransform(x, [-200, 0, 200], [0, 1, 0]);
   const rotate = useTransform(x, [-200, 0, 200], [-45, 0, 45]);
+
   const [zoom, setZoom] = useState(12);
   const [users, setUsers] = useState([]);
   const [ageGap, setAgeGap] = useState(5);
@@ -37,83 +38,76 @@ function Index() {
   const [interests, setInterests] = useState([]);
   const [selectedInterests, setSelectedInterests] = useState([]);
   const { user, setUserInfos } = useUserStore();
+  const [position, setPosition] = useState([null, null]);
 
   const fetchInterests = async () => {
     try {
-      const response = await getInterests();
-      setInterests(response);
-    } catch (error) {
-      console.error(error);
+      const res = await getInterests();
+      setInterests(res);
+    } catch (err) {
+      console.error(err);
     }
   };
-  const [position, setPosition] = useState([
-    user?.latitude || 0,
-    user?.longitude || 0,
-  ]);
+
   const getUserInfo = async () => {
     try {
-      const response = await getUser();
-      setUserInfos(response);
-      setPosition([response.latitude, response.longitude]);
-    } catch (error) {
-      console.error(error);
+      const res = await getUser();
+      setUserInfos(res);
+      setPosition([res.latitude, res.longitude]);
+    } catch (err) {
+      console.error(err);
     }
   };
 
-  const calculateZoom = (distance: number): number => {
-    if (distance <= 5) return 12; // Close view
-    if (distance <= 10) return 11;
-    if (distance <= 20) return 9;
-    if (distance <= 40) return 9;
-    if (distance <= 60) return 8;
-    if (distance <= 80) return 7;
-    return 6.5; // Far view
+  const calculateZoom = (dist) => {
+    if (dist <= 5) return 12;
+    if (dist <= 10) return 11;
+    if (dist <= 20) return 9;
+    if (dist <= 40) return 9;
+    if (dist <= 60) return 8;
+    if (dist <= 80) return 7;
+    return 6.5;
   };
-
-  useEffect(() => {
-    setZoom(calculateZoom(distance));
-  }, [distance]);
 
   const getNewUsers = async () => {
-    if (!user) return;
+    if (!user?.id) return;
     try {
-      const response = await getMatches(
-        user?.latitude,
-        user?.longitude,
-        user?.id,
+      const res = await getMatches(
+        user.latitude,
+        user.longitude,
+        user.id,
         ageGap,
         distance * 1000,
-        selectedInterests.map((interest: string) => interest.id).join(",") || ""
+        selectedInterests.map((i) => i.id).join(",")
       );
-      setUsers(response);
-    } catch (error) {
-      console.error(error);
+      setUsers(res);
+    } catch (err) {
+      console.error(err);
     }
   };
 
-  const like = async (id: string) => {
+  const like = async (id) => {
     try {
-      await likeAUser({ user_id: user?.id, liked_id: id });
+      await likeAUser({ user_id: user.id, liked_id: id });
       await getNewUsers();
-    } catch (error) {
+    } catch {
       toast.error("Error liking user");
     }
   };
-  const unlike = async (id: string) => {
+
+  const unlike = async (id) => {
     try {
-      await unlikeAUser({ user_id: user?.id, disliked_id: id });
+      await unlikeAUser({ user_id: user.id, disliked_id: id });
       await getNewUsers();
-    } catch (error) {
+    } catch {
       toast.error("Error unliking user");
     }
   };
 
-  const handleDragEnd = async (id: string) => {
-    if (x.get() > 100) {
-      await likeAUser({ user_id: user?.id, liked_id: id });
-    } else if (x.get() < 100) {
-      await unlikeAUser({ user_id: user?.id, disliked_id: id });
-    }
+  const handleDragEnd = async (id) => {
+    if (x.get() > 100) await likeAUser({ user_id: user.id, liked_id: id });
+    else if (x.get() < -100)
+      await unlikeAUser({ user_id: user.id, disliked_id: id });
     await getNewUsers();
   };
 
@@ -121,6 +115,10 @@ function Index() {
     await getUserInfo();
     await fetchInterests();
   };
+
+  useEffect(() => {
+    setZoom(calculateZoom(distance));
+  }, [distance]);
 
   useEffect(() => {
     getNewUsers();
@@ -131,38 +129,71 @@ function Index() {
   }, []);
 
   return (
-    <div className="   grid grid-cols-12 gap-3">
+    <div className="grid grid-cols-12 gap-3">
       <form
-        className="filters  border rounded-md w-full p-4 mx-auto mt-10  gap-4 min-h-[400px] col-span-5"
+        className="filters border rounded-md w-full p-4 mx-auto mt-10 gap-4 min-h-[400px] col-span-5"
         onSubmit={(e) => {
           e.preventDefault();
           getNewUsers();
         }}
       >
-        {user ? (
-          <div className="h-[400px] mb-2 rounded-md overflow-hidden">
-            <MapContainer
-              center={position}
-              zoom={zoom}
-              style={{ height: "100%", width: "100%" }}
-            >
-              <TileLayer
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                attribution="&copy; OpenStreetMap contributors"
-              />
-              <Marker position={position}>
-                <Popup>Your Location</Popup>
-              </Marker>
-              <Circle
-                center={position}
-                radius={distance * 1000}
-                pathOptions={{ color: "blue", fillOpacity: 0.2 }}
-              />
-              <ZoomHandler zoom={zoom} />
-            </MapContainer>
+        {user && position[0] && position[1] ? (
+          <div className="h-[400px] mb-2 rounded-md overflow-hidden relative">
+            {user.latitude && user.longitude ? (
+              <>
+                <MapContainer
+                  center={position}
+                  zoom={zoom}
+                  style={{ height: "100%", width: "100%" }}
+                  zoomControl={false}
+                >
+                  <TileLayer
+                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    attribution="&copy; OpenStreetMap contributors"
+                  />
+                  <Marker position={position}>
+                    <Popup>Your Location</Popup>
+                  </Marker>
+                  <Circle
+                    center={position}
+                    radius={distance * 1000}
+                    pathOptions={{ color: "blue", fillOpacity: 0.2 }}
+                  />
+                  <ZoomHandler zoom={zoom} />
+                </MapContainer>
+                <div className="absolute top-2 right-2 bg-white p-2 rounded-md shadow-md">
+                  <p>Not Accurate location?</p>
+                  <Button
+                    type="button"
+                    className="text-red-tertiary"
+                    onClick={() => {
+                      getNavigatorLocation()
+                        .then(({ coords }) => {
+                          setPosition([coords.latitude, coords.longitude]);
+                          setUserInfos({
+                            ...user,
+                            latitude: coords.latitude,
+                            longitude: coords.longitude,
+                          });
+                        })
+                        .catch((err) => {
+                          console.error("Error fetching location:", err);
+                          toast.error("Failed to refresh location");
+                        });
+                    }}
+                  >
+                    Refresh Location
+                  </Button>
+                </div>
+              </>
+            ) : (
+              <div className="h-full flex items-center justify-center bg-gray-100">
+                <p className="text-gray-600">Location not available</p>
+              </div>
+            )}
           </div>
         ) : (
-          <div className=" row-span-2 flex items-center justify-center flex-col gap-4  ">
+          <div className="flex items-center justify-center flex-col gap-4">
             <h1 className="text-3xl font-bold text-center">
               Please enable location access
             </h1>
@@ -172,8 +203,8 @@ function Index() {
           </div>
         )}
 
-        <div className=" row-span-2 flex flex-col gap-2">
-          <div className="filter flex-1 border p-2 rounded-md flex items-center gap-5">
+        <div className="flex flex-col gap-2">
+          <div className="filter border p-2 rounded-md flex items-center gap-5">
             <label htmlFor="age-gap">Age Gap</label>
             <input
               type="range"
@@ -181,12 +212,13 @@ function Index() {
               min="0"
               max="20"
               value={ageGap}
-              onChange={(e) => setAgeGap(Number(e.target.value))}
+              onChange={(e) => setAgeGap(+e.target.value)}
               className="flex-1"
             />
             <p>{ageGap} years</p>
           </div>
-          <div className="filter flex-1 border p-2 rounded-md flex items-center gap-5">
+
+          <div className="filter border p-2 rounded-md flex items-center gap-5">
             <label htmlFor="distance">Distance</label>
             <input
               type="range"
@@ -194,44 +226,41 @@ function Index() {
               min="0"
               max="100"
               value={distance}
-              onChange={(e) => setDistance(Number(e.target.value))}
+              onChange={(e) => setDistance(+e.target.value)}
               className="flex-1"
             />
             <p>{distance} km</p>
           </div>
+
           <div>
             <h2 className="text-xl font-bold">
-              Select cummon interests to match with
+              Select common interests to match with
             </h2>
-            <div className="flex gap-2 items-center flex-wrap">
-              {selectedInterests.map((interest: Interest) => (
+            <div className="flex gap-2 flex-wrap">
+              {selectedInterests.map((i) => (
                 <Button
-                  key={interest.id}
+                  key={i.id}
                   type="button"
                   className="bg-red-tertiary text-white"
                 >
-                  #{interest.name}
+                  #{i.name}
                 </Button>
               ))}
             </div>
-            {interests.map((interest) => (
+            {interests.map((i) => (
               <button
-                key={interest.id}
+                key={i.id}
                 type="button"
                 className="bg-gray-300 m-1 text-gray-800 px-2 py-1 rounded-md text-xs"
-                onClick={
-                  selectedInterests.includes(interest)
-                    ? () =>
-                        setSelectedInterests(
-                          selectedInterests.filter(
-                            (selectedInterest) => selectedInterest !== interest
-                          )
-                        )
-                    : () =>
-                        setSelectedInterests([...selectedInterests, interest])
+                onClick={() =>
+                  selectedInterests.includes(i)
+                    ? setSelectedInterests(
+                        selectedInterests.filter((s) => s !== i)
+                      )
+                    : setSelectedInterests([...selectedInterests, i])
                 }
               >
-                #{interest.name}
+                #{i.name}
               </button>
             ))}
           </div>
@@ -242,63 +271,32 @@ function Index() {
         </div>
       </form>
 
-      <div className=" grid place-content-center  border rounded-md col-span-7 mt-10">
+      <div className="grid place-content-center border rounded-md col-span-7 mt-10">
         {users.length > 0 &&
-          users.map((user) => (
+          users.map((u) => (
             <motion.div
-              key={user.id}
-              className=" card w-[300px] h-[400px] border border-white rounded-md bg-white text-gray-700 shadow-md p-5"
-              style={{
-                gridRow: 1,
-                gridColumn: 1,
-                opacity: opacity,
-                x,
-                rotate,
-              }}
+              key={u.id}
+              className="card w-[300px] h-[400px] border rounded-md bg-white text-gray-700 shadow-md p-5"
+              style={{ gridRow: 1, gridColumn: 1, opacity, x, rotate }}
               drag="x"
               dragConstraints={{ left: 0, right: 0 }}
-              onDragEnd={() => handleDragEnd(user.id)}
+              onDragEnd={() => handleDragEnd(u.id)}
             >
-              <Link to={`/profile/${user.id}`} key={user.id}>
+              <Link to={`/profile/${u.id}`}>
                 <img
-                  src={`http://localhost:3000/${user.profile_picture}`}
+                  src={`http://localhost:3000/${u.profile_picture}`}
                   alt="profile"
-                  className={`w-full  object-cover rounded-full aspect-square `} // Apply blur directly to the front card
-                  onError={(e: any) => {
-                    console.log(e);
-                    e.target.onerror = null;
-                    e.target.src = userImg;
-                  }}
+                  className="w-full object-cover rounded-full aspect-square"
+                  onError={(e) => (e.target.src = userImg)}
                 />
                 <div className="info p-1">
                   <h1 className="text-xl font-semibold text-center">
-                    {user.first_name}, {user.age}, {user.gender}
+                    {u.first_name}, {u.age}, {u.gender}
                   </h1>
-                  <p className="text-xl text-center ">
-                    Distance: {user.distance} km
-                  </p>
-                  <p className="text-sm text-center truncate">{user.bio}</p>
                 </div>
               </Link>
-              <div className="buttons flex items-center justify-between mt-4 gap-5">
-                <Button
-                  className="bg-gray-300 text-gray-800 flex-1"
-                  onClick={() => unlike(user.id)}
-                >
-                  dislike
-                </Button>
-                <Button
-                  className="bg-red-tertiary text-white flex-1"
-                  onClick={() => like(user.id)}
-                >
-                  like
-                </Button>
-              </div>
             </motion.div>
           ))}
-        {users.length === 0 && (
-          <h1 className="text-3xl font-semibold text-center">No users found</h1>
-        )}
       </div>
     </div>
   );

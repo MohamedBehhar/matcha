@@ -1,6 +1,5 @@
 import { Link } from "react-router-dom";
 import useUserStore from "@/store/userStore";
-import { socket } from "@/utils/socket";
 import { useEffect, useState } from "react"; // Combined imports
 import toast, { Toaster } from "react-hot-toast";
 import {
@@ -17,12 +16,15 @@ import { useLocation } from "react-router-dom";
 import { headerData } from "./data";
 import { Button } from "../ui/button";
 import { cn } from "@/lib/utils";
+import { useSocket } from "@/context/SocketContext";
 
 export default function Header() {
   const location = useLocation();
   const { user, setUserInfos } = useUserStore();
   const [notifications, setNotifications] = useState([]);
   const [notificationsCount, setNotificationsCount] = useState(0);
+  const socket = useSocket();
+
   useEffect(() => {
     const fetchUser = async () => {
       try {
@@ -59,7 +61,10 @@ export default function Header() {
 
   // Socket listeners
   useEffect(() => {
-    if (!user?.id) return;
+    if (!user.id) return;
+
+    alert("Connecting to socket... " + user.id);
+    socket.emit("join", user.id);
 
     const handleLike = (userId: string) => {
       toast(`User liked you: ${userId}`);
@@ -74,15 +79,24 @@ export default function Header() {
       fetchNotificationsCount();
     };
 
-    socket.emit("join", user.id);
+    socket.on("connected", (data: any) => {
+      alert(
+        `Connected to socket with ID: ${data.socketId} for user: ${data.userId}`
+      );
+    });
+
     socket.on("like", handleLike);
     socket.on("match", handleMatch);
     socket.on("notification", handleNotification);
+    socket.on("message", (msg: any) => {
+      alert(`New message from ${msg.sender_id}: ${msg.content}`);
+    });
 
     return () => {
       socket.off("like", handleLike);
       socket.off("match", handleMatch);
       socket.off("notification", handleNotification);
+      socket.off("message");
     };
   }, [user.id]);
 

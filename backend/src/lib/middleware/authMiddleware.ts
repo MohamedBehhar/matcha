@@ -9,12 +9,8 @@ const authMiddleware = async (
   next: NextFunction
 ) => {
   try {
-    console.log("---- Auth Middleware ----");
-
     let accessToken = req.cookies?.access_token;
     const refreshToken = req.cookies?.refresh_token; // ✅ Get refresh token
-
-    console.log("Cookies:", req.cookies);
 
     if (!accessToken) {
       console.log("No access token found, trying refresh token...");
@@ -45,7 +41,7 @@ const authMiddleware = async (
         maxAge: 1000 * 60 * 15, // 15 minutes
       });
 
-      accessToken = tokens.access_token; 
+      accessToken = tokens.access_token;
     }
 
     const email = await authServices.verifyToken(
@@ -58,7 +54,7 @@ const authMiddleware = async (
       throw new UnauthorizedError("Unauthorized");
     }
 
-    next(); 
+    next();
   } catch (err) {
     next(err);
   }

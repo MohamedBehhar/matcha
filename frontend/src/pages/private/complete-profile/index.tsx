@@ -295,11 +295,6 @@ const CompleteProfile = () => {
       onSubmit={handleSubmit}
       className="flex flex-col items-center justify-center h-[70vh] gap-6"
     >
-      {Object.keys(user).map((key) => (
-        <div key={key} className="">
-          {user[key as keyof User]}
-        </div>
-      ))}
       <ProgressIndicator step={step} />
       <h1 className="text-2xl font-bold text-center">{stepTitles[step - 1]}</h1>
 

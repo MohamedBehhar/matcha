@@ -1,7 +1,10 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { LoadingPage } from "@/components/loading";
 import MessagesPage from "../private/messages";
+import { updateUserLocation } from "@/api/methods/user";
+import useUserStore from "@/store/userStore";
+import toast from "react-hot-toast";
 
 const GlobalLayout = lazy(() => import("../layout"));
 const LoginPage = lazy(() => import("../public/sign-in"));
@@ -23,6 +26,60 @@ const VerifyEmailRedirectPage = lazy(
 );
 const CompleteProfile = lazy(() => import("../private/complete-profile"));
 export default function Router() {
+  const { user, setUserInfos } = useUserStore();
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (!user?.id) return;
+
+    const fetchLocation = () => {
+      const updateLocation = (latitude: number, longitude: number) => {
+        setUserInfos({
+          ...user,
+          latitude,
+          longitude,
+        });
+
+        updateUserLocation(user.id, {
+          latitude,
+          longitude,
+          userId: user.id,
+        }).catch((err) => {
+          console.error("Failed to update location:", err);
+          toast.error("Failed to update location");
+        });
+      };
+
+      if ("geolocation" in navigator) {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            const { latitude, longitude } = position.coords;
+            updateLocation(latitude, longitude);
+            setError(null);
+          },
+          async () => {
+            try {
+              const { data } = await axios.get(
+                "https://ipinfo.io/json?access_key=d528a69471b1f2a9ce4d239c07857f2f"
+              );
+              if (data.loc) {
+                const [latitude, longitude] = data.loc.split(",");
+                updateLocation(parseFloat(latitude), parseFloat(longitude));
+                setError(null);
+              } else {
+                setError("Unable to retrieve location.");
+              }
+            } catch (err) {
+              console.error("Failed to fetch location from IP API:", err);
+              setError("Unable to retrieve location.");
+            }
+          }
+        );
+      }
+    };
+
+    fetchLocation();
+  }, [user?.id]);
   return (
     <BrowserRouter>
       <Suspense fallback={<LoadingPage />}>

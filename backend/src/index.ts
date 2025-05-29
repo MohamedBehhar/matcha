@@ -7,7 +7,7 @@ import userRoutes from "./routers/userRoutes";
 import interstsRoutes from "./routers/interestsRoutes";
 import pool from "./db/db";
 import authMiddleware from "./lib/middleware/authMiddleware";
-import { Server, Socket } from "socket.io";
+import { Server } from "socket.io";
 import userServices from "./services/userServices";
 import multer from "multer";
 import path from "path";
@@ -19,17 +19,18 @@ import { addSocketIdToRedis, deleteSocketIdFromRedis } from "./utils/redis";
 import session from "express-session";
 import passport from "passport";
 import cookieParser from "cookie-parser";
+import msgsServices from "./services/msgsServices";
 
-import orm from "./lib/orm";
 const PORT = 3000;
 const app = express();
 const server = http.createServer(app);
 const upload = multer();
 
+// Express middlewares
 app.use(
   cors({
-    origin: "http://localhost:5173", // ✅ Replace with your frontend URL
-    credentials: true, // ✅ Required for cookies
+    origin: "http://localhost:5173", // Replace with your frontend URL
+    credentials: true,
   })
 );
 app.use(cookieParser());
@@ -44,21 +45,24 @@ app.use(
   })
 );
 
-// Initialize Passport
+// Passport init
 app.use(passport.initialize());
 app.use(passport.session());
 
-const userMap = new Map<string, string>();
-
+// Static files
 app.use(express.static(path.join(__dirname, "../public")));
+
+// Database connection
 pool
   .connect()
   .then(() => {
-    console.log("connected to the Database");
+    console.log("✅ Connected to the Database");
   })
   .catch((err) => {
-    console.log("test", err);
+    console.error("❌ Database connection error", err);
   });
+
+// API routes
 app.use("/api/auth", authRoutes);
 app.use(authMiddleware);
 app.use("/api/user", userRoutes);
@@ -66,56 +70,109 @@ app.use("/api/interests", interstsRoutes);
 app.use("/api/interactions", usersInteractionsRoutes);
 app.use("/api/notifications", notificationsRoutes);
 
-const socket = new Server(server, {
+// Socket.io server
+const io = new Server(server, {
   cors: {
     origin: "*",
   },
 });
 
-socket.on("connection", (socket) => {
-  console.log("a user connected", socket.id);
-  socket.on("disconnect", () => {
-    deleteSocketIdFromRedis(socket.id);
-  });
-  socket.on("join", (userId) => {
-    console.log("User joined", userId);
-    addSocketIdToRedis(userId, socket.id);
-  });
-  socket.on("chat message", (msg) => {
-    console.log("message: " + msg);
-    // socket.broadcast.emit('chat message', msg);
-  });
+const userMap = new Map<string, string>();
+
+io.on("connection", (socket) => {
+  // Initialize custom services sockets
   UsersInteractionsServices.initSocket(socket as unknown as any, userMap);
   userServices.initSocket(socket as unknown as any);
   notificationsServices.initSocket(socket as unknown as any, userMap);
-  const user_id = socket.handshake.query.user_id as string;
-  userMap.set(socket.id, user_id);
-  console.log("user_id", user_id);
-  userMap.set(socket.id, user_id);
-  addSocketIdToRedis(user_id, socket.id);
-  socket.on("disconnect", () => {
-    deleteSocketIdFromRedis(socket.id);
-    userMap.delete(socket.id);
+  msgsServices.initSocket(socket as unknown as any, userMap);
+
+  socket.on("join", (userId) => {
+    console.log(`🔗 User ${userId} connected with socket ID: ${socket.id}`);
+    addSocketIdToRedis(userId, socket.id)
+      .then(() => {
+        console.log(`✅ Socket ID ${socket.id} added for user ${userId}`);
+        userMap.set(socket.id, userId);
+        // Notify the user of successful connection
+        socket.emit("connected", {
+          message: `You are connected with socket ID: ${socket.id}`,
+          userId: userId,
+        });
+      })
+      .catch((err) => {
+        console.error(`❌ Error adding socket ID for user ${userId}:`, err);
+      });
   });
-  socket.on("message", async(msg) => {
-    console.log("message", msg);
-    const { user_id, message } = msg;
-    const socketId = userMap.get(user_id);
-    if (socketId) {
-      socket.to(socketId).emit("message", message);
-    } else {
-      console.log("User not connected");
+
+  // Handle direct messages
+  socket.on("direct_message", (msg) => {
+    console.log("--------------------------- 📩 Message received: ", msg);
+    const { sender_id, recipient_id, content, media_type, media_url } = msg;
+    console.log(userMap);
+    if (userMap.has(recipient_id)) {
+      const recipientSocketId = userMap.get(recipient_id);
+      if (recipientSocketId) {
+        console.log(
+          `📬 Sending message from ${sender_id} to ${recipient_id} via socket ${recipientSocketId}`
+        );
+        socket.to(recipientSocketId).emit("message", {
+          from: sender_id,
+          content,
+          media_type,
+          media_url,
+        });
+      } else {
+        console.warn(`⚠️ No socket found for user ${recipient_id}`);
+      }
+    }
+    // if (!to || !from || !content) {
+    //   console.error("❌ Invalid message format:", msg);
+    //   return;
+    // }
+    // if (userMap.has(to)) {
+    //   const recipientSocketId = userMap.get(to);
+    //   if (recipientSocketId) {
+    //     console.log(
+    //       `📬 Sending message from ${from} to ${to} via socket ${recipientSocketId}`
+    //     );
+    //     socket.to(recipientSocketId).emit("message", {
+    //       from,
+    //       content,
+    //       media_type,
+    //       media_url,
+    //     });
+    //   } else {
+    //     console.warn(`⚠️ No socket found for user ${to}`);
+    //   }
+    // }
+    // msgsServices
+    //   .saveMsgs(from, to, content, media_type)
+    //   .then(() => {
+    //     console.log("✅ Message saved successfully");
+    //   })
+    //   .catch((err) => {
+    //     console.error("❌ Error saving message:", err);
+    //   });
+  });
+
+  // Cleanup on disconnect
+  socket.on("disconnect", () => {
+    const disconnectedUserId = userMap.get(socket.id);
+    console.log(
+      `❌ User disconnected: ${disconnectedUserId} (socket: ${socket.id})`
+    );
+    if (disconnectedUserId) {
+      deleteSocketIdFromRedis(socket.id);
+      userMap.delete(socket.id);
     }
   });
-  // UsersInteractionsServices.initSocket(socket as unknown as any, userMap);
-  // userServices.initSocket(socket as unknown as any);
-  // notificationsServices.initSocket(socket as unknown as any, userMap);
 });
 
-socket.on("error", (err) => {
-  console.log(err);
+// Global socket error handler
+io.on("error", (err) => {
+  console.error("⚠️ Socket.IO error:", err);
 });
 
+// Server start
 server.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`🚀 Server running on port ${PORT}`);
 });

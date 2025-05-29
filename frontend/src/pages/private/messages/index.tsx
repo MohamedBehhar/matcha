@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import useUserStore from "@/store/userStore";
-import { socket } from "@/utils/socket";
 import toast from "react-hot-toast";
 import userImg from "@/assets/images/user.png";
 import { FiSend, FiSearch, FiMoreVertical, FiPaperclip } from "react-icons/fi";
@@ -19,6 +18,7 @@ import {
   uploadMediaFile,
 } from "@/api/methods/interactions";
 import Badge from "@/components/badge";
+import { useSocket } from "@/context/SocketContext";
 
 function MessagesPage() {
   const { user } = useUserStore();
@@ -38,6 +38,7 @@ function MessagesPage() {
   const [mediaPreview, setMediaPreview] = useState(null);
   const [mediaType, setMediaType] = useState(null); // 'image' or 'video'
   const [isUploading, setIsUploading] = useState(false);
+  const socket = useSocket();
 
   // Fetch user matches
   const fetchMatches = async () => {
@@ -153,13 +154,16 @@ function MessagesPage() {
       // await apiSendMessage(messageData);
 
       // Emit socket event
-      socket.emit("message", {
-        to: selectedMatch.id,
-        from: user.id,
-        content: newMessage.trim(),
-        media_url: mediaUrl,
-        media_type: mediaType || "text",
-      });
+      alert("Message sent");
+      socket.emit(
+        "direct_message",
+
+        {
+          ...messageData,
+          media_url: mediaUrl,
+          match_id: selectedMatch.id,
+        }
+      );
     } catch (error) {
       console.error("Failed to send message:", error);
       toast.error("Failed to send message");
@@ -246,6 +250,7 @@ function MessagesPage() {
 
     // Listen for new messages
     const handleNewMessage = (data) => {
+      alert("New message received");
       //   if (data.from === selectedMatch?.id) {
       //     setMessages((prev) => [
       //       ...prev,
@@ -278,8 +283,6 @@ function MessagesPage() {
       //     )
       //   );
     };
-
-    socket.emit("join", user.id);
     socket.on("message", handleNewMessage);
     socket.on("status", handleStatusChange);
 

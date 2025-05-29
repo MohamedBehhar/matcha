@@ -105,9 +105,19 @@ CREATE TABLE users
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         UNIQUE (user_id, reported_id)
     );
+    CREATE TABLE conversations
+    (
+        id SERIAL PRIMARY KEY,
+        user1_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        user2_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE (user1_id, user2_id)
+    );
+
     CREATE TABLE messages
     (
         id SERIAL PRIMARY KEY,
+        conversation_id INTEGER REFERENCES conversations(id) ON DELETE CASCADE,
         sender_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
         recipient_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
         content TEXT NOT NULL,
@@ -115,6 +125,7 @@ CREATE TABLE users
         is_read BOOLEAN DEFAULT FALSE,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
+
     CREATE TABLE notifications
     (
         id SERIAL PRIMARY KEY,
@@ -153,77 +164,3 @@ CREATE TABLE users
         ('Art'),
         ('Fashion'),
         ('Fitness');
-    INSERT INTO users
-        (
-        username,
-        email,
-        password,
-        first_name,
-        last_name,
-        date_of_birth,
-        age,
-        gender,
-        is_verified,
-        created_at
-        )
-    VALUES
-        (
-            'moha',
-            'moha@moha.com',
-            '111111',
-            'moha',
-            'bhr',
-            '2004-01-01',
-            22,
-            'male',
-            TRUE,
-            CURRENT_TIMESTAMP
-    ),
-        (
-            'toto',
-            'toto@toto.com',
-            '111111',
-            'toto',
-            'bhr',
-            '2004-01-01',
-            24,
-            'male',
-            TRUE,
-            CURRENT_TIMESTAMP
-    ),
-        (
-            'ojamil',
-            'ojamil@ojamil.com',
-            '111111',
-            'ojamil',
-            'bhr',
-            '2004-01-01',
-            26,
-            'male',
-            TRUE,
-            CURRENT_TIMESTAMP
-    ),
-        (
-            'karim',
-            'karim@karim.com',
-            '111111',
-            'karim',
-            'bhr',
-            '2004-01-01',
-            26,
-            'male',
-            TRUE,
-            CURRENT_TIMESTAMP
-    ),
-        (
-            'salma',
-            'salma@salma.com',
-            '111111',
-            'salma',
-            'bhr',
-            '2004-01-01',
-            26,
-            'female',
-            TRUE,
-            CURRENT_TIMESTAMP
-    );

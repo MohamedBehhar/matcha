@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { updateUserLocation } from "@/api/methods/user";
 import { socket } from "@/utils/socket";
 import useUserStore from "@/store/userStore";
-import { set } from "date-fns";
 
 export default function HomePage() {
   const setUserInfos = useUserStore((state) => state.setUserInfos);
@@ -87,16 +86,6 @@ export default function HomePage() {
       getFallbackLocation();
     });
   };
-
-  useEffect(() => {
-    getUser().then((data) => console.log(data));
-    // handleGetLocation();
-    handelGetLocationByIP();
-    socket.on("connect", () => {
-      console.log("connected");
-      socket.emit("join", id);
-    });
-  }, []);
 
   const count = useCountStore((state) => state.count);
   return (
