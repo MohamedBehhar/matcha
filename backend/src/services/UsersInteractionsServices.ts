@@ -1,14 +1,14 @@
 import orm from "../lib/orm";
-import { Socket } from "socket.io";
+import { Server } from "socket.io";
 import pool from "../db/db";
 import notificationsServices from "./notificationsServices";
 import userServices from "./userServices";
-import { getSocketIdFromRedis } from "../utils/redis";
+
 import notificationsEnum from "../types/notificationsType";
+import { getSocketIdsByUserId } from "../utils/redis";
 
 class UsersInteractionsServices {
-  private socket: Socket | undefined;
-  private userMap: Map<string, string> = new Map();
+  private socket: Server | undefined;
 
   constructor() {
     this.likeAUser = this.likeAUser.bind(this);
@@ -16,9 +16,8 @@ class UsersInteractionsServices {
     this.getMatches = this.getMatches.bind(this);
   }
 
-  public initSocket(io: Socket, userMap: Map<string, string>) {
+  public initSocket(io: Server) {
     this.socket = io;
-    this.userMap = userMap;
 
     this.socket.on("newVisit", async (data: any) => {
       console.log("newVisit", data);
@@ -69,7 +68,7 @@ class UsersInteractionsServices {
       notificationsEnum.like
     );
 
-    // const receiver_id = await getSocketIdFromRedis(liked_id);
+    // const receiver_id = await getSocketIdsByUserId(liked_id);
     // console.log("receiver_id - - - - - - - - - -> user interactions ", receiver_id);
     // if (receiver_id) {
     //   const sender = await userServices.getUsersById(user_id);

@@ -1,6 +1,6 @@
 import orm from "../lib/orm";
 import { Server } from "socket.io";
-import { getSocketIdFromRedis } from "../utils/redis";
+import { getAllSocketIdsWithUserIds, getSocketIdsByUserId } from "../utils/redis";
 
 type Message = {
   id?: string;
@@ -19,17 +19,66 @@ type Conversation = {
 
 class MsgsServices {
   private socket: Server | undefined;
-  private userMap: Map<string, string> = new Map();
 
   constructor() {
     this.getMsgs = this.getMsgs.bind(this);
     this.getMsgsCount = this.getMsgsCount.bind(this);
     this.markAsRead = this.markAsRead.bind(this);
+    this.saveMsgs = this.saveMsgs.bind(this);
+    this.getOrCreateConversation = this.getOrCreateConversation.bind(this);
+    this.getUserConversations = this.getUserConversations.bind(this);
   }
 
-  public initSocket(io: Server, userMap: Map<string, string>) {
+  public initSocket(io: Server) {
     this.socket = io;
-    this.userMap = userMap;
+  }
+
+  // 📦 Save Message
+  public async saveMsgs(
+    sender_id: string,
+    recipient_id: string,
+    content: string,
+    type: string = "text"
+  ): Promise<void> {
+    try {
+      const conversation_id = await this.getOrCreateConversation(
+        Number(sender_id),
+        Number(recipient_id)
+      );
+
+      await orm.create("messages", {
+        conversation_id,
+        content,
+        sender_id,
+        recipient_id,
+        is_read: false,
+        type,
+      });
+      const recipientSocketIds = await getSocketIdsByUserId(recipient_id);
+      const senderSocketIds = await getSocketIdsByUserId(sender_id);
+      const allSockets = await getAllSocketIdsWithUserIds();
+      
+      console.log("Recipient sockets:", recipientSocketIds);
+      console.log("Sender sockets:", senderSocketIds);
+      console.log("All sockets:", allSockets);
+      
+      if (recipientSocketIds.length) {
+        recipientSocketIds.forEach(socketId => {
+          console.log(`🔔 Notifying recipient ${recipient_id} with socket ID: ${socketId}`);
+          this.socket?.to(socketId).emit("receive_message", {
+            conversation_id,
+            content,
+            sender_id,
+            recipient_id,
+            type,
+            is_read: false,
+            timestamp: new Date(),
+          });
+        });
+      }
+    } catch (error) {
+      console.log("error", error);
+    }
   }
 
   // 📦 Conversations Handling
@@ -122,39 +171,9 @@ class MsgsServices {
         [user_id]
       );
 
-      const receiver_id = await getSocketIdFromRedis(user_id);
+      const receiver_id = await getSocketIdsByUserId(user_id);
       if (receiver_id) {
         this.socket?.to(receiver_id).emit("msgsRead");
-      }
-    } catch (error) {
-      console.log("error", error);
-    }
-  }
-
-  public async saveMsgs(
-    sender_id: string,
-    recipient_id: string,
-    content: string,
-    type: string = "text"
-  ): Promise<void> {
-    try {
-      const conversation_id = await this.getOrCreateConversation(
-        Number(sender_id),
-        Number(recipient_id)
-      );
-
-      await orm.create("messages", {
-        conversation_id,
-        content,
-        sender_id,
-        recipient_id,
-        is_read: false,
-        type,
-      });
-
-      const recipientSocketId = this.userMap.get(String(recipient_id));
-      if (recipientSocketId) {
-        this.socket?.to(recipientSocketId).emit("receive_message");
       }
     } catch (error) {
       console.log("error", error);

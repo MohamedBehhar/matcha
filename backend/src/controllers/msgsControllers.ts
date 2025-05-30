@@ -12,6 +12,15 @@ class MsgsController {
   }
 
   @handleResponse()
+  public async getConversations(req: Request, res: Response) {
+    const user_id = req.params.user_id;
+    const conversations = await msgsServices.getUserConversations(
+      Number(user_id)
+    );
+    return conversations as unknown as void;
+  }
+
+  @handleResponse()
   public async getMsgs(req: Request, res: Response) {
     const user_id = req.params.user_id;
     const msgs = await msgsServices.getMsgs(user_id);
@@ -35,7 +44,7 @@ class MsgsController {
   @handleResponse()
   public async saveMsgs(req: Request, res: Response) {
     const { user_id, msgs } = req.body;
-    await msgsServices.saveMsgs(user_id, msgs);
+    await msgsServices.saveMsgs(user_id, msgs, "");
     return { message: "Messages saved successfully" } as unknown as void;
   }
 }

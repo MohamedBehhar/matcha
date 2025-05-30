@@ -62,8 +62,7 @@ export default function Header() {
   // Socket listeners
   useEffect(() => {
     if (!user.id) return;
-
-    alert("Connecting to socket... " + user.id);
+    socket.connect(); // Ensure socket is connected
     socket.emit("join", user.id);
 
     const handleLike = (userId: string) => {
@@ -80,23 +79,22 @@ export default function Header() {
     };
 
     socket.on("connected", (data: any) => {
-      alert(
-        `Connected to socket with ID: ${data.socketId} for user: ${data.userId}`
-      );
+      console.log(`Connected with socket ID: ${data.socketId}`);
+      toast(`Connected as ${data.userId}`);
     });
 
     socket.on("like", handleLike);
     socket.on("match", handleMatch);
     socket.on("notification", handleNotification);
-    socket.on("message", (msg: any) => {
-      alert(`New message from ${msg.sender_id}: ${msg.content}`);
+    socket.on("new_message", (msg: any) => {
+      alert(`New direct_message from ${msg.sender_id}: ${msg.content}`);
     });
 
     return () => {
       socket.off("like", handleLike);
       socket.off("match", handleMatch);
       socket.off("notification", handleNotification);
-      socket.off("message");
+      socket.off("direct_message");
     };
   }, [user.id]);
 

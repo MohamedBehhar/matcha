@@ -1,11 +1,11 @@
 import orm from "../lib/orm";
-import { Socket } from "socket.io";
-import { getSocketIdFromRedis } from "../utils/redis";
+import { Server } from "socket.io";
+
 import notificationsEnum from "../types/notificationsType";
+import { getSocketIdsByUserId } from "../utils/redis";
 
 class NotificationsServices {
-  private socket: Socket | undefined;
-  private userMap: Map<string, string> = new Map();
+  private socket: Server | undefined;
 
   constructor() {
     this.createNotification = this.createNotification.bind(this);
@@ -14,9 +14,8 @@ class NotificationsServices {
     this.markAsRead = this.markAsRead.bind(this);
   }
 
-  public initSocket(io: Socket, userMap: Map<string, string>) {
+  public initSocket(io: Server) {
     this.socket = io;
-    this.userMap = userMap;
   }
 
   public async createNotification(
@@ -37,7 +36,7 @@ RETURNING *;
       [user_id, content, sender_id, notification_type]
     );
 
-    const receiver_id = await getSocketIdFromRedis(user_id);
+    const receiver_id = await getSocketIdsByUserId(user_id);
     if (receiver_id) {
       this.socket?.to(receiver_id).emit("notification");
     }

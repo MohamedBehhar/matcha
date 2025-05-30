@@ -11,12 +11,9 @@ import { format, isToday, isYesterday } from "date-fns";
 
 // Assume you have these API methods
 import {
-  getMatches,
-  getMessages,
-  sendMessage as apiSendMessage,
   getFriends,
-  uploadMediaFile,
 } from "@/api/methods/interactions";
+import { getMsgs } from "@/api/methods/messages";
 import Badge from "@/components/badge";
 import { useSocket } from "@/context/SocketContext";
 
@@ -59,15 +56,21 @@ function MessagesPage() {
 
   // Fetch messages for a specific match
   const fetchMessages = async (matchId) => {
-    // if (!user?.id || !matchId) return;
+    if (!user?.id || !matchId) return;
 
-    // try {
-    //   const response = [];
-    //   setMessages(response || []);
-    // } catch (error) {
-    //   console.error("Failed to fetch messages:", error);
-    //   toast.error("Failed to load conversation");
-    // }
+    try {
+      const response = await getMsgs( user.id + "");
+      console.log("Messages for match:", response);
+      setMessages(response || []);
+      setSelectedMatch((prev) => ({
+        ...prev,
+        id: matchId,
+      }));
+    } catch (error) {
+      console.error("Failed to fetch messages:", error);
+      toast.error("Failed to load messages");
+    }
+
     return [];
   };
 
@@ -88,7 +91,7 @@ function MessagesPage() {
 
     const reader = new FileReader();
     reader.onloadend = () => {
-      setMediaPreview(reader.result);
+      setMediaPreview(reader?.result);
     };
     reader.readAsDataURL(file);
   };
@@ -154,7 +157,6 @@ function MessagesPage() {
       // await apiSendMessage(messageData);
 
       // Emit socket event
-      alert("Message sent");
       socket.emit(
         "direct_message",
 
@@ -251,26 +253,9 @@ function MessagesPage() {
     // Listen for new messages
     const handleNewMessage = (data) => {
       alert("New message received");
-      //   if (data.from === selectedMatch?.id) {
-      //     setMessages((prev) => [
-      //       ...prev,
-      //       {
-      //         sender_id: data.from,
-      //         receiver_id: user.id,
-      //         content: data.content,
-      //         media_url: data.media_url,
-      //         media_type: data.media_type,
-      //         timestamp: new Date(),
-      //       },
-      //     ]);
-      //   } else {
-      //     // Show notification for messages from other matches
-      //     const matchName =
-      //       matches.find((m) => m.id === data.from)?.first_name || "Someone";
-      //     toast(`New message from ${matchName}`);
-      //     // Refresh matches list to update unread count
-      //     fetchMatches();
-      //   }
+      console.log("New message received:", data);
+      if (data.sender_id === user.id || data.receiver_id !== user.id) return;
+      setMessages((prev) => [...prev, data]);
     };
 
     // Listen for online status changes
@@ -283,14 +268,14 @@ function MessagesPage() {
       //     )
       //   );
     };
-    socket.on("message", handleNewMessage);
+    socket.on("receive_message", handleNewMessage);
     socket.on("status", handleStatusChange);
 
     return () => {
-      socket.off("message", handleNewMessage);
+      socket.off("receive_message", handleNewMessage);
       socket.off("status", handleStatusChange);
     };
-  }, [user?.id, selectedMatch, matches]);
+  }, [user?.id, selectedMatch, matches, socket]);
 
   // Fetch messages when selected match changes
   useEffect(() => {
@@ -331,7 +316,7 @@ function MessagesPage() {
   };
 
   return (
-    <div className=" dark h-full px-4 py-6 ">
+    <div className=" dark h-full px-4 py-6">
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg h-full overflow-hidden  flex">
         {/* Matches Sidebar */}
         <div
@@ -601,7 +586,7 @@ function MessagesPage() {
               </div>
 
               {/* Media Preview */}
-              {mediaPreview && (
+              {/* {mediaPreview && (
                 <div className="px-3 pt-2 border-t border-gray-200 dark:border-gray-700">
                   <div className="relative inline-block">
                     {mediaType === "image" ? (
@@ -624,7 +609,7 @@ function MessagesPage() {
                     </button>
                   </div>
                 </div>
-              )}
+              )} */}
 
               {/* Message Input */}
               <form

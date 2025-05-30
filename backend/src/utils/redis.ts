@@ -47,29 +47,60 @@ export const deleteKey = async (key: string): Promise<void> => {
   }
 };
 
-export const addSocketIdToRedis = async (socketId: string, userId: string) => {
+export const addSocketIdToRedis = async (userId: string, socketId: string) => {
   try {
-    console.log("socketId", socketId, "userId", userId);
-    await redisClient?.set(socketId, userId);
+    await redisClient.sadd(`userSockets:${userId}`, socketId); // Use a Set
+    await redisClient.set(`socket:${socketId}`, userId);       // Keep socket → user mapping as string
   } catch (err) {
     throw new Error(`Error setting key in Redis: ${err}`);
   }
 };
 
-export const getSocketIdFromRedis = async (socketId: string) => {
+
+export const getSocketIdsByUserId = async (userId: string) => {
   try {
-    return await redisClient?.get(socketId);
+    return await redisClient.smembers(`userSockets:${userId}`); // Returns an array of socket IDs
   } catch (err) {
-    throw new Error(`Error getting key from Redis: ${err}`);
+    throw new Error(`Error getting socket IDs for user: ${err}`);
   }
 };
 
-export const deleteSocketIdFromRedis = async (socketId: string) => {
+
+export const getUserIdBySocketId = async (socketId: string) => {
   try {
-    await redisClient?.del(socketId);
+    return await redisClient.get(`socket:${socketId}`);
   } catch (err) {
-    throw new Error(`Error deleting key from Redis: ${err}`);
+    throw new Error(`Error getting userId for socket: ${err}`);
   }
 };
+
+export const getAllSocketIdsWithUserIds = async () => {
+  try {
+    const keys = await redisClient.keys("socket:*");
+    const socketIdsWithUserIds: Record<string, string> = {};
+    for (const key of keys) {
+      const userId = await redisClient.get(key);
+      if (userId) {
+        socketIdsWithUserIds[key] = userId;
+      }
+    }
+    return socketIdsWithUserIds;
+  } catch (err) {
+    throw new Error(`Error getting all socket IDs with user IDs: ${err}`);
+  }
+}
+
+export const deleteSocketIdFromRedis = async (socketId: string) => {
+  try {
+    const userId = await redisClient.get(`socket:${socketId}`);
+    if (userId) {
+      await redisClient.srem(`userSockets:${userId}`, socketId); // Remove this socket from the user's set
+    }
+    await redisClient.del(`socket:${socketId}`);
+  } catch (err) {
+    throw new Error(`Error deleting socket and user keys from Redis: ${err}`);
+  }
+};
+
 
 export default redisClient;
