@@ -71,7 +71,7 @@ export default function Header() {
 
     const handleMatch = (matchedUser: any) => {
       toast(`User matched with you: ${matchedUser.id}`);
-    };
+  };
 
     const handleNotification = () => {
       fetchNotifications();
