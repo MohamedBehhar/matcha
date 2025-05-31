@@ -85,6 +85,10 @@ class UsersInteractionsServices {
         user_id,
         friend_id: liked_id,
       });
+      const conversation = await orm.create("conversations", {
+        user1_id: user_id,
+        user2_id: liked_id,
+      });
       const sender = await userServices.getUsersById(user_id);
       const receiver = await userServices.getUsersById(liked_id);
       notificationsServices.createNotification(
