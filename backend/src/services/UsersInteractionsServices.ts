@@ -202,22 +202,61 @@ class UsersInteractionsServices {
           AND interactions.target_user_id = u.id
           AND interactions.interaction_type IN ('like', 'dislike', 'block')
         )
-        AND u.id != $4 -- Exclude the current user
-        AND u.age >= $5 -- Minimum age filter
-        AND u.age <= $6 -- Maximum age filter
+        AND u.id != $4 -- Exclude current user
+        AND u.age >= $5 -- Min age
+        AND u.age <= $6 -- Max age
         AND (
-            -- Match based on sexual preference logic
-            CASE 
-                WHEN $7 = 'bisexual' THEN TRUE
-                WHEN $7 = 'heterosexual' AND $8 = 'male' THEN (u.gender = 'female' AND u.sexual_preference IN ('heterosexual', 'bisexual'))
-                 WHEN $7 = 'heterosexual' AND $8 = 'female' THEN (u.gender = 'male' AND u.sexual_preference IN ('heterosexual', 'bisexual'))
-                 WHEN $7 = 'homosexual' AND $8 = 'male' THEN (u.gender = 'male' AND u.sexual_preference IN ('homosexual', 'bisexual'))
-                 WHEN $7 = 'homosexual' AND $8 = 'female' THEN (u.gender = 'female' AND u.sexual_preference IN ('homosexual', 'bisexual'))
-                ELSE FALSE -- Default to no match
-            END
+            -- Mutual matching logic
+            (
+                -- If searcher is heterosexual male
+                $7 = 'heterosexual' AND $8 = 'male'
+                AND u.gender = 'female'
+                AND u.sexual_preference IN ('heterosexual', 'bisexual')
+            )
+            OR
+            (
+                -- If searcher is heterosexual female
+                $7 = 'heterosexual' AND $8 = 'female'
+                AND u.gender = 'male'
+                AND u.sexual_preference IN ('heterosexual', 'bisexual')
+            )
+            OR
+            (
+                -- If searcher is homosexual male
+                $7 = 'homosexual' AND $8 = 'male'
+                AND u.gender = 'male'
+                AND u.sexual_preference IN ('homosexual', 'bisexual')
+            )
+            OR
+            (
+                -- If searcher is homosexual female
+                $7 = 'homosexual' AND $8 = 'female'
+                AND u.gender = 'female'
+                AND u.sexual_preference IN ('homosexual', 'bisexual')
+            )
+            OR
+            (
+                -- If searcher is bisexual male
+                $7 = 'bisexual' AND $8 = 'male'
+                AND (
+                    (u.gender = 'female' AND u.sexual_preference IN ('heterosexual', 'bisexual'))
+                    OR
+                    (u.gender = 'male' AND u.sexual_preference IN ('homosexual', 'bisexual'))
+                )
+            )
+            OR
+            (
+                -- If searcher is bisexual female
+                $7 = 'bisexual' AND $8 = 'female'
+                AND (
+                    (u.gender = 'male' AND u.sexual_preference IN ('heterosexual', 'bisexual'))
+                    OR
+                    (u.gender = 'female' AND u.sexual_preference IN ('homosexual', 'bisexual'))
+                )
+            )
         )
         AND (
-            -- Match based on shared interests
+            -- Shared interests
             $9::integer[] IS NULL OR EXISTS (
                 SELECT 1
                 FROM user_interests ui2
@@ -227,7 +266,7 @@ class UsersInteractionsServices {
         )
     ORDER BY 
         distance ASC;
-  `;
+    `;
 
     const min_age = user?.age - age_gap;
     const max_age = user?.age + age_gap;

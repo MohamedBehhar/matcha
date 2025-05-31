@@ -197,9 +197,27 @@ function Index() {
             <h1 className="text-3xl font-bold text-center">
               Please enable location access
             </h1>
-            <Link to="/profile" className="text-center text-red-tertiary">
-              Go to profile
-            </Link>
+            <Button
+              type="button"
+              className="bg-red-tertiary text-white"
+              onClick={() => {
+                getNavigatorLocation()
+                  .then(({ coords }) => {
+                    setPosition([coords.latitude, coords.longitude]);
+                    setUserInfos({
+                      ...user,
+                      latitude: coords.latitude,
+                      longitude: coords.longitude,
+                    });
+                  })
+                  .catch((err) => {
+                    console.error("Error fetching location:", err);
+                    toast.error("Failed to refresh location");
+                  });
+              }}
+            >
+              Refresh Location
+            </Button>
           </div>
         )}
 
