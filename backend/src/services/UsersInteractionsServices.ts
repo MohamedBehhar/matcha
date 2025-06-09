@@ -330,12 +330,32 @@ class UsersInteractionsServices {
 
   public async getFriends(user_id: string) {
     const friends = await orm.querySql(
-      `
-      SELECT u.id, u.username, u.email, u.age, u.bio, u.first_name, u.last_name, u.rating
-      FROM friendships f
-      JOIN users u ON (u.id = f.friend_id OR u.id = f.user_id)
-      WHERE (f.user_id = $1 OR f.friend_id = $1) AND u.id != $1
-      ORDER BY u.username
+      `SELECT 
+      u.id, 
+      u.username, 
+      u.email, 
+      u.age, 
+      u.bio, 
+      u.first_name, 
+      u.last_name, 
+      u.rating,
+      c.id AS conversation_id,
+      m.content AS last_message,
+      m.created_at AS last_message_time
+    FROM friendships f
+    JOIN users u ON (u.id = f.friend_id OR u.id = f.user_id)
+    LEFT JOIN conversations c 
+      ON ((c.user1_id = $1 AND c.user2_id = u.id) OR (c.user1_id = u.id AND c.user2_id = $1))
+    LEFT JOIN LATERAL (
+      SELECT content, created_at
+      FROM messages
+      WHERE conversation_id = c.id
+      ORDER BY created_at DESC
+      LIMIT 1
+    ) m ON true
+    WHERE (f.user_id = $1 OR f.friend_id = $1) 
+      AND u.id != $1
+    ORDER BY u.username;
     `,
       [user_id]
     );

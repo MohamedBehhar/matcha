@@ -47,6 +47,15 @@ class MsgsController {
     await msgsServices.saveMsgs(user_id, msgs, "");
     return { message: "Messages saved successfully" } as unknown as void;
   }
+
+  @handleResponse()
+  public async getMsgsByConversationId(req: Request, res: Response) {
+    const conversation_id = req.params.conversation_id;
+    const msgs = await msgsServices.getConversationMessages(
+      Number(conversation_id)
+    );
+    return msgs as unknown as void;
+  }
 }
 
 export default new MsgsController();

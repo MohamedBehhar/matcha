@@ -2,6 +2,7 @@ import express, { Request, Response } from "express";
 import http from "http";
 import cors from "cors";
 import bodyParser from "body-parser";
+import fs from "fs";
 import authRoutes from "./routers/authRoutes";
 import userRoutes from "./routers/userRoutes";
 import interstsRoutes from "./routers/interestsRoutes";
@@ -25,6 +26,7 @@ import passport from "passport";
 import cookieParser from "cookie-parser";
 import msgsServices from "./services/msgsServices";
 import msgsRoutes from "./routers/msgsRoutes";
+import orm from "./lib/orm";
 
 const PORT = 3000;
 const app = express();
@@ -100,20 +102,49 @@ io.on("connection", (socket) => {
       await deleteSocketIdFromRedis(socket.id);
     }
   });
+  socket.on("message", async (data: any) => {
+    if (data.type === "image"){
+      /// i have content base 64 image data
+      const base64Data = data.content.replace(/^data:image\/png;base64,/, "");
+      const fileName = `image-${Date.now()}.png`;
 
-  socket.on("join", async (userId: string) => {
-    await addSocketIdToRedis(userId, socket.id);
-    socket.emit("connected", { socketId: socket.id, userId });
-  });
+      //  Error saving image: [Error: ENOENT: no such file or directory, open '/app/public/uploads/image-1749479942891.png'] {
+      // check if public/uploads directory exists
+      const uploadsDir = path.join(__dirname, "../public/uploads");
+      if (!fs.existsSync(uploadsDir)) {
+        fs.mkdirSync(uploadsDir, { recursive: true });
+      }
+      const filePath = path.join(__dirname, "../public/uploads", fileName);
+      fs.writeFile(filePath, base64Data, "base64", (err) => {
+        if (err) {
+          console.error("❌ Error saving image:", err);
+          return;
+        }
+        console.log(`✅ Image saved as ${fileName}`);
+        data.content = `/uploads/${fileName}`; // Update content to the image path
+      });
+    }
 
-  socket.on("direct_message", async (data: any) => {
-    const { sender_id, receiver_id, content } = data;
-    console.log(
-      `New direct message from ${sender_id} to ${receiver_id}: ${content}`
+    socket.broadcast.emit("message", data);
+    await msgsServices.saveMsgs(
+      data.sender_id,
+      data.recipient_id,
+      data.content,
+      data.type || "text",
+   
     );
-
-    // Save the message to the database
-    await msgsServices.saveMsgs(sender_id, receiver_id, content);
+    orm.querySql(
+      `INSERT INTO messages (sender_id, recipient_id, content, type, conversation_id) VALUES ($1, $2, $3, $4, $5)`,
+      [data.from, data.to, data.content, data.type || "text", data.conversation_id]
+    )
+      .then(() => {
+        console.log("✅ Message saved to database");
+      }
+      )
+      .catch((err) => {
+        console.error("❌ Error saving message to database:", err);
+      }
+    );
   });
 });
 

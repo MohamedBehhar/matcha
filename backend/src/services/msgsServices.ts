@@ -113,6 +113,23 @@ class MsgsServices {
     }
   }
 
+
+
+  public async getConversationMessages(
+    conversation_id: number
+  ): Promise<Message[]> {
+    try {
+      const messages = await orm.querySql(
+        `SELECT * FROM messages WHERE conversation_id = $1 ORDER BY created_at ASC`,
+        [conversation_id]
+      );
+      return messages;
+    } catch (error) {
+      console.error("error fetching messages", error);
+      return [];
+    }
+  }
+  
   public async getUserConversations(user_id: number) {
     try {
       const conversations = await orm.querySql(

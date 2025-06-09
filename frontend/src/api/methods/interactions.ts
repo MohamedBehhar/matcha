@@ -11,17 +11,31 @@ const likeAUser = async (body) => {
 
 const unlikeAUser = async (body: any) => {
   console.log("body", body);
-  try {
-    const response = await instance.post("/interactions/unlike", body);
-    return response.data;
-  } catch (error) {
-    throw error;
-  }
+  const response = await instance.post("/interactions/unlike", body);
+  return response.data;
 };
 
 
 
 
+const getMessagesByConversationId = async (conversation_id: string) => {
+  if (!conversation_id) {
+    throw new Error("Conversation id is required");
+  }
+  const response = await instance.get(
+    `/messages/get-msgs-by-conversation/${conversation_id}`
+  );
+  return response.data;
+};
+
+const saveMsgs = async (user_id: string, msgs: any, type: string) => {
+  const response = await instance.post("/messages/save-msgs", {
+    user_id,
+    msgs,
+    type,
+  });
+  return response.data;
+};
 
 const getFriends = async (user_id: string | null) => {
   if (!user_id) {
@@ -79,4 +93,4 @@ const blockAUser = async (body: any) => {
   }
 };
 
-export { likeAUser, unlikeAUser, getMatches, checkLike, blockAUser , getFriends };
+export { likeAUser, unlikeAUser, getMatches, checkLike, blockAUser , getFriends ,saveMsgs,getMessagesByConversationId};
