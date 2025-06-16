@@ -17,6 +17,7 @@ const AboutPage = lazy(() => import("../private/about"));
 const ProfileSettings = lazy(() => import("../private/profile-settings"));
 const MatchMaking = lazy(() => import("../private/match-making"));
 const ProfilePage = lazy(() => import("../private/profile"));
+const NotificationsPage = lazy(() => import("../private/notifications"));
 const WelcomePage = lazy(() => import("../public/welcome"));
 const VerifyEmailPage = lazy(() => import("../public/verify-email"));
 const ResetPasswordPage = lazy(() => import("../public/reset-password"));
@@ -94,6 +95,7 @@ export default function Router() {
               <Route path="/profile/:userid" element={<ProfilePage />} />
               <Route path="/complete-profile" element={<CompleteProfile />} />
               <Route path="/messages" element={<MessagesPage />} />
+              <Route path="notifications" element={<NotificationsPage />} />
             </Route>
             <Route path="/signin" element={<LoginPage />} />
             <Route path="/signup" element={<SignUpPage />} />
