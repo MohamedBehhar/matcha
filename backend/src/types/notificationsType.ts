@@ -1,11 +1,4 @@
-// 'like',
-// 'dislike',
-// 'block',
-// 'report',
-// 'message',
-// 'visit',
-// 'friend_request',
-// 'friend_accept'
+
 
 const notificationsEnum = {
 	like: "like",

@@ -15,6 +15,7 @@ import useUserStore from "@/store/userStore";
 import toast from "react-hot-toast";
 import { FaMapMarkerAlt, FaInfoCircle } from "react-icons/fa";
 import { motion } from "framer-motion";
+import { socket } from "@/utils/socket";
 
 function ProfilePage() {
   const [userInfo, setUser] = useState<any>(null);
@@ -80,7 +81,30 @@ function ProfilePage() {
   };
 
   useEffect(() => {
-    fetchData();
+    const fetchDataAndTrackVisit = async () => {
+      await fetchData();
+
+      // Track visit if user is logged in and viewing someone else's profile
+      if (user?.id && user.id + "" !== target_id) {
+        try {
+          socket.emit("newVisit", {
+            user_id: user.id,
+            visited_id: target_id,
+          });
+
+          // Optional: Show a toast if you want to confirm the visit was tracked
+          toast.success("Visit recorded", {
+            position: "top-right",
+            duration: 2000,
+          });
+        } catch (error) {
+          console.error("Error tracking visit:", error);
+          toast.error("Couldn't track visit");
+        }
+      }
+    };
+
+    fetchDataAndTrackVisit();
   }, [user?.id]);
 
   if (loading) {

@@ -103,7 +103,7 @@ io.on("connection", (socket) => {
     }
   });
   socket.on("message", async (data: any) => {
-    if (data.type === "image"){
+    if (data.type === "image") {
       /// i have content base 64 image data
       const base64Data = data.content.replace(/^data:image\/png;base64,/, "");
       const fileName = `image-${Date.now()}.png`;
@@ -130,21 +130,29 @@ io.on("connection", (socket) => {
       data.sender_id,
       data.recipient_id,
       data.content,
-      data.type || "text",
-   
+      data.type || "text"
     );
-    orm.querySql(
-      `INSERT INTO messages (sender_id, recipient_id, content, type, conversation_id) VALUES ($1, $2, $3, $4, $5)`,
-      [data.from, data.to, data.content, data.type || "text", data.conversation_id]
-    )
+    orm
+      .querySql(
+        `INSERT INTO messages (sender_id, recipient_id, content, type, conversation_id) VALUES ($1, $2, $3, $4, $5)`,
+        [
+          data.from,
+          data.to,
+          data.content,
+          data.type || "text",
+          data.conversation_id,
+        ]
+      )
       .then(() => {
         console.log("✅ Message saved to database");
-      }
-      )
+      })
       .catch((err) => {
         console.error("❌ Error saving message to database:", err);
-      }
-    );
+      });
+  });
+
+  socket.on("newVisit", async ({ user_id, visited_id }: any) => {
+    UsersInteractionsServices.newVisit(user_id, visited_id);
   });
 });
 
