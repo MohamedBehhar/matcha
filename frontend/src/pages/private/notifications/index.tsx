@@ -26,13 +26,20 @@ function NotificationPage() {
     const fetchData = async () => {
       try {
         setLoading(true);
+        if (!user.id) {
+          setLoading(false);
+          return;
+        }
         const [notificationsData, countData] = await Promise.all([
-          getNotifications(user.id),
-          getNotificationsCount(user.id),
+          getNotifications(user.id.toString()),
+          getNotificationsCount(user.id.toString()),
         ]);
 
         setNotifications(notificationsData);
         setUnreadCount(countData.count);
+        if (countData.count > 0) {
+          await handleMarkAsRead();
+        }
       } catch (err) {
         setError(err.message);
         toast.error("Failed to load notifications");
@@ -48,10 +55,10 @@ function NotificationPage() {
     if (!user?.id || unreadCount === 0) return;
 
     try {
-      await markAsRead(user.id);
-      setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })));
-      setUnreadCount(0);
-      toast.success("All notifications marked as read");
+      await markAsRead(user.id.toString());
+      // setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })));
+      // setUnreadCount(0);
+      // toast.success("All notifications marked as read");
     } catch (err) {
       toast.error("Failed to mark notifications as read");
     }

@@ -14,7 +14,7 @@ const getNotifications = async (user_id: string) => {
 
 const markAsRead = async (user_id: string) => {
   try {
-	const response = await instance.put(baseURL + `notifications/${user_id}`);
+	const response = await instance.put(baseURL + `notifications/mark-as-read/${user_id}`);
 	return response.data;
   } catch (error) {
 	throw error;

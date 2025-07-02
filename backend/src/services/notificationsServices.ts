@@ -46,10 +46,11 @@ RETURNING *;
 
   public async getNotifications(user_id: string): Promise<Notification[]> {
     try {
-      const notifications = await orm.findMany("notifications", {
-        where: { user_id },
-      });
-
+      const notifications = await orm.querySql(
+        `SELECT * FROM notifications WHERE user_id = $1 AND is_read = false ORDER BY created_at DESC`,
+        [user_id]
+      );
+      console.log("notifications==> ", notifications);
       return notifications;
     } catch (error) {
       console.log("error", error);
@@ -70,7 +71,7 @@ RETURNING *;
   }
 
   public async markAsRead(user_id: string): Promise<void> {
-    await orm.update("notifications", user_id, { isRead: true });
+    await orm.update("notifications", user_id, { is_read: true });
     return;
   }
 }
