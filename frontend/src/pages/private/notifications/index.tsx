@@ -7,12 +7,10 @@ import { useEffect, useState } from "react";
 import useUserStore from "@/store/userStore";
 import { FaBell, FaBellSlash, FaCheck, FaTrash } from "react-icons/fa";
 import { formatDistanceToNow } from "date-fns";
-import { Button } from "@/components/ui/button";
 import toast from "react-hot-toast";
 
 function NotificationPage() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const { user } = useUserStore();
@@ -36,10 +34,7 @@ function NotificationPage() {
         ]);
 
         setNotifications(notificationsData);
-        setUnreadCount(countData.count);
-        if (countData.count > 0) {
-          await handleMarkAsRead();
-        }
+        await handleMarkAsRead();
       } catch (err) {
         setError(err.message);
         toast.error("Failed to load notifications");
@@ -52,13 +47,10 @@ function NotificationPage() {
   }, [user]);
 
   const handleMarkAsRead = async () => {
-    if (!user?.id || unreadCount === 0) return;
+    if (!user?.id) return;
 
     try {
       await markAsRead(user.id.toString());
-      // setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })));
-      // setUnreadCount(0);
-      // toast.success("All notifications marked as read");
     } catch (err) {
       toast.error("Failed to mark notifications as read");
     }
@@ -82,22 +74,7 @@ function NotificationPage() {
           <h1 className="text-2xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
             <FaBell className="text-red-primary" />
             Notifications
-            {unreadCount > 0 && (
-              <span className="bg-red-500 text-white text-sm font-medium px-2 py-0.5 rounded-full ml-2">
-                {unreadCount} new
-              </span>
-            )}
           </h1>
-
-          {unreadCount > 0 && (
-            <Button
-              onClick={handleMarkAsRead}
-              className="flex items-center gap-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-white"
-            >
-              <FaCheck size={14} />
-              Mark all as read
-            </Button>
-          )}
         </div>
 
         {/* Loading state */}

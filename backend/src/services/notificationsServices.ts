@@ -47,7 +47,7 @@ RETURNING *;
   public async getNotifications(user_id: string): Promise<Notification[]> {
     try {
       const notifications = await orm.querySql(
-        `SELECT * FROM notifications WHERE user_id = $1 AND is_read = false ORDER BY created_at DESC`,
+        `SELECT * FROM notifications WHERE user_id = $1  ORDER BY created_at DESC`,
         [user_id]
       );
       console.log("notifications==> ", notifications);
@@ -61,8 +61,10 @@ RETURNING *;
   public async getNotificationsCount(user_id: string): Promise<number> {
     try {
       const notifications = await orm.findMany("notifications", {
-        where: { user_id },
+        where: { user_id, is_read: false },
       });
+      console.log("user_id==> ", user_id);
+      console.log("notifications count==> ", notifications.length);
       return notifications.length;
     } catch (error) {
       console.error("Error in getNotificationsCount:", error);

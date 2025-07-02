@@ -3,7 +3,9 @@ import pool from "../db/db";
 import { BadRequestError, NotFoundError } from "./customError";
 
 type QueryFindMany = {
-  where?: Record<string, string | number>;
+  where?: Record<string, string | number
+    | boolean | Date | null
+  >;
   orderBy?: {
     [key: string]: "ASK" | "DESC";
   };

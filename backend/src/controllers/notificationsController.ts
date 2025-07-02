@@ -27,7 +27,6 @@ class NotificationsController {
   public async getNotificationsCount(req: Request, res: Response) {
     const user_id = req.params.user_id;
     const count = await notificationsServices.getNotificationsCount(user_id);
-    console.log("count", count);
     return {
       count,
     } as unknown as void;

@@ -37,7 +37,7 @@ const AnimatedStep = ({ children }: { children: React.ReactNode }) => (
 
 // Progress Dots
 const ProgressIndicator = ({ step }: { step: number }) => (
-  <div className="flex gap-8 mb-6 border justify-center items-center ">
+  <div className="flex gap-8 mb-6  justify-center items-center ">
     {Array.from({ length: TOTAL_STEPS }, (_, i) => (
       <div
         key={i}
@@ -293,7 +293,7 @@ const CompleteProfile = () => {
   return (
     <form
       onSubmit={handleSubmit}
-      className="flex flex-col items-center justify-center h-[70vh] gap-6"
+      className="flex flex-col items-center justify-center h-[100vh] gap-6"
     >
       <ProgressIndicator step={step} />
       <h1 className="text-2xl font-bold text-center">{stepTitles[step - 1]}</h1>

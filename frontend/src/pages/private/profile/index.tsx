@@ -34,6 +34,7 @@ function ProfilePage() {
         getUserById(target_id),
         getUserInterests(target_id),
       ]);
+      console.log("User Data: ", userData);
       setUser(userData);
       setUserInterests(interestsData);
 
@@ -137,10 +138,10 @@ function ProfilePage() {
     <div className="dark bg-gray-900 min-h-screen pb-20">
       {/* Profile Gallery */}
       <div className="relative h-[70vh] max-h-[700px] overflow-hidden">
-        {userInfo?.images?.length > 0 ? (
+        {userInfo?.profile_picture ? (
           <div className="h-full w-full flex">
             <img
-              src={`http://localhost:3000/${userInfo.images[0].url}`}
+              src={`http://localhost:3000/${userInfo.profile_picture}`}
               alt="Profile"
               className="w-full h-full object-cover"
               onError={(e) => {
