@@ -19,24 +19,24 @@ class NotificationsServices {
   }
 
   public async createNotification(
-    user_id: string,
+    recipient_id: string,
     content: string,
     sender_id: string,
     notification_type: string
   ): Promise<void> {
     const newNotification = await orm.querySql(
-      `INSERT INTO notifications (user_id, content, sender_id, notification_type)
+      `INSERT INTO notifications (recipient_id, content, sender_id, notification_type)
 SELECT $1, $2, $3, $4
 WHERE NOT EXISTS (
   SELECT 1 FROM notifications 
-  WHERE user_id = $1 AND content = $2 AND sender_id = $3 AND notification_type = $4
+  WHERE recipient_id = $1 AND content = $2 AND sender_id = $3 AND notification_type = $4
 )
 RETURNING *;
 `,
-      [user_id, content, sender_id, notification_type]
+      [recipient_id, content, sender_id, notification_type]
     );
 
-    const receiver_id = await getSocketIdsByUserId(user_id);
+    const receiver_id = await getSocketIdsByUserId(recipient_id);
     if (receiver_id) {
       this.socket?.to(receiver_id).emit("notification");
     }
@@ -44,11 +44,11 @@ RETURNING *;
     return;
   }
 
-  public async getNotifications(user_id: string): Promise<Notification[]> {
+  public async getNotifications(recipient_id: string): Promise<Notification[]> {
     try {
       const notifications = await orm.querySql(
-        `SELECT * FROM notifications WHERE user_id = $1  ORDER BY created_at DESC`,
-        [user_id]
+        `SELECT * FROM notifications WHERE recipient_id = $1  ORDER BY created_at DESC`,
+        [recipient_id]
       );
       console.log("notifications==> ", notifications);
       return notifications;
@@ -58,13 +58,11 @@ RETURNING *;
     return [];
   }
 
-  public async getNotificationsCount(user_id: string): Promise<number> {
+  public async getNotificationsCount(recipient_id: string): Promise<number> {
     try {
       const notifications = await orm.findMany("notifications", {
-        where: { user_id, is_read: false },
+        where: { recipient_id, is_read: false },
       });
-      console.log("user_id==> ", user_id);
-      console.log("notifications count==> ", notifications.length);
       return notifications.length;
     } catch (error) {
       console.error("Error in getNotificationsCount:", error);
@@ -72,8 +70,8 @@ RETURNING *;
     }
   }
 
-  public async markAsRead(user_id: string): Promise<void> {
-    await orm.update("notifications", user_id, { is_read: true });
+  public async markAsRead(recipient_id: string): Promise<void> {
+    await orm.update("notifications", recipient_id, { is_read: true });
     return;
   }
 }

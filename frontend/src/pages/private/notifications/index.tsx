@@ -8,6 +8,8 @@ import useUserStore from "@/store/userStore";
 import { FaBell, FaBellSlash, FaCheck, FaTrash } from "react-icons/fa";
 import { formatDistanceToNow } from "date-fns";
 import toast from "react-hot-toast";
+import { Button } from "@/components/ui/button";
+import { Link, useNavigate } from "react-router-dom";
 
 function NotificationPage() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -45,6 +47,8 @@ function NotificationPage() {
 
     fetchData();
   }, [user]);
+
+  const navigate = useNavigate()
 
   const handleMarkAsRead = async () => {
     if (!user?.id) return;
@@ -132,13 +136,15 @@ function NotificationPage() {
                       })}
                     </p>
                   </div>
-                  <button
-                    className="text-gray-400 hover:text-red-primary transition-colors p-1"
-                    title="Delete notification"
-                  >
-                    <FaTrash size={14} />
-                  </button>
                 </div>
+                {notification.notification_type == "like" && (
+                  <Button
+                  onClick={()=> {
+                    navigate(`/profile/${notification.sender_id}`)
+                  }}
+
+                  >View Porfile</Button>
+                )}
               </div>
             ))}
           </div>

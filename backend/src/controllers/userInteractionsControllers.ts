@@ -52,10 +52,8 @@ class UserInteractionsControllers {
 
 	@handleResponse()
 	public async checkLike(req: Request, res: Response) {
-		const { user_id, target_id } = req.params;
-		console.log("user_id3", user_id);
-		console.log("target_id3", target_id);
-		return await UsersInteractionsServices.checkLike(user_id, target_id) as unknown as void;
+		const { recipient_id, target_id } = req.params;
+		return await UsersInteractionsServices.checkLike(recipient_id, target_id) as unknown as void;
 	}
 
 	@handleResponse()

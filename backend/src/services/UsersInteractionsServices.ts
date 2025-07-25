@@ -39,7 +39,6 @@ class UsersInteractionsServices {
     });
     console.log("alreadyDisliked", alreadyDisliked);
     const user = await orm.findOne("users", { where: { id: user_id } });
-    const liked = await orm.findOne("users", { where: { id: liked_id } });
 
     if (alreadyDisliked) {
       await orm.querySql(
