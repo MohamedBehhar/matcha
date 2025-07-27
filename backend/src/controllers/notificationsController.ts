@@ -18,8 +18,8 @@ class NotificationsController {
 
   @handleResponse()
   public async markAsRead(req: Request, res: Response) {
-    const user_id = req.params.user_id;
-    await notificationsServices.markAsRead(user_id);
+    const recipient_id = req.params.recipient_id;
+    await notificationsServices.markAsRead(recipient_id);
     return { message: "Marked as read" } as unknown as void;
   }
 

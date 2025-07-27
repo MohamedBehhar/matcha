@@ -5,7 +5,7 @@ const router = express.Router();
 
 router.get("/:user_id", notificationsController.getNotifications);
 
-router.put("/mark-as-read/:user_id", notificationsController.markAsRead);
+router.put("/mark-as-read/:recipient_id", notificationsController.markAsRead);
 
 router.get("/count/:user_id", notificationsController.getNotificationsCount);
 

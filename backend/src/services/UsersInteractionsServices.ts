@@ -184,6 +184,7 @@ class UsersInteractionsServices {
         u.latitude, 
         u.longitude,
         u.profile_picture,
+        ARRAY_REMOVE(ARRAY_AGG(DISTINCT i.name), NULL) AS interests,
         CEIL(
             ST_Distance(
                 ST_GeogFromText('SRID=4326;POINT(' || $2 || ' ' || $1 || ')'),
@@ -192,6 +193,8 @@ class UsersInteractionsServices {
         ) AS distance
     FROM 
         users u
+    LEFT JOIN user_interests ui ON u.id = ui.user_id
+    LEFT JOIN interests i ON ui.interest_id = i.id
     WHERE 
         ST_DWithin(
             ST_GeogFromText('SRID=4326;POINT(' || $2 || ' ' || $1 || ')'),
@@ -199,11 +202,11 @@ class UsersInteractionsServices {
             $3
         )
         AND NOT EXISTS (
-          SELECT 1
-          FROM user_interactions interactions
-          WHERE interactions.user_id = $4
-          AND interactions.target_user_id = u.id
-          AND interactions.interaction_type IN ('like', 'dislike', 'block')
+            SELECT 1
+            FROM user_interactions interactions
+            WHERE interactions.user_id = $4
+            AND interactions.target_user_id = u.id
+            AND interactions.interaction_type IN ('like', 'dislike', 'block')
         )
         AND u.id != $4 -- Exclude current user
         AND u.age >= $5 -- Min age
@@ -211,35 +214,26 @@ class UsersInteractionsServices {
         AND (
             -- Mutual matching logic
             (
-                -- If searcher is heterosexual male
                 $7 = 'heterosexual' AND $8 = 'male'
                 AND u.gender = 'female'
                 AND u.sexual_preference IN ('heterosexual', 'bisexual')
             )
-            OR
-            (
-                -- If searcher is heterosexual female
+            OR (
                 $7 = 'heterosexual' AND $8 = 'female'
                 AND u.gender = 'male'
                 AND u.sexual_preference IN ('heterosexual', 'bisexual')
             )
-            OR
-            (
-                -- If searcher is homosexual male
+            OR (
                 $7 = 'homosexual' AND $8 = 'male'
                 AND u.gender = 'male'
                 AND u.sexual_preference IN ('homosexual', 'bisexual')
             )
-            OR
-            (
-                -- If searcher is homosexual female
+            OR (
                 $7 = 'homosexual' AND $8 = 'female'
                 AND u.gender = 'female'
                 AND u.sexual_preference IN ('homosexual', 'bisexual')
             )
-            OR
-            (
-                -- If searcher is bisexual male
+            OR (
                 $7 = 'bisexual' AND $8 = 'male'
                 AND (
                     (u.gender = 'female' AND u.sexual_preference IN ('heterosexual', 'bisexual'))
@@ -247,9 +241,7 @@ class UsersInteractionsServices {
                     (u.gender = 'male' AND u.sexual_preference IN ('homosexual', 'bisexual'))
                 )
             )
-            OR
-            (
-                -- If searcher is bisexual female
+            OR (
                 $7 = 'bisexual' AND $8 = 'female'
                 AND (
                     (u.gender = 'male' AND u.sexual_preference IN ('heterosexual', 'bisexual'))
@@ -259,7 +251,6 @@ class UsersInteractionsServices {
             )
         )
         AND (
-            -- Shared interests
             $9::integer[] IS NULL OR EXISTS (
                 SELECT 1
                 FROM user_interests ui2
@@ -267,9 +258,12 @@ class UsersInteractionsServices {
                 AND ui2.interest_id = ANY($9::integer[])
             )
         )
+    GROUP BY 
+        u.id
     ORDER BY 
         distance ASC;
     `;
+    
 
     const min_age = user?.age - age_gap;
     const max_age = user?.age + age_gap;

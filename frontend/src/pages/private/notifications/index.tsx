@@ -48,7 +48,7 @@ function NotificationPage() {
     fetchData();
   }, [user]);
 
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   const handleMarkAsRead = async () => {
     if (!user?.id) return;
@@ -114,7 +114,7 @@ function NotificationPage() {
             {notifications.map((notification) => (
               <div
                 key={notification.id}
-                className={`p-4 rounded-lg border transition-all ${
+                className={`p-4 rounded-lg border transition-all flex justify-between items-center  ${
                   notification.is_read
                     ? "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700"
                     : "bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800"
@@ -137,13 +137,14 @@ function NotificationPage() {
                     </p>
                   </div>
                 </div>
-                {notification.notification_type == "like" && (
+                {(notification.notification_type == "like" || notification.notification_type == "visit") && (
                   <Button
-                  onClick={()=> {
-                    navigate(`/profile/${notification.sender_id}`)
-                  }}
-
-                  >View Porfile</Button>
+                    onClick={() => {
+                      navigate(`/profile/${notification.sender_id}`);
+                    }}
+                  >
+                    View Porfile
+                  </Button>
                 )}
               </div>
             ))}

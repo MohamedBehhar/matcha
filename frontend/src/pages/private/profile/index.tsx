@@ -134,11 +134,13 @@ function ProfilePage() {
     );
   }
 
+  console.log("----> ", userInfo)
+
   return (
     <div className="dark bg-gray-900 min-h-screen pb-20">
       {/* Profile Gallery */}
       <div className="relative h-[70vh] max-h-[700px] overflow-hidden">
-        {userInfo?.profile_picture ? (
+        {userInfo?.profile_picture  ? (
           <div className="h-full w-full flex">
             <img
               src={`http://localhost:3000/${userInfo.profile_picture}`}

@@ -71,7 +71,10 @@ RETURNING *;
   }
 
   public async markAsRead(recipient_id: string): Promise<void> {
-    await orm.update("notifications", recipient_id, { is_read: true });
+    await orm.querySql(
+      `UPDATE notifications SET is_read = true WHERE recipient_id = $1`,
+      [recipient_id]
+    );
     return;
   }
 }

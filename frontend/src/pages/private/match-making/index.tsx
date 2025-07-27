@@ -25,6 +25,7 @@ import {
   FaBirthdayCake,
 } from "react-icons/fa";
 import { IoMdRefresh } from "react-icons/io";
+import { FaVenusMars, FaVenus, FaMars } from "react-icons/fa";
 
 function ZoomHandler({ zoom }) {
   const map = useMap();
@@ -334,7 +335,7 @@ function MatchingPage() {
 
         {/* Matching Cards */}
         <div className="lg:col-span-2">
-          <div className="bg-white dark:bg-gray-800  shadow-lg p-6 h-full rounded-md">
+          <div className="bg-white dark:bg-gray-800  shadow-lg p-6 h-full rounded-md flex justify-center items-center">
             {loading ? (
               <div className="flex justify-center items-center h-96">
                 <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-red-primary"></div>
@@ -348,9 +349,9 @@ function MatchingPage() {
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.9 }}
                     transition={{ duration: 0.3 }}
-                    className="w-full max-w-md"
+                    className="w-full max-w-md p-4 min-w-[400px]"
                   >
-                    <div className="relative rounded-xl overflow-hidden shadow-lg border border-gray-200 dark:border-gray-700">
+                    <div className="relative rounded-lg overflow-hidden shadow-lg border border-gray-200 dark:border-gray-700">
                       {/* Profile Image */}
                       <div className="relative h-96 w-full">
                         <img
@@ -365,15 +366,51 @@ function MatchingPage() {
 
                         {/* User Info Overlay */}
                         <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
-                          <h2 className="text-white text-2xl font-bold">
-                            {currentUser.first_name}, {currentUser.age}
-                          </h2>
-                          <div className="flex items-center gap-2 text-white/90">
+                          <div className="flex items-center  gap-2">
+                            <h2 className="text-white text-2xl font-bold">
+                              {currentUser.first_name}, {currentUser.age}
+                            </h2>
+                            {/* Sexual Orientation Icon */}
+                            {currentUser.gender && (
+                              <div
+                                className="flex items-center"
+                                title={currentUser.gender}
+                              >
+                                {currentUser.gender === "female" && (
+                                  <FaVenus className="text-red-200" size={26} />
+                                )}
+                                {currentUser.gender === "male" && (
+                                  <FaMars className="text-blue-300" size={26} />
+                                )}
+                              </div>
+                            )}
+                          </div>
+
+                          <div className="flex items-center gap-2 text-white/90 mb-2">
                             <FaMapMarkerAlt size={14} />
                             <span>
                               {Math.round(currentUser.distance)} km away
                             </span>
                           </div>
+
+                          {/* Interests Section */}
+                          {currentUser.interests &&
+                            currentUser.interests.length > 0 && (
+                              <div className="mt-2">
+                                <div className="flex flex-wrap gap-2">
+                                  {currentUser.interests.map(
+                                    (interest, index) => (
+                                      <span
+                                        key={index}
+                                        className="bg-white/20 backdrop-blur-sm text-white text-xs px-2 py-1 rounded-full"
+                                      >
+                                        {interest}
+                                      </span>
+                                    )
+                                  )}
+                                </div>
+                              </div>
+                            )}
                         </div>
                       </div>
 
