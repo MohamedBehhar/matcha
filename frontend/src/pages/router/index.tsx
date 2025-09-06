@@ -5,6 +5,7 @@ import MessagesPage from "../private/messages";
 import { updateUserLocation } from "@/api/methods/user";
 import useUserStore from "@/store/userStore";
 import toast from "react-hot-toast";
+import axios from "axios"
 
 const GlobalLayout = lazy(() => import("../layout"));
 const LoginPage = lazy(() => import("../public/sign-in"));

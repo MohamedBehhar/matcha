@@ -123,10 +123,9 @@ function MatchingPage() {
   };
 
   const nextUser = () => {
-    if (currentIndex < users.length - 1) {
-      setCurrentIndex(currentIndex + 1);
-    } else {
-      toast("No more matches. Try adjusting your filters!", { icon: "🔍" });
+    setCurrentIndex((prev) => (prev + 1) % users.length);
+    if (users.length === 1) {
+      setUsers([]);
     }
   };
 
