@@ -1,39 +1,46 @@
-import { Request, Response } from "express"; 
+import { Request, Response } from "express";
 
 import { handleResponse } from "../utils/decorators";
-
 
 import UsersInteractionsServices from "../services/UsersInteractionsServices";
 
 class UserInteractionsControllers {
-	constructor() {
-		this.likeAUser = this.likeAUser.bind(this);
-		this.unlikeAUser = this.unlikeAUser.bind(this);
-	}
+  constructor() {
+    this.likeAUser = this.likeAUser.bind(this);
+    this.unlikeAUser = this.unlikeAUser.bind(this);
+    this.blockAUser = this.blockAUser.bind(this);
+    this.getMatches = this.getMatches.bind(this);
+    this.checkLike = this.checkLike.bind(this);
+    this.newVisit = this.newVisit.bind(this);
+    this.getFriends = this.getFriends.bind(this);
+  }
 
+  @handleResponse()
+  public async likeAUser(req: Request, res: Response) {
+    const body = req.body;
+    return (await UsersInteractionsServices.likeAUser(body)) as unknown as void;
+  }
 
+  @handleResponse()
+  public async unlikeAUser(req: Request, res: Response) {
+    const body = req.body;
+    return (await UsersInteractionsServices.unlikeAUser(
+      body
+    )) as unknown as void;
+  }
 
-	@handleResponse()
-	public async likeAUser(req: Request, res: Response) {
-		const body = req.body;
-		return await UsersInteractionsServices.likeAUser(body) as unknown as void;
-	}
+  @handleResponse()
+  public async blockAUser(req: Request, res: Response) {
+    const body = req.body;
+    return (await UsersInteractionsServices.blockAUser(
+      body
+    )) as unknown as void;
+  }
 
-	@handleResponse()
-	public async unlikeAUser(req: Request, res: Response) {
-		const body = req.body;
-		return await UsersInteractionsServices.unlikeAUser(body) as unknown as void;
-	}
-
-	@handleResponse()
-	public async blockAUser(req: Request, res: Response) {
-		const body = req.body;
-		return await UsersInteractionsServices.blockAUser(body) as unknown as void;
-	}
-
-	// @handleResponse()
-	public async getMatches(req: Request, res: Response) {
-		const { latitude, longitude, distance, user_id, age_gap, interests } = req.query;
+  // @handleResponse()
+  public async getMatches(req: Request, res: Response) {
+    const { latitude, longitude, distance, user_id, age_gap, interests } =
+      req.query;
     try {
       const users = await UsersInteractionsServices.getMatches(
         Number(latitude),
@@ -48,25 +55,33 @@ class UserInteractionsControllers {
       console.error(error);
       res.status(500).send("Internal server error");
     }
-	}
+  }
 
-	@handleResponse()
-	public async checkLike(req: Request, res: Response) {
-		const { recipient_id, target_id } = req.params;
-		return await UsersInteractionsServices.checkLike(recipient_id, target_id) as unknown as void;
-	}
+  @handleResponse()
+  public async checkLike(req: Request, res: Response) {
+    const { user_id, target_id } = req.params;
+    return (await UsersInteractionsServices.checkLike(
+      user_id,
+      target_id
+    )) as unknown as void;
+  }
 
-	@handleResponse()
-	public async newVisit(req: Request, res: Response) {
-		const { user_id, visited_id } = req.body;
-		return await UsersInteractionsServices.newVisit(user_id, visited_id) as unknown as void;
-	}
+  @handleResponse()
+  public async newVisit(req: Request, res: Response) {
+    const { user_id, visited_id } = req.body;
+    return (await UsersInteractionsServices.newVisit(
+      user_id,
+      visited_id
+    )) as unknown as void;
+  }
 
-	@handleResponse()
-	public async getFriends(req: Request, res: Response) {
-		const { user_id } = req.params;
-		return await UsersInteractionsServices.getFriends(user_id as string) as unknown as void;
-	}
+  @handleResponse()
+  public async getFriends(req: Request, res: Response) {
+    const { user_id } = req.params;
+    return (await UsersInteractionsServices.getFriends(
+      user_id as string
+    )) as unknown as void;
+  }
 }
 
-export default  new UserInteractionsControllers();
+export default new UserInteractionsControllers();

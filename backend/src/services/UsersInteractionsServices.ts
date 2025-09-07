@@ -67,16 +67,6 @@ class UsersInteractionsServices {
       notificationsEnum.like
     );
 
-    // const receiver_id = await getSocketIdsByUserId(liked_id);
-    // console.log("receiver_id - - - - - - - - - -> user interactions ", receiver_id);
-    // if (receiver_id) {
-    //   const sender = await userServices.getUsersById(user_id);
-    //   notificationsServices.createNotification(
-    //     liked_id,
-    //     `${sender.username} liked your profile`,
-    //     user_id
-    //   );
-    // }
 
     if (mutualLike) {
       // Create a friendship
@@ -145,12 +135,23 @@ class UsersInteractionsServices {
   public async blockAUser(body: any) {
     const { user_id, target_id } = body;
 
-    // Insert the "block" interaction
-    await orm.create("user_interactions", {
-      user_id,
-      target_user_id: target_id,
-      interaction_type: "block",
-    });
+    // Try to update first
+    const updated = await orm.querySql(
+      `UPDATE user_interactions 
+       SET interaction_type = 'block', created_at = NOW() 
+       WHERE user_id = $1 AND target_user_id = $2
+       RETURNING *`,
+      [user_id, target_id]
+    );
+
+    if (updated.length === 0) {
+      // No existing row → insert new
+      await orm.create("user_interactions", {
+        user_id,
+        target_user_id: target_id,
+        interaction_type: "block",
+      });
+    }
 
     return { message: "Blocked user" };
   }
@@ -263,7 +264,6 @@ class UsersInteractionsServices {
     ORDER BY 
         distance ASC;
     `;
-    
 
     const min_age = user?.age - age_gap;
     const max_age = user?.age + age_gap;
@@ -290,14 +290,28 @@ class UsersInteractionsServices {
   }
 
   public async checkLike(user_id: string, target_id: string) {
-    const like = await orm.querySql(
-      "SELECT * FROM user_interactions WHERE user_id = $1 AND target_user_id = $2 AND interaction_type = 'like'",
+    console.log("user_id", user_id);
+    console.log("target_id", target_id);
+    // user → target
+    const youLiked = await orm.querySql(
+      "SELECT 1 FROM user_interactions WHERE user_id = $1 AND target_user_id = $2 AND interaction_type = 'like'",
       [user_id, target_id]
     );
 
-    console.log("Like8:", like);
+    // target → user
+    const theyLiked = await orm.querySql(
+      "SELECT 1 FROM user_interactions WHERE user_id = $1 AND target_user_id = $2 AND interaction_type = 'like'",
+      [target_id, user_id]
+    );
 
-    return { liked: like.length > 0 ? true : false };
+    console.log("youLiked", youLiked);
+    console.log("theyLiked", theyLiked);
+
+    return {
+      youLiked: youLiked.length > 0,
+      theyLiked: theyLiked.length > 0,
+      connected: youLiked.length > 0 && theyLiked.length > 0,
+    };
   }
 
   public async newVisit(user_id: string, visited_id: string) {

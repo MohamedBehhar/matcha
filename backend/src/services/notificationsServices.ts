@@ -47,9 +47,24 @@ RETURNING *;
   public async getNotifications(recipient_id: string): Promise<Notification[]> {
     try {
       const notifications = await orm.querySql(
-        `SELECT * FROM notifications WHERE recipient_id = $1  ORDER BY created_at DESC`,
+        `
+        SELECT *
+        FROM notifications n
+        WHERE n.recipient_id = $1
+          AND NOT EXISTS (
+            SELECT 1
+            FROM user_interactions ui
+            WHERE ui.interaction_type = 'block'
+              AND (
+                (ui.user_id = n.sender_id AND ui.target_user_id = $1)
+                OR (ui.user_id = $1 AND ui.target_user_id = n.sender_id)
+              )
+          )
+        ORDER BY n.created_at DESC
+        `,
         [recipient_id]
       );
+
       console.log("notifications==> ", notifications);
       return notifications;
     } catch (error) {

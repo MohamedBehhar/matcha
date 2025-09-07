@@ -3,7 +3,7 @@ import { getUserInterests } from "@/api/methods/interest";
 import { getUserById } from "@/api/methods/user";
 import { useEffect, useState } from "react";
 import { IoFemale, IoMale } from "react-icons/io5";
-import { FaRegUser, FaHeart, FaRegHeart } from "react-icons/fa";
+import { FaRegUser, FaHeart, FaRegHeart, FaUserFriends } from "react-icons/fa";
 import { MdBlock, MdVerified } from "react-icons/md";
 import {
   checkLike,
@@ -13,14 +13,16 @@ import {
 } from "@/api/methods/interactions";
 import useUserStore from "@/store/userStore";
 import toast from "react-hot-toast";
-import { FaMapMarkerAlt, FaInfoCircle } from "react-icons/fa";
+import { FaMapMarkerAlt } from "react-icons/fa";
 import { motion } from "framer-motion";
 import { socket } from "@/utils/socket";
 
 function ProfilePage() {
   const [userInfo, setUser] = useState<any>(null);
   const [userInterests, setUserInterests] = useState<any>(null);
-  const [liked, setLiked] = useState(false);
+  const [youLiked, setYouLiked] = useState(false);
+  const [theyLiked, setTheyLiked] = useState(false);
+  const [connected, setConnected] = useState(false);
   const [loading, setLoading] = useState(true);
   const { user } = useUserStore();
 
@@ -34,13 +36,15 @@ function ProfilePage() {
         getUserById(target_id),
         getUserInterests(target_id),
       ]);
-      console.log("User Data: ", userData);
       setUser(userData);
       setUserInterests(interestsData);
 
       if (user?.id) {
         const likeStatus = await checkLike(user.id, target_id);
-        setLiked(likeStatus.liked);
+        console.log("likeStatus", likeStatus);
+        setYouLiked(likeStatus.youLiked);
+        setTheyLiked(likeStatus.theyLiked);
+        setConnected(likeStatus.connected);
       }
     } catch (error) {
       toast.error("Couldn't load profile");
@@ -52,8 +56,13 @@ function ProfilePage() {
   const handleLike = async () => {
     try {
       await likeAUser({ user_id: user.id, liked_id: target_id });
-      setLiked(true);
-      toast.success("Liked!");
+      setYouLiked(true);
+      if (theyLiked) {
+        setConnected(true);
+        toast.success("It's a match! 🎉");
+      } else {
+        toast.success("Liked!");
+      }
     } catch (error) {
       toast.error("Failed to like");
     }
@@ -62,22 +71,27 @@ function ProfilePage() {
   const handleUnlike = async () => {
     try {
       await unlikeAUser({ user_id: user.id, disliked_id: target_id });
-      setLiked(false);
+      setYouLiked(false);
+      setConnected(false);
       toast("Removed like");
     } catch (error) {
       toast.error("Failed to remove like");
     }
   };
 
+  const [blocked, setBlocked] = useState(false);
+
   const handleBlock = async () => {
-    if (window.confirm("Are you sure you want to block this user?")) {
-      try {
-        await blockAUser({ user_id: user.id, target_id });
-        toast.success("User blocked");
-        window.location.href = "/";
-      } catch (error) {
-        toast.error("Block failed");
-      }
+    if (!window.confirm("Are you sure you want to block this user?")) return;
+
+    try {
+      await blockAUser({ user_id: user.id, target_id });
+      setBlocked(true);
+      toast.success("User blocked");
+      // Optional: redirect to home or another page
+      window.location.href = "/";
+    } catch (error) {
+      toast.error("Block failed");
     }
   };
 
@@ -85,22 +99,14 @@ function ProfilePage() {
     const fetchDataAndTrackVisit = async () => {
       await fetchData();
 
-      // Track visit if user is logged in and viewing someone else's profile
       if (user?.id && user.id + "" !== target_id) {
         try {
           socket.emit("newVisit", {
             user_id: user.id,
             visited_id: target_id,
           });
-
-          // Optional: Show a toast if you want to confirm the visit was tracked
-          toast.success("Visit recorded", {
-            position: "top-right",
-            duration: 2000,
-          });
         } catch (error) {
           console.error("Error tracking visit:", error);
-          toast.error("Couldn't track visit");
         }
       }
     };
@@ -134,13 +140,11 @@ function ProfilePage() {
     );
   }
 
-  console.log("----> ", userInfo)
-
   return (
     <div className="dark bg-gray-900 min-h-screen pb-20">
       {/* Profile Gallery */}
       <div className="relative h-[70vh] max-h-[700px] overflow-hidden">
-        {userInfo?.profile_picture  ? (
+        {userInfo?.profile_picture ? (
           <div className="h-full w-full flex">
             <img
               src={`http://localhost:3000/${userInfo.profile_picture}`}
@@ -165,27 +169,37 @@ function ProfilePage() {
         <div className="absolute bottom-20 left-0 right-0 flex justify-center gap-4">
           <motion.button
             whileTap={{ scale: 0.9 }}
-            onClick={handleBlock}
-            className="bg-gray-700 p-3 rounded-full shadow-lg text-gray-200 hover:bg-gray-600 transition-colors"
+            onClick={blocked ? undefined : handleBlock}
+            className="bg-gray-700 w-[55px] p-3 rounded-full shadow-lg text-gray-200 hover:bg-gray-600 transition-colors flex items-center justify-center"
           >
-            <MdBlock className="text-xl" />
+            <MdBlock className="text-2xl" />
           </motion.button>
 
-          <motion.button
-            whileTap={{ scale: 0.9 }}
-            onClick={liked ? handleUnlike : handleLike}
-            className={`p-4 rounded-full shadow-lg ${
-              liked
-                ? "bg-red-primary text-white"
-                : "bg-gray-700 text-gray-200 hover:bg-gray-600"
-            } transition-colors`}
-          >
-            {liked ? (
+          {connected ? (
+            <motion.button
+              whileTap={{ scale: 0.9 }}
+              onClick={handleUnlike}
+              className="p-4 rounded-full shadow-lg bg-green-600 text-white transition-colors"
+            >
+              <FaUserFriends className="text-2xl" />
+            </motion.button>
+          ) : youLiked ? (
+            <motion.button
+              whileTap={{ scale: 0.9 }}
+              onClick={handleUnlike}
+              className="p-4 rounded-full shadow-lg bg-red-primary text-white transition-colors"
+            >
               <FaHeart className="text-2xl" />
-            ) : (
+            </motion.button>
+          ) : (
+            <motion.button
+              whileTap={{ scale: 0.9 }}
+              onClick={handleLike}
+              className="p-4 rounded-full shadow-lg bg-gray-700 text-gray-200 hover:bg-gray-600 transition-colors"
+            >
               <FaRegHeart className="text-2xl" />
-            )}
-          </motion.button>
+            </motion.button>
+          )}
         </div>
       </div>
 
@@ -237,6 +251,17 @@ function ProfilePage() {
           </div>
         </div>
 
+        {/* Status */}
+        <div className="mt-3">
+          {connected ? (
+            <p className="text-green-400 font-semibold">✅ You are connected</p>
+          ) : theyLiked && !youLiked ? (
+            <p className="text-yellow-400 font-semibold">
+              💌 This user liked you
+            </p>
+          ) : null}
+        </div>
+
         {/* Bio */}
         {userInfo?.bio && (
           <div className="mt-4">
@@ -260,42 +285,7 @@ function ProfilePage() {
             </div>
           </div>
         )}
-
-        {/* Gallery Indicators */}
-        {userInfo?.images?.length > 1 && (
-          <div className="flex justify-center gap-2 mt-6">
-            {userInfo.images.map((_, index) => (
-              <div
-                key={index}
-                className={`h-1.5 rounded-full ${
-                  index === 0 ? "w-6 bg-red-primary" : "w-2 bg-gray-600"
-                }`}
-              />
-            ))}
-          </div>
-        )}
       </motion.div>
-
-      {/* Additional Photos Grid */}
-      {userInfo?.images?.length > 1 && (
-        <div className="mt-6 px-4">
-          <h3 className="font-semibold text-white mb-3">More Photos</h3>
-          <div className="grid grid-cols-2 gap-3">
-            {userInfo.images.slice(1).map((image: any, index: number) => (
-              <div
-                key={index}
-                className="aspect-square rounded-xl overflow-hidden border border-gray-700"
-              >
-                <img
-                  src={`http://localhost:3000/${image.url}`}
-                  alt={`Profile ${index + 2}`}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
     </div>
   );
 }
