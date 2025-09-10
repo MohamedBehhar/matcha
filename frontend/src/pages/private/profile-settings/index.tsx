@@ -18,6 +18,7 @@ import toast from "react-hot-toast";
 import { Textarea } from "@/components/ui/textArea";
 import useUserStore from "@/store/userStore";
 import axios from "axios";
+import LocationPicker from "@/components/LocationPicker";
 
 function ProfileSetting() {
   // State management
@@ -205,6 +206,7 @@ function ProfileSetting() {
   };
 
   // Form submission
+  // Form submission
   const handleSubmit = async (event) => {
     event.preventDefault();
     setLoading(true);
@@ -237,6 +239,12 @@ function ProfileSetting() {
         JSON.stringify(selectedInterests.map((interest) => interest.id))
       );
 
+     // Add location if selected
+     if (location) {
+       formData.append("latitude", location.latitude);
+       formData.append("longitude", location.longitude);
+     }
+
       if (!user.id) {
         throw new Error("User ID not found");
       }
@@ -247,7 +255,14 @@ function ProfileSetting() {
 
       // Then update user info
       const updatedUser = await updateUser(formData, String(user.id));
-      setUserInfos(updatedUser);
+
+    // Update store with location too
+     if (location) {
+       setUserInfos({ ...updatedUser, latitude: location.latitude, longitude: location.longitude });
+     } else {
+       setUserInfos(updatedUser);
+     }
+
       toast.success("Profile updated successfully");
     } catch (error) {
       toast.error("Failed to update profile");
@@ -255,6 +270,7 @@ function ProfileSetting() {
       setLoading(false);
     }
   };
+
 
   if (loading && !user?.id) {
     return (
@@ -329,7 +345,6 @@ function ProfileSetting() {
               </label>
             )}
           </div>
-
           {/* Rating */}
           <div className="flex items-center gap-1 mb-2">
             {[1, 2, 3, 4, 5].map((star) => (
@@ -348,7 +363,7 @@ function ProfileSetting() {
             ))}
             <span className="text-sm text-gray-500 ml-2">({rating || 0})</span>
           </div>
-
+          import LocationPicker from "@/components/LocationPicker"; ...
           <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
             {user?.first_name} {user?.last_name}
           </h1>
@@ -487,6 +502,25 @@ function ProfileSetting() {
               <p className="text-xs text-gray-500 text-right">
                 Maximum 500 characters
               </p>
+            </div>
+          </div>
+
+          <div className="bg-gray-50 dark:bg-gray-700 p-6 rounded-lg mb-6">
+            <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-white">
+              Choose Your Location
+            </h2>
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300"></label>
+              <LocationPicker
+                value={location}
+                onChange={(newLoc) => setLocation(newLoc)}
+              />
+              {location && (
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                  Selected: {location.latitude.toFixed(5)},{" "}
+                  {location.longitude.toFixed(5)}
+                </p>
+              )}
             </div>
           </div>
 
