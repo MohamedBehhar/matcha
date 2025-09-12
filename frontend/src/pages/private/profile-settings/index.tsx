@@ -58,6 +58,14 @@ function ProfileSetting() {
         );
         setSelectedImages(userImages);
         setRating(userData.rating || 0);
+        if (userData.latitude && userData.longitude) {
+          setLocation({
+            latitude: userData.latitude,
+            longitude: userData.longitude,
+          });
+        } else {
+          setLocation(null);
+        }
       } catch (error) {
         console.error("Error fetching user data:", error);
         toast.error("Failed to load profile data");
@@ -239,11 +247,11 @@ function ProfileSetting() {
         JSON.stringify(selectedInterests.map((interest) => interest.id))
       );
 
-     // Add location if selected
-     if (location) {
-       formData.append("latitude", location.latitude);
-       formData.append("longitude", location.longitude);
-     }
+      // Add location if selected
+      if (location) {
+        formData.append("latitude", String(location.latitude));
+        formData.append("longitude", String(location.longitude));
+      }
 
       if (!user.id) {
         throw new Error("User ID not found");
@@ -256,12 +264,16 @@ function ProfileSetting() {
       // Then update user info
       const updatedUser = await updateUser(formData, String(user.id));
 
-    // Update store with location too
-     if (location) {
-       setUserInfos({ ...updatedUser, latitude: location.latitude, longitude: location.longitude });
-     } else {
-       setUserInfos(updatedUser);
-     }
+      // Update store with location too
+      if (location) {
+        setUserInfos({
+          ...updatedUser,
+          latitude: location.latitude,
+          longitude: location.longitude,
+        });
+      } else {
+        setUserInfos(updatedUser);
+      }
 
       toast.success("Profile updated successfully");
     } catch (error) {
@@ -270,7 +282,6 @@ function ProfileSetting() {
       setLoading(false);
     }
   };
-
 
   if (loading && !user?.id) {
     return (

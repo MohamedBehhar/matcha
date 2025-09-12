@@ -16,10 +16,13 @@ const updateUserDto = Schema.object({
     last_name: Schema.string().optional(),
     username: Schema.string().optional(),
     bio: Schema.string().optional(),
-    gender : Schema.string().optional(),
+    gender: Schema.string().optional(),
     sexual_preference: Schema.string().optional(),
     date_of_birth: Schema.string().optional(),
+    latitude: Schema.string().optional(),
+    longitude: Schema.string().optional(),
 });
+
 
 const updateUserLocationDto = Schema.object({
     latitude: Schema.number().required(),

@@ -64,6 +64,8 @@ class UserService {
   public async update(data: any, id: string) {
     const body = updateUserDto.validate(data);
 
+    console.log('----------------> ', body)
+
     // Update user data first (including date_of_birth)
     await orm.update("users", id, body);
 
@@ -147,6 +149,7 @@ class UserService {
 
     const images = await orm.findMany("images", { where: { user_id: id } });
     const user = await orm.findOne("users", { where: { id } });
+    console.log(user)
     return { ...user, interests, images };
   }
 
