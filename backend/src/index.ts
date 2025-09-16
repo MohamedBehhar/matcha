@@ -27,6 +27,7 @@ import cookieParser from "cookie-parser";
 import msgsServices from "./services/msgsServices";
 import msgsRoutes from "./routers/msgsRoutes";
 import orm from "./lib/orm";
+import { errorHandler } from "./lib/middleware/errorHandler";
 
 const PORT = 3000;
 const app = express();
@@ -160,6 +161,8 @@ io.on("connection", (socket) => {
 io.on("error", (err) => {
   console.error("⚠️ Socket.IO error:", err);
 });
+
+app.use(errorHandler);
 
 // Server start
 server.listen(PORT, () => {
