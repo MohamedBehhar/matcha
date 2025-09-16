@@ -1,6 +1,5 @@
 import React from "react";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import SignupImg from "@/assets/images/signupImg.svg?react";
 import { signIn, forgotPassword } from "@/api/methods/auth";
 import { useState } from "react";
@@ -8,10 +7,8 @@ import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import useUserStore from "@/store/userStore";
-import { useEffect } from "react";
 import HeartLoader from "@/components/HeartLoader";
 import { FcGoogle } from "react-icons/fc";
-import { Toast } from "@/components/ui/toaster";
 import toast from "react-hot-toast";
 
 function index() {
@@ -27,27 +24,40 @@ function index() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
+    setError("");
+  
     const formData = new FormData(e.currentTarget);
     const signInInput = {
       email: formData.get("email") as string,
       password: formData.get("password") as string,
     };
+  
     try {
       const response = await signIn(signInInput);
+  
       localStorage.setItem("name", response.username);
       localStorage.setItem("id", response.id);
       setUserInfos(response);
       logUser(response);
+  
       if (response.is_data_complete) {
         navigate("/match-making");
       } else {
         navigate("/complete-profile");
       }
-    } catch (error) {
-      setError(error.response.data);
+    } catch (err: any) {
+      if (err.response) {
+        const {  message } = err.response.data;
+
+        toast.error(message);
+      } else {
+        setError("Something went wrong. Please try again.");
+      }
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
   };
+  
 
   const handleForgotPassword = async () => {
     if (!email) {
@@ -67,7 +77,6 @@ function index() {
       {error && <div className="text-red-500 text-sm mb-4">{error}</div>}
 
       <div className="flex flex-col lg:flex-row items-center w-full max-w-5xl bg-black-secondary rounded-lg p-6 gap-8">
-        {/* Animated Signup Image */}
         <motion.div
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
