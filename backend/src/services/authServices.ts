@@ -21,6 +21,7 @@ import {
 import passport from "passport";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import { Response, NextFunction, Request } from "express";
+import zxcvbn from "zxcvbn";
 
 class AuthServices {
   constructor() {
@@ -199,44 +200,51 @@ class AuthServices {
   public async signUp(data: SignUpInput): Promise<Record<string, unknown>> {
     try {
       const body = signUpType.validate(data);
-      console.log("data: ", body);
+  
+      // ✅ Check password strength
+      const strength = zxcvbn(body.password);
+      if (strength.score < 3) {
+        throw new Error("Password is too weak. Please choose a stronger one.");
+      }
+  
       const hashedPassword = await bcrypt.hash(body.password, 10);
       const newUser = await orm.create("users", {
         ...body,
         password: hashedPassword,
         is_verified: false,
       });
+  
       const verifyToken = jwt.sign(
         { email: newUser.email },
         process.env.JWT_SECRET as string,
-        {
-          expiresIn: "1d",
-        }
+        { expiresIn: "1d" }
       );
+  
       if (newUser) {
         const transporter = nodemailer.createTransport({
-          service: "Gmail", // or another email service
+          service: "Gmail",
           auth: {
             user: process.env.EMAIL_USER,
             pass: process.env.EMAIL_PASS,
           },
         });
-
+  
         const mailOptions = {
           from: process.env.EMAIL_USER,
           to: newUser.email,
           subject: "Verify your account",
           html: `<p>Click <a href="http://localhost:5173/verify/${verifyToken}">here</a> to verify your account.</p>`,
         };
-
+  
         await transporter.sendMail(mailOptions);
       }
-
+  
       return newUser;
     } catch (err) {
       throw err;
     }
   }
+  
 
   public async singIn(
     data: {
@@ -255,7 +263,6 @@ class AuthServices {
       throw new ForbiddenError("Account not verified");
     }
     const isMatch = await bcrypt.compare(data.password, user.password);
-    // const isMatch = data.password === user.password;
     if (!isMatch) {
       throw new UnauthorizedError("Invalid password");
     }

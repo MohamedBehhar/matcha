@@ -29,7 +29,6 @@ export default function LocationPicker({
     value ? [value.latitude, value.longitude] : null
   );
 
-  // Sync initial value changes
   useEffect(() => {
     if (value) {
       setPosition([value.latitude, value.longitude]);
@@ -41,14 +40,13 @@ export default function LocationPicker({
       alert("Geolocation is not supported by your browser.");
       return;
     }
-
+  
     navigator.geolocation.getCurrentPosition(
       (pos) => {
-        const coords: [number, number] = [
-          pos.coords.latitude,
-          pos.coords.longitude,
-        ];
+        const coords = [pos.coords.latitude, pos.coords.longitude] as [number, number];
+  
         setPosition(coords);
+  
         onChange({ latitude: coords[0], longitude: coords[1] });
       },
       (err) => {
@@ -57,6 +55,7 @@ export default function LocationPicker({
       }
     );
   };
+  
 
   return (
     <div className="space-y-2">

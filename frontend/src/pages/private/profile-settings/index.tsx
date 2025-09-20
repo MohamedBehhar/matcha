@@ -212,6 +212,9 @@ function ProfileSetting() {
       throw error;
     }
   };
+  const handleLocationChange = useCallback((newLoc) => {
+    setLocation(newLoc);
+  }, []);
 
   // Form submission
   // Form submission
@@ -524,8 +527,9 @@ function ProfileSetting() {
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300"></label>
               <LocationPicker
                 value={location}
-                onChange={(newLoc) => setLocation(newLoc)}
+                onChange={handleLocationChange}
               />
+
               {location && (
                 <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
                   Selected: {location.latitude.toFixed(5)},{" "}

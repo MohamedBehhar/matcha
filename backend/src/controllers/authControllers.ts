@@ -22,9 +22,26 @@ class AuthControllers {
   }
   @handleResponse()
   public async signUp(req: Request, res: Response) {
-    const body: SignUpInput = signUpType.validate(req.body);
-    return (await authServices.signUp(body)) as unknown as void;
+    try {
+      const body: SignUpInput = signUpType.validate(req.body);
+      const user = await authServices.signUp(body);
+  
+      // If your service returns a user object
+      // remove password before sending response
+      const { password, ...userWithoutPassword } = user as any;
+  
+      return res.status(201).json({
+        success: true,
+        data: userWithoutPassword,
+      });
+    } catch (err: any) {
+      return res.status(err.statusCode || 400).json({
+        success: false,
+        message: err.message || "Internal server error",
+      });
+    }
   }
+  
   @handleResponse()
   public async signIn(req: Request, res: Response) {
     const body: signInInput = signInType.validate(req.body);

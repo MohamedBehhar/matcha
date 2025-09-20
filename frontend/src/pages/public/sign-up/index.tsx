@@ -26,9 +26,14 @@ function index() {
       const response = await signUp(signUpInput);
       console.log(response);
       navigate("/verify");
-    } catch (error) {
-      console.error( error);
-      toast.error("Sign up failed. Please try again.");
+    } catch (err: any) {
+      if (err.response) {
+        const { message } = err.response.data;
+
+        toast.error(message);
+      } else {
+        toast.error("Something went wrong. Please try again.");
+      }
     }
     setIsLoading(false);
   };
