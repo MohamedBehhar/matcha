@@ -1,21 +1,23 @@
 import { Navigate, Outlet, useLocation } from "react-router-dom";
-import CompleteProfile from "@/pages/private/complete-profile";
 import useUserStore from "@/store/userStore";
-import Header from "../header";
 
 const ProtectedRoutes = () => {
   const { user } = useUserStore();
   const location = useLocation();
 
-  console.log(user);
-
   if (!user) {
     return <Navigate to="/signin" replace state={{ from: location }} />;
   }
-  // alert('hhhhh ' + user.is_data_complete);
-  // if (!user.is_data_complete) {
-  //   return <CompleteProfile />;
-  // }
+
+
+  if (!user.is_data_complete && location.pathname !== "/complete-profile") {
+    return <Navigate to="/complete-profile" replace />;
+  }
+
+
+  if (user.is_data_complete && location.pathname === "/complete-profile") {
+    return <Navigate to="/match-making" replace />;
+  }
 
   return <Outlet />;
 };

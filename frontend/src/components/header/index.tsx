@@ -130,7 +130,7 @@ export default function Header() {
       <header className="  relative w-[70px]  h-full p-1">
         <div className="flex flex-col gap-5 [&>*:hover]:text-primary [&>*]:transition-colors font-semibold  items-center text-gray-300  h-full py-4 shadow-lg  rounded-lg bg-red-primary/30 backdrop-blur-sm">
           <div className="flex flex-1 flex-col gap-5 items-center">
-            {headerData.map(
+            {user.is_data_complete && headerData.map(
               (item: {
                 title: string;
                 path: string;

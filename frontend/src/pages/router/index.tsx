@@ -6,6 +6,7 @@ import { updateUserLocation } from "@/api/methods/user";
 import useUserStore from "@/store/userStore";
 import toast from "react-hot-toast";
 import axios from "axios"
+import ProtectedRoutes from "@/components/protectedRoutes";
 
 const GlobalLayout = lazy(() => import("../layout"));
 const LoginPage = lazy(() => import("../public/sign-in"));
@@ -87,6 +88,7 @@ export default function Router() {
       <Suspense fallback={<LoadingPage />}>
         <Routes>
           <Route element={<GlobalLayout />}>
+          <Route element={<ProtectedRoutes />}>
             <Route element={<PrivateLayout />}>
               <Route path="/" element={<HomePage />} />
               <Route path="/about" element={<AboutPage />} />
@@ -98,6 +100,7 @@ export default function Router() {
               <Route path="/messages" element={<MessagesPage />} />
               <Route path="notifications" element={<NotificationsPage />} />
             </Route>
+          </Route>
             <Route path="/signin" element={<LoginPage />} />
             <Route path="/signup" element={<SignUpPage />} />
             <Route path="/verify" element={<VerifyEmailPage />} />
