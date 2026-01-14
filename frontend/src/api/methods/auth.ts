@@ -2,6 +2,7 @@
 import axios from "axios";
 import instance from "../axios";
 import { SignUpInput, signInInput } from "@/types/authTypes";
+import useUserStore from "@/store/userStore";
 
 const baseURL = "http://localhost:3000/api/";
 
@@ -70,20 +71,20 @@ const resetPassword = async (password: string, token: string) => {
 };
 
 const logout = async () => {
+  const { logout } = useUserStore.getState();
+
   try {
-    await instance
-      .post(
-        "/auth/logout",
-        {},
-        {
-          withCredentials: true,
-        }
-      )
-      .then(() => {
-        window.location.href = "/signin";
-      });
+    await instance.post(
+      "/auth/logout",
+      {},
+      { withCredentials: true }
+    );
   } catch (error) {
-    throw error;
+    // backend failure should NOT block logout
+    console.error("Logout API failed", error);
+  } finally {
+    // ✅ clear auth state FIRST
+    logout();
   }
 };
 

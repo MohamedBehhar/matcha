@@ -5,8 +5,9 @@ import MessagesPage from "../private/messages";
 import { updateUserLocation } from "@/api/methods/user";
 import useUserStore from "@/store/userStore";
 import toast from "react-hot-toast";
-import axios from "axios"
+import axios from "axios";
 import ProtectedRoutes from "@/components/protectedRoutes";
+import PublicRoutes from "@/components/publicRoutes";
 
 const GlobalLayout = lazy(() => import("../layout"));
 const LoginPage = lazy(() => import("../public/sign-in"));
@@ -29,7 +30,7 @@ const VerifyEmailRedirectPage = lazy(
 );
 const CompleteProfile = lazy(() => import("../private/complete-profile"));
 export default function Router() {
-  const { user, setUserInfos } = useUserStore();
+  const { user, setUser } = useUserStore();
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -37,7 +38,7 @@ export default function Router() {
 
     const fetchLocation = () => {
       const updateLocation = (latitude: number, longitude: number) => {
-        setUserInfos({
+        setUser({
           ...user,
           latitude,
           longitude,
@@ -88,31 +89,33 @@ export default function Router() {
       <Suspense fallback={<LoadingPage />}>
         <Routes>
           <Route element={<GlobalLayout />}>
-          <Route element={<ProtectedRoutes />}>
-            <Route element={<PrivateLayout />}>
-              <Route path="/" element={<HomePage />} />
-              <Route path="/about" element={<AboutPage />} />
-              <Route path="/contact" element={<ContactPage />} />
-              <Route path="/profile-settings" element={<ProfileSettings />} />
-              <Route path="/match-making" element={<MatchMaking />} />
-              <Route path="/profile/:userid" element={<ProfilePage />} />
-              <Route path="/complete-profile" element={<CompleteProfile />} />
-              <Route path="/messages" element={<MessagesPage />} />
-              <Route path="notifications" element={<NotificationsPage />} />
+            {/* 🔒 PRIVATE ROUTES */}
+            <Route element={<ProtectedRoutes />}>
+              <Route element={<PrivateLayout />}>
+                <Route path="/" element={<HomePage />} />
+                <Route path="/about" element={<AboutPage />} />
+                <Route path="/contact" element={<ContactPage />} />
+                <Route path="/profile-settings" element={<ProfileSettings />} />
+                <Route path="/match-making" element={<MatchMaking />} />
+                <Route path="/profile/:userid" element={<ProfilePage />} />
+                <Route path="/complete-profile" element={<CompleteProfile />} />
+                <Route path="/messages" element={<MessagesPage />} />
+                <Route path="/notifications" element={<NotificationsPage />} />
+              </Route>
             </Route>
-          </Route>
-            <Route path="/signin" element={<LoginPage />} />
-            <Route path="/signup" element={<SignUpPage />} />
-            <Route path="/verify" element={<VerifyEmailPage />} />
-            <Route
-              path="/verify/:token?"
-              element={<VerifyEmailRedirectPage />}
-            />
-            <Route path="/reset/:token" element={<ResetPasswordPage />} />
-            <Route path="/forgot-password" element={<ForGotPasswordPage />} />
-            <Route path="/welcome" element={<WelcomePage />} />
-            <Route path="/verify-email" element={<VerifyEmailPage />} />
-            <Route path="/verify-email-redirect" element={<LoginPage />} />
+
+            {/* 🚫 AUTH ROUTES (blocked if logged in) */}
+            <Route element={<PublicRoutes />}>
+              <Route path="/signin" element={<LoginPage />} />
+              <Route path="/signup" element={<SignUpPage />} />
+              <Route path="/forgot-password" element={<ForGotPasswordPage />} />
+              <Route path="/reset/:token" element={<ResetPasswordPage />} />
+              <Route
+                path="/verify/:token?"
+                element={<VerifyEmailRedirectPage />}
+              />
+              <Route path="/welcome" element={<WelcomePage />} />
+            </Route>
 
             <Route path="*" element={<NotFoundPage />} />
           </Route>

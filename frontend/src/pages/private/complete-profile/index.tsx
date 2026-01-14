@@ -96,10 +96,10 @@ const Step1 = ({
 // Step 2: Gender
 const Step2 = ({
   user,
-  setUserInfos,
+  setUser,
 }: {
   user: User;
-  setUserInfos: (u: User) => void;
+  setUser: (u: User) => void;
 }) => (
   <AnimatedStep>
     <div className="flex justify-center gap-4">
@@ -108,7 +108,7 @@ const Step2 = ({
         className={`w-36 h-36 flex flex-col items-center justify-center ${
           user.gender === "female" ? "border border-white" : ""
         }`}
-        onClick={() => setUserInfos({ ...user, gender: "female" })}
+        onClick={() => setUser({ ...user, gender: "female" })}
         type="button"
       >
         <FaFemale size={80} className="text-red-primary" />
@@ -119,7 +119,7 @@ const Step2 = ({
         className={`w-36 h-36 flex flex-col items-center justify-center ${
           user.gender === "male" ? "border border-white" : ""
         }`}
-        onClick={() => setUserInfos({ ...user, gender: "male" })}
+        onClick={() => setUser({ ...user, gender: "male" })}
         type="button"
       >
         <FaMale size={80} className="text-blue-primary" />
@@ -132,17 +132,15 @@ const Step2 = ({
 // Step 3: Sexual Preference
 const Step3 = ({
   user,
-  setUserInfos,
+  setUser,
 }: {
   user: User;
-  setUserInfos: (u: User) => void;
+  setUser: (u: User) => void;
 }) => (
   <AnimatedStep>
     <RadioGroup
       value={user.sexual_preference}
-      onValueChange={(value) =>
-        setUserInfos({ ...user, sexual_preference: value })
-      }
+      onValueChange={(value) => setUser({ ...user, sexual_preference: value })}
       className="flex flex-col gap-4"
     >
       {["heterosexual", "bisexual", "homosexual"].map((pref) => (
@@ -160,17 +158,17 @@ const Step3 = ({
 // Step 4: Bio
 const Step4 = ({
   user,
-  setUserInfos,
+  setUser,
 }: {
   user: User;
-  setUserInfos: (u: User) => void;
+  setUser: (u: User) => void;
 }) => (
   <AnimatedStep>
     <div className="flex flex-col items-center gap-4">
       <Textarea
         placeholder="Tell us about yourself..."
         value={user.bio}
-        onChange={(e) => setUserInfos({ ...user, bio: e.target.value })}
+        onChange={(e) => setUser({ ...user, bio: e.target.value })}
         maxLength={500}
         rows={5}
         className="w-72"
@@ -230,7 +228,7 @@ const Step5 = ({
 
 // Main Component
 const CompleteProfile = () => {
-  const { user, setUserInfos } = useUserStore();
+  const { user, setUser } = useUserStore();
   const [birthDate, setBirthDate] = useState("");
   const [step, setStep] = useState(1);
   const stepTitles = [
@@ -301,9 +299,9 @@ const CompleteProfile = () => {
       {step === 1 && (
         <Step1 birthDate={birthDate} setBirthDate={setBirthDate} />
       )}
-      {step === 2 && <Step2 user={user} setUserInfos={setUserInfos} />}
-      {step === 3 && <Step3 user={user} setUserInfos={setUserInfos} />}
-      {step === 4 && <Step4 user={user} setUserInfos={setUserInfos} />}
+      {step === 2 && <Step2 user={user} setUser={setUser} />}
+      {step === 3 && <Step3 user={user} setUser={setUser} />}
+      {step === 4 && <Step4 user={user} setUser={setUser} />}
       {step === 5 && (
         <Step5
           profilePicture={profilePicture}

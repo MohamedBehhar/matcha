@@ -6,7 +6,7 @@ import { socket } from "@/utils/socket";
 import useUserStore from "@/store/userStore";
 
 export default function HomePage() {
-  const setUserInfos = useUserStore((state) => state.setUserInfos);
+  const setUser = useUserStore((state) => state.setUser);
   const id = localStorage.getItem("id");
   const [errro, setError] = useState();
   const updateLocation = async (id: string, data: any) => {
@@ -35,7 +35,7 @@ export default function HomePage() {
           });
           localStorage.setItem("latitude", position.coords.latitude);
           localStorage.setItem("longitude", position.coords.longitude);
-          setUserInfos({
+          setUser({
             ...useUserStore.getState().user,
             latitude: position.coords.latitude,
             longitude: position.coords.longitude,

@@ -20,7 +20,7 @@ import { useSocket } from "@/context/SocketContext";
 
 export default function Header() {
   const location = useLocation();
-  const { user, setUserInfos } = useUserStore();
+  const { user, setUser } = useUserStore();
   const [notifications, setNotifications] = useState([]);
   const [notificationsCount, setNotificationsCount] = useState(0);
   const socket = useSocket();
@@ -29,15 +29,15 @@ export default function Header() {
     const fetchUser = async () => {
       try {
         const userData = await getUser();
-        setUserInfos(userData); // Set user in store
+        setUser(userData); // Set user in store
       } catch (error) {
         console.error("Failed to fetch user:", error);
-        toast.error("Failed to load user data.");
+        toast.error("Failed to load user data 99.");
       }
     };
 
     fetchUser();
-  }, [setUserInfos]);
+  }, [setUser]);
 
   useEffect(() => {
     if (!user?.id) return; // Prevents API calls if user is not set
@@ -71,7 +71,7 @@ export default function Header() {
 
     const handleMatch = (matchedUser: any) => {
       toast(`User matched with you: ${matchedUser.id}`);
-  };
+    };
 
     const handleNotification = () => {
       fetchNotifications();
@@ -130,50 +130,51 @@ export default function Header() {
       <header className="  relative w-[70px]  h-full p-1">
         <div className="flex flex-col gap-5 [&>*:hover]:text-primary [&>*]:transition-colors font-semibold  items-center text-gray-300  h-full py-4 shadow-lg  rounded-lg bg-red-primary/30 backdrop-blur-sm">
           <div className="flex flex-1 flex-col gap-5 items-center">
-            {user.is_data_complete && headerData.map(
-              (item: {
-                title: string;
-                path: string;
-                typeImg: string;
-                icon: JSX.Element;
-              }) => (
-                <div key={item.title}>
-                  <Link
-                    to={item.path}
-                    className={cn(
-                      "[&>*]:transition-colors hover:bg-red-500 hover:[&>*]:text-red-primary relative",
-                      {
-                        "text-primary": location.pathname !== item.path,
-                        "text-red-primary": item.title === "Matches",
-                        "text-red-primary scale-110":
-                          location.pathname === item.path,
-                      }
-                    )}
-                  >
-                    {item.typeImg === "img" ? (
-                      <img
-                        src={`http://localhost:3000/${user?.profile_picture}`}
-                        className="w-10 h-10 rounded-full border object-cover"
-                        onError={(e) => {
-                          e.currentTarget.src = userImg;
-                        }}
-                        alt="User Profile"
-                      />
-                    ) : (
-                      <>
-                        {notificationsCount > 0 &&
-                          item.title === "Notifications" && (
-                            <span className="absolute top-0 right-[-5px] d-flex items-center justify-center bg-red-500 text-white rounded-full px-1 aspect-square text-xs">
-                              <p>{notificationsCount}</p>
-                            </span>
-                          )}
-                        {item.icon}
-                      </>
-                    )}
-                  </Link>
-                </div>
-              )
-            )}
+            {user.is_data_complete &&
+              headerData.map(
+                (item: {
+                  title: string;
+                  path: string;
+                  typeImg: string;
+                  icon: JSX.Element;
+                }) => (
+                  <div key={item.title}>
+                    <Link
+                      to={item.path}
+                      className={cn(
+                        "[&>*]:transition-colors hover:bg-red-500 hover:[&>*]:text-red-primary relative",
+                        {
+                          "text-primary": location.pathname !== item.path,
+                          "text-red-primary": item.title === "Matches",
+                          "text-red-primary scale-110":
+                            location.pathname === item.path,
+                        }
+                      )}
+                    >
+                      {item.typeImg === "img" ? (
+                        <img
+                          src={`http://localhost:3000/${user?.profile_picture}`}
+                          className="w-10 h-10 rounded-full border object-cover"
+                          onError={(e) => {
+                            e.currentTarget.src = userImg;
+                          }}
+                          alt="User Profile"
+                        />
+                      ) : (
+                        <>
+                          {notificationsCount > 0 &&
+                            item.title === "Notifications" && (
+                              <span className="absolute top-0 right-[-5px] d-flex items-center justify-center bg-red-500 text-white rounded-full px-1 aspect-square text-xs">
+                                <p>{notificationsCount}</p>
+                              </span>
+                            )}
+                          {item.icon}
+                        </>
+                      )}
+                    </Link>
+                  </div>
+                )
+              )}
           </div>
           <Button
             onClick={handleLogout}

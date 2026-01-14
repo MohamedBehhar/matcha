@@ -44,7 +44,7 @@ function MatchingPage() {
   const [selectedInterests, setSelectedInterests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const { user, setUserInfos } = useUserStore();
+  const { user, setUser } = useUserStore();
   const [position, setPosition] = useState([null, null]);
 
   const calculateZoom = (dist) => {
@@ -70,7 +70,7 @@ function MatchingPage() {
   const getUserInfo = async () => {
     try {
       const res = await getUser();
-      setUserInfos(res);
+      setUser(res);
       if (res.latitude && res.longitude) {
         setPosition([res.latitude, res.longitude]);
       }
@@ -141,7 +141,7 @@ function MatchingPage() {
     try {
       const { coords } = await getNavigatorLocation();
       setPosition([coords.latitude, coords.longitude]);
-      setUserInfos({
+      setUser({
         ...user,
         latitude: coords.latitude,
         longitude: coords.longitude,

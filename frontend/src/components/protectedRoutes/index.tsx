@@ -5,17 +5,17 @@ const ProtectedRoutes = () => {
   const { user } = useUserStore();
   const location = useLocation();
 
-  if (!user) {
-    return <Navigate to="/signin" replace state={{ from: location }} />;
+  // ⛔ Not authenticated
+  if (!user?.id) {
+    return <Navigate to="/signin" replace />;
   }
 
-
-  if (!user.is_data_complete && location.pathname !== "/complete-profile") {
+  if (!user.is_data_complete) {
     return <Navigate to="/complete-profile" replace />;
   }
 
-
-  if (user.is_data_complete && location.pathname === "/complete-profile") {
+  // ✅ profile complete → main app entry
+  if (location.pathname === "/") {
     return <Navigate to="/match-making" replace />;
   }
 

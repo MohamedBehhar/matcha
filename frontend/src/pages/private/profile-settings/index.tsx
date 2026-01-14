@@ -32,7 +32,7 @@ function ProfileSetting() {
   const [error, setError] = useState("");
   const [rating, setRating] = useState(0);
   const [hoveredRating, setHoveredRating] = useState(0);
-  const { user, setUserInfos } = useUserStore();
+  const { user, setUser } = useUserStore();
 
   // Fetch user and related data
   useEffect(() => {
@@ -47,7 +47,7 @@ function ProfileSetting() {
           getUserImages(String(user.id)),
         ]);
 
-        setUserInfos(userData);
+        setUser(userData);
         setProfilePicture(userData.profile_picture);
         setInterests(interestsData);
         setSelectedInterests(userData.interests || []);
@@ -76,7 +76,7 @@ function ProfileSetting() {
 
     const fetchLocation = () => {
       const updateLocation = (latitude, longitude) => {
-        setUserInfos({
+        setUser({
           ...user,
           latitude,
           longitude,
@@ -269,13 +269,13 @@ function ProfileSetting() {
 
       // Update store with location too
       if (location) {
-        setUserInfos({
+        setUser({
           ...updatedUser,
           latitude: location.latitude,
           longitude: location.longitude,
         });
       } else {
-        setUserInfos(updatedUser);
+        setUser(updatedUser);
       }
 
       toast.success("Profile updated successfully");
@@ -454,7 +454,7 @@ function ProfileSetting() {
                   placeholder="Gender"
                   name="gender"
                   value={user.gender}
-                  onChange={(value) => setUserInfos({ ...user, gender: value })}
+                  onChange={(value) => setUser({ ...user, gender: value })}
                 />
               </div>
 
@@ -468,7 +468,7 @@ function ProfileSetting() {
                   name="sexual_preference"
                   value={user.sexual_preference}
                   onChange={(value) =>
-                    setUserInfos({ ...user, sexual_preference: value })
+                    setUser({ ...user, sexual_preference: value })
                   }
                 />
               </div>

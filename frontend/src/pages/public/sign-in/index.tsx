@@ -1,82 +1,61 @@
-import React from "react";
+import React, { useRef, useState } from "react";
 import { Input } from "@/components/ui/input";
 import SignupImg from "@/assets/images/signupImg.svg?react";
 import { signIn, forgotPassword } from "@/api/methods/auth";
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Link } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import useUserStore from "@/store/userStore";
 import HeartLoader from "@/components/HeartLoader";
 import { FcGoogle } from "react-icons/fc";
 import toast from "react-hot-toast";
 
-function index() {
+function Index() {
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
-  const emailRef = React.useRef<HTMLInputElement>(null);
-
+  const emailRef = useRef<HTMLInputElement>(null);
   const [email, setEmail] = useState("");
-  const setUserInfos = useUserStore((state) => state.setUserInfos);
-  const logUser = useUserStore((state) => state.logUser);
+
+  const setUser = useUserStore((state) => state.setUser);
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
-    setError("");
-  
-    const formData = new FormData(e.currentTarget);
-    const signInInput = {
-      email: formData.get("email") as string,
-      password: formData.get("password") as string,
-    };
-  
-    try {
-      const response = await signIn(signInInput);
-  
-      localStorage.setItem("name", response.username);
-      localStorage.setItem("id", response.id);
-      setUserInfos(response);
-      logUser(response);
-  
-      if (response.is_data_complete) {
-        navigate("/match-making");
-      } else {
-        navigate("/complete-profile");
-      }
-    } catch (err: any) {
-      if (err.response) {
-        const {  message } = err.response.data;
 
-        toast.error(message);
-      } else {
-        setError("Something went wrong. Please try again.");
-      }
+    const formData = new FormData(e.currentTarget);
+
+    try {
+      const response = await signIn({
+        email: formData.get("email") as string,
+        password: formData.get("password") as string,
+      });
+
+      setUser(response);
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message ?? "Something went wrong");
     } finally {
       setIsLoading(false);
     }
   };
-  
 
   const handleForgotPassword = async () => {
     if (!email) {
       emailRef.current?.focus();
       return;
     }
+
     try {
       await forgotPassword(email);
       navigate("/forgot-password");
-    } catch (error) {
-      console.log(error);
+    } catch {
+      toast.error("Failed to send reset email");
     }
   };
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen px-4 bg-black-primary">
-      {error && <div className="text-red-500 text-sm mb-4">{error}</div>}
-
       <div className="flex flex-col lg:flex-row items-center w-full max-w-5xl bg-black-secondary rounded-lg p-6 gap-8">
+
+        {/* Illustration */}
         <motion.div
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -85,26 +64,27 @@ function index() {
             ease: "easeOut",
             scale: { type: "spring", stiffness: 120, damping: 10 },
           }}
-          className="w-full  max-w-[400px] "
+          className="w-full max-w-[400px]"
         >
-          <SignupImg className="w-full " />
+          <SignupImg className="w-full" />
         </motion.div>
 
-        {/* Animated Form */}
+        {/* Form */}
         <motion.form
           initial={{ x: -100, opacity: 0 }}
           animate={{ x: 0, opacity: 1 }}
           transition={{ delay: 0.5, duration: 0.8, ease: "easeOut" }}
           onSubmit={handleSubmit}
-          className="w-full max-w-[450px]   flex flex-col items-center gap-4"
+          className="w-full max-w-[450px] flex flex-col items-center gap-4"
         >
           <Input
             name="email"
             type="email"
             placeholder="Email"
             className="w-full"
-            onChange={(e) => setEmail(e.target.value)}
             ref={emailRef}
+            onChange={(e) => setEmail(e.target.value)}
+            required
           />
 
           <Input
@@ -112,6 +92,7 @@ function index() {
             type="password"
             placeholder="Password"
             className="w-full"
+            required
           />
 
           <motion.button
@@ -128,37 +109,31 @@ function index() {
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.95 }}
             type="submit"
+            disabled={isLoading}
             className="w-full bg-red-primary text-white py-2 rounded-md"
           >
             {isLoading ? <HeartLoader /> : "Sign In"}
           </motion.button>
 
-          {/* Divider */}
-          <div className="w-full  h-px bg-gray-700 my-2"></div>
+          <div className="w-full h-px bg-gray-700 my-2" />
 
-          <div className="flex flex-col max-w-[300px] sm:max-w-[unset] md:flex-row items-center justify-center w-full gap-4">
-            <motion.button
+          <div className="flex flex-col md:flex-row items-center justify-center w-full gap-4">
+            <motion.a
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.95 }}
-              type="button"
+              href="http://localhost:3000/api/auth/google"
               className="w-full md:w-auto flex items-center justify-center gap-2 bg-gray-600 py-2 px-4 rounded-md"
             >
-              <a
-                href="http://localhost:3000/api/auth/google"
-                className="flex items-center gap-2"
-              >
-                <FcGoogle size={20} /> Sign In with Google
-              </a>
-            </motion.button>
+              <FcGoogle size={20} /> Sign In with Google
+            </motion.a>
 
-            <motion.button
+            <motion.div
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.95 }}
-              type="button"
-              className="w-full md:w-auto border border-red-primary text-red-primary font-semibold py-2 px-4 rounded-md"
+              className="w-full md:w-auto border border-red-primary text-red-primary font-semibold py-2 px-4 rounded-md text-center"
             >
               <Link to="/signup">Sign Up</Link>
-            </motion.button>
+            </motion.div>
           </div>
         </motion.form>
       </div>
@@ -166,4 +141,4 @@ function index() {
   );
 }
 
-export default index;
+export default Index;
