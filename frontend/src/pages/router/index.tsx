@@ -36,6 +36,15 @@ export default function Router() {
   useEffect(() => {
     if (!user?.id) return;
 
+    // Only fetch location if user doesn't already have location data
+    // or if location is stale (older than 1 hour)
+    const hasStaleLocation =
+      !user.latitude ||
+      !user.longitude ||
+      (user.latitude === 0 && user.longitude === 0);
+
+    if (!hasStaleLocation) return;
+
     const fetchLocation = () => {
       const updateLocation = (latitude: number, longitude: number) => {
         setUser({
@@ -50,42 +59,67 @@ export default function Router() {
           userId: user.id,
         }).catch((err) => {
           console.error("Failed to update location:", err);
-          toast.error("Failed to update location");
+          // Don't show error toast for location failures
         });
       };
 
-      if ("geolocation" in navigator) {
-        navigator.geolocation.getCurrentPosition(
-          (position) => {
-            const { latitude, longitude } = position.coords;
-            updateLocation(latitude, longitude);
+      // Try IP-based location first (doesn't require user gesture)
+      const fetchIPLocation = async () => {
+        try {
+          const { data } = await axios.get(
+            "https://ipinfo.io/json?access_key=d528a69471b1f2a9ce4d239c07857f2f"
+          );
+          if (data.loc) {
+            const [latitude, longitude] = data.loc.split(",");
+            updateLocation(parseFloat(latitude), parseFloat(longitude));
             setError(null);
-          },
-          async () => {
-            try {
-              const { data } = await axios.get(
-                "https://ipinfo.io/json?access_key=d528a69471b1f2a9ce4d239c07857f2f"
-              );
-              if (data.loc) {
-                const [latitude, longitude] = data.loc.split(",");
-                updateLocation(parseFloat(latitude), parseFloat(longitude));
-                setError(null);
-              } else {
-                setError("Unable to retrieve location.");
-              }
-            } catch (err) {
-              console.error("Failed to fetch location from IP API:", err);
-              setError("Unable to retrieve location.");
-            }
           }
-        );
-      }
+        } catch (err) {
+          console.error("Failed to fetch location from IP API:", err);
+          // Silently fail - location is optional
+        }
+      };
+
+      // Prefer IP-based location (no user gesture required)
+      fetchIPLocation();
+
+      // Try geolocation only if user has interacted with the page
+      // This will be triggered when user clicks/interacts with the app
+      const handleUserInteraction = () => {
+        if ("geolocation" in navigator) {
+          navigator.geolocation.getCurrentPosition(
+            (position) => {
+              const { latitude, longitude } = position.coords;
+              updateLocation(latitude, longitude);
+              setError(null);
+            },
+            () => {
+              // Silently fail - IP location is fallback
+            },
+            { timeout: 5000 }
+          );
+        }
+        // Remove listener after first interaction
+        document.removeEventListener("click", handleUserInteraction);
+        document.removeEventListener("touchstart", handleUserInteraction);
+      };
+
+      // Only request precise geolocation after user interaction
+      document.addEventListener("click", handleUserInteraction, { once: true });
+      document.addEventListener("touchstart", handleUserInteraction, {
+        once: true,
+      });
     };
 
     fetchLocation();
-  }, [user?.id]);
+  }, [user?.id, user?.latitude, user?.longitude]);
   return (
-    <BrowserRouter>
+    <BrowserRouter
+      future={{
+        v7_startTransition: true,
+        v7_relativeSplatPath: true,
+      }}
+    >
       <Suspense fallback={<LoadingPage />}>
         <Routes>
           <Route element={<GlobalLayout />}>
@@ -111,9 +145,10 @@ export default function Router() {
               <Route path="/forgot-password" element={<ForGotPasswordPage />} />
               <Route path="/reset/:token" element={<ResetPasswordPage />} />
               <Route
-                path="/verify/:token?"
+                path="/verify/:token"
                 element={<VerifyEmailRedirectPage />}
               />
+              <Route path="/verify" element={<VerifyEmailPage />} />
               <Route path="/welcome" element={<WelcomePage />} />
             </Route>
 
