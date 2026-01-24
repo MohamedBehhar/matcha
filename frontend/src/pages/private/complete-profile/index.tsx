@@ -281,6 +281,7 @@ const CompleteProfile = () => {
       const response = await updateUser(formData, user.id + "");
       if (response) {
         toast.success("Profile updated successfully!");
+        setUser(response);
         navigate("/match-making");
       }
     } catch (error) {

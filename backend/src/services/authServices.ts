@@ -114,32 +114,46 @@ class AuthServices {
 
   // Google OAuth Callback
   public googleCallback(req: Request, res: Response, next: NextFunction) {
-    return passport.authenticate("google", async (err: any, user: any) => {
-      if (err || !user) {
-        return res.redirect(
-          "http://localhost:5173/login?error=Authentication failed"
-        );
+    passport.authenticate(
+      "google",
+      { session: false },
+      async (err: any, user: any) => {
+        if (err || !user) {
+          return res.redirect(
+            "http://localhost:5173/login?error=Authentication failed"
+          );
+        }
+  
+        try {
+          const tokens = await this.createTokens(user.email as string);
+  
+          // 🔐 Access token cookie
+          res.cookie("access_token", tokens.access_token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "lax", // ✅ important for OAuth
+            maxAge: 1000 * 60 * 60 * 24, // 1 day
+          });
+  
+          // (Optional) refresh token cookie
+          // res.cookie("refresh_token", tokens.refresh_token, {
+          //   httpOnly: true,
+          //   secure: process.env.NODE_ENV === "production",
+          //   sameSite: "lax",
+          //   maxAge: 1000 * 60 * 60 * 24 * 7,
+          // });
+  
+          // ✅ ALWAYS redirect here
+          return res.redirect("http://localhost:5173/oauth-success");
+        } catch (error) {
+          return res.redirect(
+            "http://localhost:5173/login?error=Token generation failed"
+          );
+        }
       }
-
-      try {
-        const tokens = await this.createTokens(user.email as string);
-
-        res.cookie("access_token", tokens.access_token, {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === "production",
-          sameSite: "strict",
-          maxAge: 1000 * 60 * 60 * 24,
-        });
-        if (user.is_data_complete)
-          res.redirect("http://localhost:5173/match-making");
-        else res.redirect("http://localhost:5173/complete-profile");
-      } catch (error) {
-        res.redirect(
-          "http://localhost:5173/login?error=Token generation failed"
-        );
-      }
-    })(req, res, next);
+    )(req, res, next);
   }
+  
 
   public async createTokens(email: string): Promise<Tokens> {
     const access_token = jwt.sign(

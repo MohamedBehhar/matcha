@@ -5,21 +5,20 @@ const ProtectedRoutes = () => {
   const { user } = useUserStore();
   const location = useLocation();
 
-  // ⛔ Not authenticated
   if (!user?.id) {
     return <Navigate to="/signin" replace />;
   }
 
-  if (!user.is_data_complete) {
+  if (!user?.is_data_complete) {
     return <Navigate to="/complete-profile" replace />;
   }
 
-  // ✅ profile complete → main app entry
   if (location.pathname === "/") {
     return <Navigate to="/match-making" replace />;
   }
 
   return <Outlet />;
 };
+
 
 export default ProtectedRoutes;

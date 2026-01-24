@@ -352,7 +352,7 @@ function MatchingPage() {
                   >
                     <div className="relative rounded-lg overflow-hidden shadow-lg border border-gray-200 dark:border-gray-700">
                       {/* Profile Image */}
-                      <div className="relative h-96 w-full">
+                      <div className="relative h-96 w-full ">
                         <img
                           src={`http://localhost:3000/${currentUser.profile_picture}`}
                           alt={currentUser.first_name}
@@ -364,7 +364,7 @@ function MatchingPage() {
                         />
 
                         {/* User Info Overlay */}
-                        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
+                        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/100  to-transparent p-4">
                           <div className="flex items-center  gap-2">
                             <h2 className="text-white text-2xl font-bold">
                               {currentUser.first_name}, {currentUser.age}
@@ -384,6 +384,12 @@ function MatchingPage() {
                               </div>
                             )}
                           </div>
+                          {/* sexula prefernce */}
+                          {currentUser?.sexual_preference && (
+                            <h2 className="text-white text-lg font-medium">
+                              {currentUser?.sexual_preference}{" "}
+                            </h2>
+                          )}
 
                           <div className="flex items-center gap-2 text-white/90 mb-2">
                             <FaMapMarkerAlt size={14} />
