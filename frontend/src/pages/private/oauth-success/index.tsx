@@ -25,7 +25,7 @@ const OAuthSuccess = () => {
         );
       })
       .catch(() => {
-        navigate("/signin", { replace: true });
+        navigate("/", { replace: true });
       });
 
     return () => {

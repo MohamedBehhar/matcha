@@ -126,16 +126,16 @@ export default function Router() {
 
             {/* 🔓 PUBLIC (blocked if logged in) */}
             <Route element={<PublicRoutes />}>
-              <Route path="/signin" element={<LoginPage />} />
+              <Route path="/" element={<LoginPage />} />
               <Route path="/signup" element={<SignUpPage />} />
               <Route path="/welcome" element={<WelcomePage />} />
-              <Route path="/verify-email" element={<VerifyEmailPage />} />
+              <Route path="/verify" element={<VerifyEmailPage />} />
               <Route
-                path="/verify-email/:token"
+                path="/verify/:token"
                 element={<VerifyEmailRedirectPage />}
               />
               <Route
-                path="/reset-password"
+                path="/reset/:token"
                 element={<ResetPasswordPage />}
               />
               <Route

@@ -1,38 +1,33 @@
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import { verifyEmail } from "@/api/methods/auth";
-import { useParams } from "react-router-dom";
-import { useNavigate } from "react-router-dom";
-function index() {
-  const [isLoading, setIsLoading] = React.useState(false);
+import { useParams, useNavigate } from "react-router-dom";
+
+function VerifyEmailPage() {
   const { token } = useParams();
   const navigate = useNavigate();
+
   useEffect(() => {
-    setIsLoading(true);
-    console.log(token);
-    verifyEmail(token || "")
-      .then((res) => {
-        localStorage.setItem("id", res.id);
-        if (res.is_data_complete) {
-          navigate("/match-making");
-        } else {
-          navigate("/complete-profile");
-        }
+    if (!token) {
+      navigate("/signin", { replace: true });
+      return;
+    }
+
+    verifyEmail(token)
+      .then(() => {
+        // ✅ ALWAYS go here
+        navigate("/oauth-success", { replace: true });
       })
-      .catch((err) => {
-        console.error(err);
-        window.location.href = "/signin";
+      .catch(() => {
+        navigate("/signin", { replace: true });
       });
-    setIsLoading(false);
-  }, []);
+  }, [token]);
+
   return (
-    <div className="container flex flex-col items-center justify-center h-screen ">
-      <h1 className="text-3xl font-semibold text-center">Verify Email</h1>
-      <p className="text-center text-red-primary">
-        Your email is being verified.
-      </p>
-      <p>{isLoading ? "Loading..." : "Verifying email..."}</p>
+    <div className="container flex flex-col items-center justify-center h-screen">
+      <h1 className="text-3xl font-semibold">Verify Email</h1>
+      <p className="text-red-primary">Your email is being verified…</p>
     </div>
   );
 }
 
-export default index;
+export default VerifyEmailPage;

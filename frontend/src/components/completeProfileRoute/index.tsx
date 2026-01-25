@@ -6,7 +6,7 @@ const CompleteProfileRoute = () => {
 
   // ⛔ Not logged in
   if (!user?.id) {
-    return <Navigate to="/signin" replace />;
+    return <Navigate to="/" replace />;
   }
 
   // ⛔ Profile already completed

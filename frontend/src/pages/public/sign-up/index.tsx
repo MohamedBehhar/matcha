@@ -82,7 +82,7 @@ function index() {
         <p>Already have an account?</p>
         <Button
           className=" bg-red-primary text-white"
-          onClick={() => navigate("/signin")}
+          onClick={() => navigate("/")}
         >
           Sign In
         </Button>

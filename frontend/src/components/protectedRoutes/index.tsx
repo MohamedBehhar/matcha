@@ -6,7 +6,7 @@ const ProtectedRoutes = () => {
   const location = useLocation();
 
   if (!user?.id) {
-    return <Navigate to="/signin" replace />;
+    return <Navigate to="/" replace />;
   }
 
   if (!user?.is_data_complete) {

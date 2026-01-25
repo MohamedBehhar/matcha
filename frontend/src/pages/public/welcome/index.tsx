@@ -64,7 +64,7 @@ function index() {
         <Button className="bg-red-primary text-white mt-8">Join now</Button>
         <div className="flex gap-2">
           <p>Already have account?</p>
-          <Link to="/signin" className="text-red-primary font-bold">
+          <Link to="/" className="text-red-primary font-bold">
             Sign in
           </Link>
         </div>

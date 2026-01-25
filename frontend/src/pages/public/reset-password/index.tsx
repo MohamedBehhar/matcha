@@ -18,7 +18,7 @@ function index() {
     const token = window.location.pathname.split("/")[2];
     try {
       await resetPassword(password, token);
-      navigate("/signin");
+      navigate("/");
     } catch (error) {
       console.log(error);
     }
