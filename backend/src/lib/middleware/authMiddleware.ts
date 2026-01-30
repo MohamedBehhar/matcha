@@ -17,7 +17,7 @@ const authMiddleware = async (
 
       if (!refreshToken) {
         console.log("No refresh token found.");
-        throw new ForbiddenError("Forbidden");
+        throw new UnauthorizedError("Unauthorized");
       }
 
       const email = await authServices.verifyToken(

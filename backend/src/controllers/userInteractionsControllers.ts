@@ -17,6 +17,7 @@ class UserInteractionsControllers {
 
   @handleResponse()
   public async likeAUser(req: Request, res: Response) {
+    console.log("likeAUser controller called===============> ", req.body);
     const body = req.body;
     return (await UsersInteractionsServices.likeAUser(body)) as unknown as void;
   }

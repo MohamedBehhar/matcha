@@ -132,16 +132,18 @@ class AuthServices {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
             sameSite: "lax", // ✅ important for OAuth
-            maxAge: 1000 * 60 * 60 * 24, // 1 day
+            // maxAge: 1000 * 60 * 60 * 24, // 1 day
+            maxAge: 1000 * 60 * 1, // 1 day
           });
-  
+          
           // (Optional) refresh token cookie
-          // res.cookie("refresh_token", tokens.refresh_token, {
-          //   httpOnly: true,
-          //   secure: process.env.NODE_ENV === "production",
-          //   sameSite: "lax",
-          //   maxAge: 1000 * 60 * 60 * 24 * 7,
-          // });
+          res.cookie("refresh_token", tokens.refresh_token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "lax",
+            maxAge: 1000 * 60 * 3, // 1 day
+            // maxAge: 1000 * 60 * 60 * 24 * 7,
+          });
   
           // ✅ ALWAYS redirect here
           return res.redirect("http://localhost:5173/oauth-success");
@@ -211,11 +213,23 @@ class AuthServices {
     return Math.abs(ageDate.getUTCFullYear() - 1970);
   }
 
+  public async checkPasswordStrength(password: string): Promise<boolean> {
+    // check if the password is 8 characters long and contains at least one uppercase letter, one lowercase letter, one number and one special character
+    const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    return regex.test(password);
+  }
+
   public async signUp(data: SignUpInput): Promise<Record<string, unknown>> {
     try {
       const body = signUpType.validate(data);
 
       // ✅ Check password strength
+      const isPasswordStrong = await this.checkPasswordStrength(body.password);
+       if (isPasswordStrong === false) {
+        throw new Error(
+          "Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number and one special character."
+        );
+      }
       const strength = zxcvbn(body.password);
       if (strength.score < 3) {
         throw new Error("Password is too weak. Please choose a stronger one.");

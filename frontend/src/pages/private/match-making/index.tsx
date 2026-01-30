@@ -63,7 +63,6 @@ function MatchingPage() {
       setInterests(res);
     } catch (err) {
       console.error(err);
-      toast.error("Failed to load interests");
     }
   };
 
@@ -76,7 +75,6 @@ function MatchingPage() {
       }
     } catch (err) {
       console.error(err);
-      toast.error("Failed to load user data");
     }
   };
 
@@ -85,9 +83,9 @@ function MatchingPage() {
     try {
       setLoading(true);
       const res = await getMatches(
-        user.latitude,
-        user.longitude,
-        user.id,
+        user.latitude ?? 0,
+        user.longitude ?? 0,
+        String(user.id),
         ageGap,
         distance * 1000,
         selectedInterests.map((i) => i.id).join(",")
@@ -102,9 +100,9 @@ function MatchingPage() {
     }
   };
 
-  const like = async (id) => {
+  const like = async (id: string) => {
     try {
-      await likeAUser({ user_id: user.id, liked_id: id });
+      await likeAUser({ user_id: user?.id, liked_id: id });
       toast.success("Liked!");
       nextUser();
     } catch {

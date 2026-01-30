@@ -1,6 +1,9 @@
 import orm from "../lib/orm";
 import { Server } from "socket.io";
-import { getAllSocketIdsWithUserIds, getSocketIdsByUserId } from "../utils/redis";
+import {
+  getAllSocketIdsWithUserIds,
+  getSocketIdsByUserId,
+} from "../utils/redis";
 
 type Message = {
   id?: string;
@@ -57,14 +60,16 @@ class MsgsServices {
       const recipientSocketIds = await getSocketIdsByUserId(recipient_id);
       const senderSocketIds = await getSocketIdsByUserId(sender_id);
       const allSockets = await getAllSocketIdsWithUserIds();
-      
+
       console.log("Recipient sockets:", recipientSocketIds);
       console.log("Sender sockets:", senderSocketIds);
       console.log("All sockets:", allSockets);
-      
+
       if (recipientSocketIds.length) {
-        recipientSocketIds.forEach(socketId => {
-          console.log(`🔔 Notifying recipient ${recipient_id} with socket ID: ${socketId}`);
+        recipientSocketIds.forEach((socketId) => {
+          console.log(
+            `🔔 Notifying recipient ${recipient_id} with socket ID: ${socketId}`
+          );
           this.socket?.to(socketId).emit("receive_message", {
             conversation_id,
             content,
@@ -113,8 +118,6 @@ class MsgsServices {
     }
   }
 
-
-
   public async getConversationMessages(
     conversation_id: number
   ): Promise<Message[]> {
@@ -129,7 +132,7 @@ class MsgsServices {
       return [];
     }
   }
-  
+
   public async getUserConversations(user_id: number) {
     try {
       const conversations = await orm.querySql(
@@ -195,6 +198,16 @@ class MsgsServices {
     } catch (error) {
       console.log("error", error);
     }
+  }
+  public async createSystemMessage(conversation_id: number, content: string) {
+    return orm.create("messages", {
+      conversation_id,
+      sender_id: null, // system message
+      content,
+      type: "system",
+      is_read: true,
+      created_at: new Date(),
+    });
   }
 }
 

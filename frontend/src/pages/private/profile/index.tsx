@@ -89,7 +89,7 @@ function ProfilePage() {
       setBlocked(true);
       toast.success("User blocked");
       // Optional: redirect to home or another page
-      window.location.href = "/";
+      window.location.href = "/match-making";
     } catch (error) {
       toast.error("Block failed");
     }

@@ -6,6 +6,7 @@ import userServices from "./userServices";
 
 import notificationsEnum from "../types/notificationsType";
 import { getSocketIdsByUserId } from "../utils/redis";
+import msgsServices from "./msgsServices";
 
 class UsersInteractionsServices {
   private socket: Server | undefined;
@@ -37,7 +38,6 @@ class UsersInteractionsServices {
         interaction_type: "dislike",
       },
     });
-    console.log("alreadyDisliked", alreadyDisliked);
     const user = await orm.findOne("users", { where: { id: user_id } });
 
     if (alreadyDisliked) {
@@ -78,6 +78,10 @@ class UsersInteractionsServices {
         user1_id: user_id,
         user2_id: liked_id,
       });
+      await msgsServices.createSystemMessage(
+        conversation.id,
+        "🎉 It's a match! Say hi 👋"
+      );
       const sender = await userServices.getUsersById(user_id);
       const receiver = await userServices.getUsersById(liked_id);
       notificationsServices.createNotification(
