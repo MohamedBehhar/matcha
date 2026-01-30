@@ -32,7 +32,6 @@ export default function Header() {
         setUser(userData); // Set user in store
       } catch (error) {
         console.error("Failed to fetch user:", error);
-        toast.error("Failed to load user data 99.");
       }
     };
 
@@ -52,7 +51,6 @@ export default function Header() {
         setNotificationsCount(count.count);
       } catch (error) {
         console.error("Failed to fetch notifications:", error);
-        toast.error("Failed to load notifications.");
       }
     };
 
@@ -105,7 +103,6 @@ export default function Header() {
       setNotifications(notifications);
     } catch (error) {
       console.error("Failed to fetch notifications:", error);
-      toast.error("Failed to load notifications.");
     }
   };
 
@@ -115,7 +112,7 @@ export default function Header() {
       setNotificationsCount(count.count);
     } catch (error) {
       console.error("Failed to fetch notifications count:", error);
-      toast.error("Failed to load notifications count.");
+
     }
   };
 

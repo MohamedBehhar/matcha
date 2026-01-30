@@ -121,10 +121,12 @@ export default function Router() {
     >
       <Suspense fallback={<LoadingPage />}>
         <Routes>
+          {/* Global layout for all routes */}
           <Route element={<GlobalLayout />}>
+            {/* Public OAuth route (no auth checks) */}
             <Route path="/oauth-success" element={<OAuthSuccess />} />
 
-            {/* 🔓 PUBLIC (blocked if logged in) */}
+            {/* Public routes - redirect if logged in */}
             <Route element={<PublicRoutes />}>
               <Route path="/" element={<LoginPage />} />
               <Route path="/signup" element={<SignUpPage />} />
@@ -134,23 +136,16 @@ export default function Router() {
                 path="/verify/:token"
                 element={<VerifyEmailRedirectPage />}
               />
-              <Route
-                path="/reset/:token"
-                element={<ResetPasswordPage />}
-              />
-              <Route
-                path="/forgot-password"
-                element={<ForGotPasswordPage />}
-              />
-              {/* etc */}
+              <Route path="/reset/:token" element={<ResetPasswordPage />} />
+              <Route path="/forgot-password" element={<ForGotPasswordPage />} />
             </Route>
 
-            {/* 🟡 AUTHENTICATED ONLY (profile may be incomplete) */}
+            {/* Complete profile - only for authenticated users with incomplete profile */}
             <Route element={<CompleteProfileRoute />}>
               <Route path="/complete-profile" element={<CompleteProfile />} />
             </Route>
 
-            {/* 🔒 FULLY PROTECTED (auth + profile complete) */}
+            {/* Protected routes - only for authenticated users with complete profile */}
             <Route element={<ProtectedRoutes />}>
               <Route element={<PrivateLayout />}>
                 <Route path="/match-making" element={<MatchMaking />} />
@@ -162,6 +157,7 @@ export default function Router() {
               </Route>
             </Route>
 
+            {/* Catch-all route */}
             <Route path="*" element={<NotFoundPage />} />
           </Route>
         </Routes>

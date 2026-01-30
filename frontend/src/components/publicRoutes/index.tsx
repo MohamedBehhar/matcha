@@ -4,9 +4,12 @@ import useUserStore from "@/store/userStore";
 const PublicRoutes = () => {
   const { user } = useUserStore();
 
-  // ✅ Already authenticated → redirect away from auth pages
+  // ✅ Already authenticated → redirect based on profile completion
   if (user?.id) {
-    return <Navigate to="/" replace />;
+    if (!user.is_data_complete) {
+      return <Navigate to="/complete-profile" replace />;
+    }
+    return <Navigate to="/match-making" replace />;
   }
 
   return <Outlet />;

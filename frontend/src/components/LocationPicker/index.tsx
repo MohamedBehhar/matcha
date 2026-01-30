@@ -1,6 +1,7 @@
 import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import toast from "react-hot-toast";
 
 function LocationMarker({
   position,
@@ -37,7 +38,7 @@ export default function LocationPicker({
 
   const handleUseMyLocation = () => {
     if (!navigator.geolocation) {
-      alert("Geolocation is not supported by your browser.");
+      toast.error('Unable to retrieve your location, make sure to give location permissions')
       return;
     }
   
@@ -51,8 +52,7 @@ export default function LocationPicker({
       },
       (err) => {
         console.warn("Geolocation error:", err);
-        alert("Unable to retrieve your location.");
-      }
+        toast.error('Unable to retrieve your location, make sure to give location permissions')      }
     );
   };
   
@@ -78,7 +78,9 @@ export default function LocationPicker({
           />
         </MapContainer>
       </div>
-      <Button variant="outline" onClick={handleUseMyLocation}>
+      <Button variant="outline" onClick={handleUseMyLocation}
+        type='button'
+      >
         📍 Use My Location
       </Button>
     </div>
