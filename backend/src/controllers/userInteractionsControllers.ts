@@ -38,7 +38,7 @@ class UserInteractionsControllers {
     )) as unknown as void;
   }
 
-  // @handleResponse()
+  @handleResponse()
   public async getMatches(req: Request, res: Response) {
     const {
       latitude,
@@ -51,27 +51,28 @@ class UserInteractionsControllers {
       min_rating,
     } = req.query;
     try {
-      const interestIds = interests
-        ? (interests as string)
-            .split(",")
-            .map((s) => parseInt(s.trim(), 10))
-            .filter((n) => !isNaN(n))
-        : null;
-      const users = await UsersInteractionsServices.getMatches(
-        Number(latitude),
-        Number(longitude),
-        Number(distance),
-        user_id as string,
-        Number(age_gap),
-        interestIds?.length ? interestIds : null,
-        {
-          sort: (sort as string) || undefined,
-          min_rating:
-            min_rating !== undefined && min_rating !== ""
-              ? Number(min_rating)
-              : null,
-        }
-      );
+      const interestIds: number[] | null = interests
+      ? (interests as string)
+          .split(",")
+          .map((s) => parseInt(s.trim(), 10))
+          .filter((n) => !isNaN(n))
+      : null;
+    
+    const users = await UsersInteractionsServices.getMatches(
+      Number(latitude),
+      Number(longitude),
+      Number(distance),
+      user_id as string,
+      Number(age_gap),
+      interestIds && interestIds.length > 0 ? interestIds.map(String) : null,
+      {
+        sort: sort ? String(sort) : undefined,
+        min_rating:
+          min_rating !== undefined && min_rating !== ""
+            ? Number(min_rating)
+            : null,
+      }
+    );
       res.status(200).send(users);
     } catch (error) {
       console.error(error);
