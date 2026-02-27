@@ -243,6 +243,12 @@ function ProfilePage() {
                   <span>{Math.round(userInfo.distance)} km away</span>
                 </div>
               )}
+
+              {/* Public fame rating (IV.2): 0–100 from profile views + likes received */}
+              <div className="flex items-center gap-1 text-gray-300">
+                <span className="text-yellow-400 font-medium">★</span>
+                <span>Fame {userInfo?.rating ?? 0}/100</span>
+              </div>
             </div>
           </div>
 

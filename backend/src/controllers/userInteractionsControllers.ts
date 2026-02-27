@@ -40,16 +40,37 @@ class UserInteractionsControllers {
 
   // @handleResponse()
   public async getMatches(req: Request, res: Response) {
-    const { latitude, longitude, distance, user_id, age_gap, interests } =
-      req.query;
+    const {
+      latitude,
+      longitude,
+      distance,
+      user_id,
+      age_gap,
+      interests,
+      sort,
+      min_rating,
+    } = req.query;
     try {
+      const interestIds = interests
+        ? (interests as string)
+            .split(",")
+            .map((s) => parseInt(s.trim(), 10))
+            .filter((n) => !isNaN(n))
+        : null;
       const users = await UsersInteractionsServices.getMatches(
         Number(latitude),
         Number(longitude),
         Number(distance),
         user_id as string,
         Number(age_gap),
-        interests ? (interests as string).split(",") : null
+        interestIds?.length ? interestIds : null,
+        {
+          sort: (sort as string) || undefined,
+          min_rating:
+            min_rating !== undefined && min_rating !== ""
+              ? Number(min_rating)
+              : null,
+        }
       );
       res.status(200).send(users);
     } catch (error) {

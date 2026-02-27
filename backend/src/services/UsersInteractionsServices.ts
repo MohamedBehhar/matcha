@@ -66,7 +66,7 @@ class UsersInteractionsServices {
       user_id,
       notificationsEnum.like
     );
-
+    await userServices.updateFameRating(liked_id);
 
     if (mutualLike) {
       // Create a friendship
@@ -160,19 +160,33 @@ class UsersInteractionsServices {
     return { message: "Blocked user" };
   }
 
+  /**
+   * IV.3 Browsing: suggested profiles by preferences (orientation, gender),
+   * intelligently ordered by proximity, fame rating, shared tags.
+   * Orientation not specified → treated as bisexual. Sortable and filterable.
+   */
   public async getMatches(
     latitude: number,
     longitude: number,
     distance: number,
     user_id: string,
     age_gap: number,
-    interests?: string[] | null
+    interests?: string[] | null,
+    options?: { sort?: string; min_rating?: number | null }
   ) {
     const user = await orm.findOne("users", {
       where: { id: user_id },
     });
+    // IV.3: If orientation not specified, consider bisexual by default
+    const sexual_preference = user?.sexual_preference ?? "bisexual";
+    const gender = user?.gender;
 
-    console.log("User's sexual preference:", user);
+    const commonTagsSubquery = `(
+      SELECT COUNT(*)
+      FROM user_interests ui_me
+      JOIN user_interests ui_them ON ui_me.interest_id = ui_them.interest_id AND ui_them.user_id = u.id
+      WHERE ui_me.user_id = $4
+    )`;
 
     const query = `
     SELECT 
@@ -195,7 +209,8 @@ class UsersInteractionsServices {
                 ST_GeogFromText('SRID=4326;POINT(' || $2 || ' ' || $1 || ')'),
                 u.location
             ) / 1000
-        ) AS distance
+        ) AS distance,
+        ${commonTagsSubquery}::integer AS common_tags_count
     FROM 
         users u
     LEFT JOIN user_interests ui ON u.id = ui.user_id
@@ -213,11 +228,11 @@ class UsersInteractionsServices {
             AND interactions.target_user_id = u.id
             AND interactions.interaction_type IN ('like', 'dislike', 'block')
         )
-        AND u.id != $4 -- Exclude current user
-        AND u.age >= $5 -- Min age
-        AND u.age <= $6 -- Max age
+        AND u.id != $4
+        AND u.age >= $5
+        AND u.age <= $6
+        AND ($10::integer IS NULL OR u.rating >= $10)
         AND (
-            -- Mutual matching logic
             (
                 $7 = 'heterosexual' AND $8 = 'male'
                 AND u.gender = 'female'
@@ -242,38 +257,34 @@ class UsersInteractionsServices {
                 $7 = 'bisexual' AND $8 = 'male'
                 AND (
                     (u.gender = 'female' AND u.sexual_preference IN ('heterosexual', 'bisexual'))
-                    OR
-                    (u.gender = 'male' AND u.sexual_preference IN ('homosexual', 'bisexual'))
+                    OR (u.gender = 'male' AND u.sexual_preference IN ('homosexual', 'bisexual'))
                 )
             )
             OR (
                 $7 = 'bisexual' AND $8 = 'female'
                 AND (
                     (u.gender = 'male' AND u.sexual_preference IN ('heterosexual', 'bisexual'))
-                    OR
-                    (u.gender = 'female' AND u.sexual_preference IN ('homosexual', 'bisexual'))
+                    OR (u.gender = 'female' AND u.sexual_preference IN ('homosexual', 'bisexual'))
                 )
             )
         )
         AND (
-            $9::integer[] IS NULL OR EXISTS (
+            $9::integer[] IS NULL OR array_length($9::integer[], 1) IS NULL
+            OR EXISTS (
                 SELECT 1
                 FROM user_interests ui2
                 WHERE ui2.user_id = u.id
                 AND ui2.interest_id = ANY($9::integer[])
             )
         )
-    GROUP BY 
-        u.id
-    ORDER BY 
-        distance ASC;
+    GROUP BY u.id
+    ORDER BY ${this.getMatchesOrderBy(options?.sort)}
     `;
 
-    const min_age = user?.age - age_gap;
-    const max_age = user?.age + age_gap;
-
-    console.log("User's sexual preference:", user?.sexual_preference);
-    console.log("User's gender:", user?.gender);
+    const min_age = Math.max(18, (user?.age ?? 25) - age_gap);
+    const max_age = Math.min(120, (user?.age ?? 25) + age_gap);
+    const min_rating = options?.min_rating ?? null;
+    const interestIds = interests?.length ? interests : null;
 
     try {
       const { rows } = await pool.query(query, [
@@ -283,13 +294,41 @@ class UsersInteractionsServices {
         user_id,
         min_age,
         max_age,
-        user?.sexual_preference,
-        user?.gender,
-        interests,
+        sexual_preference,
+        gender,
+        interestIds,
+        min_rating,
       ]);
       return rows;
     } catch (error) {
       console.error("Error executing query:", error);
+      return [];
+    }
+  }
+
+  /** IV.3: Sort by age, location, fame rating, common tags. Default: proximity then rating then shared tags. */
+  private getMatchesOrderBy(sort?: string): string {
+    const base = "distance ASC NULLS LAST, rating DESC NULLS LAST, common_tags_count DESC NULLS LAST";
+    if (!sort) return base;
+    switch (sort) {
+      case "age_asc":
+        return "age ASC NULLS LAST, distance ASC NULLS LAST";
+      case "age_desc":
+        return "age DESC NULLS LAST, distance ASC NULLS LAST";
+      case "distance_asc":
+        return "distance ASC NULLS LAST, rating DESC NULLS LAST";
+      case "distance_desc":
+        return "distance DESC NULLS LAST, rating DESC NULLS LAST";
+      case "rating_asc":
+        return "rating ASC NULLS LAST, distance ASC NULLS LAST";
+      case "rating_desc":
+        return "rating DESC NULLS LAST, distance ASC NULLS LAST";
+      case "common_tags_asc":
+        return "common_tags_count ASC NULLS LAST, distance ASC NULLS LAST";
+      case "common_tags_desc":
+        return "common_tags_count DESC NULLS LAST, distance ASC NULLS LAST";
+      default:
+        return base;
     }
   }
 
@@ -335,7 +374,7 @@ class UsersInteractionsServices {
       user_id,
       notificationsEnum.visit
     );
-
+    await userServices.updateFameRating(visited_id);
     return;
   }
 

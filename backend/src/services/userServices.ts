@@ -93,18 +93,24 @@ class UserService {
     return updatedUser;
   }
 
+  /** Max 5 pictures total = 1 profile + 4 in images table (IV.2) */
+  private static readonly MAX_ADDITIONAL_IMAGES = 4;
+
   public async addUserImage(userId: string, file: any) {
-    console.log("file: ", file);
     if (!file) {
       throw new Error("No file uploaded");
+    }
+    const existing = await orm.findMany("images", { where: { user_id: userId } });
+    if (existing.length >= UserService.MAX_ADDITIONAL_IMAGES) {
+      throw new Error(
+        `Maximum 5 photos allowed (1 profile + 4 additional). You already have ${existing.length} additional photos.`
+      );
     }
     await orm.create("images", {
       user_id: userId,
       url: "/" + file.filename,
     });
-    const images = await orm.findMany("images", { where: { user_id: userId } });
-    console.log("images: ", images);
-    return images;
+    return orm.findMany("images", { where: { user_id: userId } });
   }
 
   public async addUserInterests(userId: string, interestsIds: string[]) {
@@ -136,6 +142,27 @@ class UserService {
     return [];
   }
 
+  /**
+   * Fame rating (IV.2): 0–100 from profile views + likes received.
+   * Formula: min(100, visits + likes_received * 2). Consistent criteria.
+   */
+  public async updateFameRating(userId: string): Promise<void> {
+    const [visitsRow, likesRow] = await Promise.all([
+      orm.querySql(
+        `SELECT COUNT(*) AS count FROM visits WHERE visited_id = $1`,
+        [userId]
+      ),
+      orm.querySql(
+        `SELECT COUNT(*) AS count FROM user_interactions WHERE target_user_id = $1 AND interaction_type = 'like'`,
+        [userId]
+      ),
+    ]);
+    const visits = parseInt(visitsRow[0]?.count ?? "0", 10);
+    const likes = parseInt(likesRow[0]?.count ?? "0", 10);
+    const rating = Math.min(100, visits + likes * 2);
+    await orm.update("users", userId, { rating });
+  }
+
   public async getUsersById(id: string) {
     const interests = await orm.querySql(
       `
@@ -149,7 +176,6 @@ class UserService {
 
     const images = await orm.findMany("images", { where: { user_id: id } });
     const user = await orm.findOne("users", { where: { id } });
-    console.log(user)
     return { ...user, interests, images };
   }
 
@@ -165,13 +191,18 @@ class UserService {
   }
 
   public async getUserImages(userId: string) {
-    console.log("userId: ", userId);
     return await orm.querySql(
-      `
-    SELECT * FROM images WHERE user_id = $1
-  `,
+      `SELECT * FROM images WHERE user_id = $1`,
       [userId]
     );
+  }
+
+  public async getAdditionalImagesCount(userId: string): Promise<number> {
+    const rows = await orm.querySql(
+      `SELECT COUNT(*) AS count FROM images WHERE user_id = $1`,
+      [userId]
+    );
+    return parseInt(rows[0]?.count ?? "0", 10);
   }
 
   public async profileCompleted(id: string) {

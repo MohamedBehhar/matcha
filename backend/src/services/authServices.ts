@@ -275,13 +275,12 @@ class AuthServices {
 
   public async singIn(
     data: {
-      email: string;
+      username: string;
       password: string;
     },
     res: Response
   ): Promise<User | undefined> {
-    console.log(data);
-    const user = await orm.findOne("users", { where: { email: data.email } });
+    const user = await orm.findOne("users", { where: { username: data.username } });
     if (!user) {
       throw new ForbiddenError("User not found");
     }

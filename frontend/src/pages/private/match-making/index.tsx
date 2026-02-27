@@ -1,7 +1,12 @@
-import { getMatches, likeAUser, unlikeAUser } from "@/api/methods/interactions";
+import {
+  getMatches,
+  likeAUser,
+  unlikeAUser,
+  type MatchSort,
+} from "@/api/methods/interactions";
 import { getInterests } from "@/api/methods/interest";
-import { getUser } from "@/api/methods/user";
-import { useEffect, useState } from "react";
+import { getUser, updateUserLocation } from "@/api/methods/user";
+import { useEffect, useState, useCallback } from "react";
 import userImg from "@/assets/images/user.png";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -26,6 +31,10 @@ import {
 } from "react-icons/fa";
 import { IoMdRefresh } from "react-icons/io";
 import { FaVenusMars, FaVenus, FaMars } from "react-icons/fa";
+import LocationConsentModal, {
+  getLocationConsent,
+} from "@/components/LocationConsentModal";
+import LocationPicker from "@/components/LocationPicker";
 
 function ZoomHandler({ zoom }) {
   const map = useMap();
@@ -42,10 +51,17 @@ function MatchingPage() {
   const [distance, setDistance] = useState(5);
   const [interests, setInterests] = useState([]);
   const [selectedInterests, setSelectedInterests] = useState([]);
+  const [sortBy, setSortBy] = useState<MatchSort | "">("");
+  const [minRating, setMinRating] = useState<number>(0);
   const [loading, setLoading] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
   const { user, setUser } = useUserStore();
   const [position, setPosition] = useState([null, null]);
+  // IV.2: GPS consent; if denied, user must set location manually to use matching
+  const [locationConsent, setLocationConsentState] = useState(getLocationConsent);
+  const [consentModalOpen, setConsentModalOpen] = useState(false);
+  const [manualLocation, setManualLocation] = useState(null);
+  const [savingLocation, setSavingLocation] = useState(false);
 
   const calculateZoom = (dist) => {
     if (dist <= 5) return 12;
@@ -88,7 +104,11 @@ function MatchingPage() {
         String(user.id),
         ageGap,
         distance * 1000,
-        selectedInterests.map((i) => i.id).join(",")
+        selectedInterests.map((i) => i.id).join(",") || null,
+        {
+          sort: sortBy || undefined,
+          min_rating: minRating > 0 ? minRating : null,
+        }
       );
       setUsers(res);
       setCurrentIndex(0);
@@ -144,10 +164,65 @@ function MatchingPage() {
         latitude: coords.latitude,
         longitude: coords.longitude,
       });
+      await updateUserLocation(user?.id, {
+        latitude: coords.latitude,
+        longitude: coords.longitude,
+        userId: user?.id,
+      });
       toast.success("Location updated!");
     } catch (err) {
       console.error("Error fetching location:", err);
       toast.error("Failed to refresh location");
+    }
+  };
+
+  const handleConsentGranted = useCallback(async () => {
+    setLocationConsentState("granted");
+    try {
+      const { coords } = await getNavigatorLocation();
+      setPosition([coords.latitude, coords.longitude]);
+      setUser({
+        ...user,
+        latitude: coords.latitude,
+        longitude: coords.longitude,
+      });
+      if (user?.id) {
+        await updateUserLocation(user.id, {
+          latitude: coords.latitude,
+          longitude: coords.longitude,
+          userId: user.id,
+        });
+      }
+      toast.success("Location enabled");
+    } catch (err) {
+      toast.error("Could not get GPS location. Set it manually in profile settings.");
+    }
+  }, [user, setUser]);
+
+  const handleConsentDenied = useCallback(() => {
+    setLocationConsentState("denied");
+  }, []);
+
+  const saveManualLocation = async () => {
+    if (!manualLocation || !user?.id) return;
+    setSavingLocation(true);
+    try {
+      await updateUserLocation(user.id, {
+        latitude: manualLocation.latitude,
+        longitude: manualLocation.longitude,
+        userId: user.id,
+      });
+      setUser({
+        ...user,
+        latitude: manualLocation.latitude,
+        longitude: manualLocation.longitude,
+      });
+      setPosition([manualLocation.latitude, manualLocation.longitude]);
+      toast.success("Location saved. You can use matching now.");
+    } catch (err) {
+      toast.error("Failed to save location");
+    } finally {
+      setSavingLocation(false);
     }
   };
 
@@ -169,10 +244,31 @@ function MatchingPage() {
     init();
   }, []);
 
+  // IV.2: When no location, show consent modal (once) or require manual location
+  useEffect(() => {
+    const hasLocation = user?.latitude != null && user?.longitude != null && (user.latitude !== 0 || user.longitude !== 0);
+    if (hasLocation) return;
+    const consent = getLocationConsent();
+    setLocationConsentState(consent);
+    if (consent === "pending") {
+      setConsentModalOpen(true);
+    }
+  }, [user?.latitude, user?.longitude]);
+
   const currentUser = users[currentIndex];
+  const hasPosition = position[0] != null && position[1] != null;
+  const showManualLocationBlock =
+    !hasPosition && locationConsent === "denied";
 
   return (
     <div className="dark min-h-screen  dark:bg-gray-900 p-4 md:p-6 ">
+      <LocationConsentModal
+        open={consentModalOpen}
+        onClose={() => setConsentModalOpen(false)}
+        onGranted={handleConsentGranted}
+        onDenied={handleConsentDenied}
+      />
+
       <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Filters Panel */}
         <div className="lg:col-span-1 ">
@@ -185,9 +281,9 @@ function MatchingPage() {
             </div>
 
             <div className="p-5 space-y-6">
-              {/* Map Display */}
+              {/* Map Display / Manual location (IV.2: manual location required if GPS opted out) */}
               <div className="h-64 md:h-80 rounded-lg overflow-hidden relative border border-gray-200 dark:border-gray-700">
-                {position[0] && position[1] ? (
+                {hasPosition ? (
                   <>
                     <MapContainer
                       center={position}
@@ -220,6 +316,26 @@ function MatchingPage() {
                       <IoMdRefresh className="text-red-primary" />
                     </button>
                   </>
+                ) : showManualLocationBlock ? (
+                  <div className="h-full flex flex-col p-2 bg-gray-100 dark:bg-gray-700">
+                    <p className="text-gray-700 dark:text-gray-300 text-sm mb-2 text-center">
+                      Set your location to use matching (city or neighborhood)
+                    </p>
+                    <div className="flex-1 min-h-0">
+                      <LocationPicker
+                        value={manualLocation}
+                        onChange={setManualLocation}
+                      />
+                    </div>
+                    <Button
+                      type="button"
+                      disabled={!manualLocation || savingLocation}
+                      onClick={saveManualLocation}
+                      className="w-full mt-2"
+                    >
+                      {savingLocation ? "Saving…" : "Save location"}
+                    </Button>
+                  </div>
                 ) : (
                   <div className="h-full flex flex-col items-center justify-center bg-gray-100 dark:bg-gray-700 p-4 text-center">
                     <FaMapMarkerAlt className="text-red-primary text-3xl mb-2" />
@@ -274,6 +390,48 @@ function MatchingPage() {
                     max="100"
                     value={distance}
                     onChange={(e) => setDistance(+e.target.value)}
+                    className="w-full h-2 bg-gray-200 dark:bg-gray-600 rounded-lg appearance-none cursor-pointer accent-red-primary"
+                  />
+                </div>
+
+                {/* IV.3: Sort by age, location, fame rating, common tags */}
+                <div className="space-y-2">
+                  <label className="flex items-center gap-2 text-gray-700 dark:text-gray-300 font-medium">
+                    Sort by
+                  </label>
+                  <select
+                    value={sortBy}
+                    onChange={(e) => setSortBy((e.target.value || "") as MatchSort | "")}
+                    className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-3 py-2 text-sm"
+                  >
+                    <option value="">Default (nearby, then rating, then tags)</option>
+                    <option value="age_asc">Age (youngest first)</option>
+                    <option value="age_desc">Age (oldest first)</option>
+                    <option value="distance_asc">Distance (nearest)</option>
+                    <option value="distance_desc">Distance (farthest)</option>
+                    <option value="rating_desc">Fame rating (highest)</option>
+                    <option value="rating_asc">Fame rating (lowest)</option>
+                    <option value="common_tags_desc">Common tags (most)</option>
+                    <option value="common_tags_asc">Common tags (least)</option>
+                  </select>
+                </div>
+
+                {/* IV.3: Filter by minimum fame rating */}
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <label className="text-gray-700 dark:text-gray-300 font-medium">
+                      Min. fame rating
+                    </label>
+                    <span className="bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 px-2 py-1 rounded-full text-xs font-medium">
+                      {minRating}
+                    </span>
+                  </div>
+                  <input
+                    type="range"
+                    min="0"
+                    max="100"
+                    value={minRating}
+                    onChange={(e) => setMinRating(+e.target.value)}
                     className="w-full h-2 bg-gray-200 dark:bg-gray-600 rounded-lg appearance-none cursor-pointer accent-red-primary"
                   />
                 </div>

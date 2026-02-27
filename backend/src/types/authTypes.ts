@@ -17,7 +17,7 @@ interface Tokens {
 }
 
 interface signInInput {
-  email: string;
+  username: string;
   password: string;
 }
 
@@ -51,7 +51,7 @@ interface verifyEmailReturn {
 }
 
 const signInType = Schema.object({
-  email: Schema.string().email().required(),
+  username: Schema.string().required(),
   password: Schema.string().min(6).required(),
 });
 

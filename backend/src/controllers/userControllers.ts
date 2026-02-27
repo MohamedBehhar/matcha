@@ -73,8 +73,14 @@ class UserControllers {
 
   @handleResponse()
   public async addImages(req: Request, res: Response) {
-    const images = req.files as [];
+    const images = (req.files as Express.Multer.File[]) || [];
     const userId = req.params.id;
+    const currentCount = await userServices.getAdditionalImagesCount(userId);
+    if (currentCount + images.length > 4) {
+      throw new Error(
+        "Maximum 5 photos total (1 profile + 4 additional). Remove some photos first or upload fewer."
+      );
+    }
     for (const image of images) {
       await userServices.addUserImage(userId, image);
     }

@@ -49,21 +49,42 @@ const getFriends = async (user_id: string | null) => {
   }
 };
 
+export type MatchSort =
+  | "age_asc"
+  | "age_desc"
+  | "distance_asc"
+  | "distance_desc"
+  | "rating_asc"
+  | "rating_desc"
+  | "common_tags_asc"
+  | "common_tags_desc";
+
 const getMatches = async (
   latitude: number,
   longitude: number,
   user_id: string | null,
   ageGap: number,
   distance: number,
-  interests: string | null
+  interests: string | null,
+  options?: { sort?: MatchSort; min_rating?: number | null }
 ) => {
   if (!user_id) {
     throw new Error("User id is required");
   }
-  console.log("user_id", user_id);
+  const params = new URLSearchParams({
+    user_id,
+    latitude: String(latitude),
+    longitude: String(longitude),
+    distance: String(distance),
+    age_gap: String(ageGap),
+    interests: interests ?? "",
+  });
+  if (options?.sort) params.set("sort", options.sort);
+  if (options?.min_rating != null && options.min_rating > 0)
+    params.set("min_rating", String(options.min_rating));
   try {
     const response = await instance.get(
-      `/interactions/matches?user_id=${user_id}&latitude=${latitude}&longitude=${longitude}&distance=${distance}&age_gap=${ageGap}&interests=${interests}`
+      `/interactions/matches?${params.toString()}`
     );
     return response.data;
   } catch (error) {

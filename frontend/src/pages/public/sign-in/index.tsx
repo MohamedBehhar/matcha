@@ -1,8 +1,8 @@
-import React, { useRef, useState } from "react";
+import React, { useState } from "react";
 import { Input } from "@/components/ui/input";
 import SignupImg from "@/assets/images/signupImg.svg?react";
-import { signIn, forgotPassword } from "@/api/methods/auth";
-import { useNavigate, Link } from "react-router-dom";
+import { signIn } from "@/api/methods/auth";
+import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import useUserStore from "@/store/userStore";
 import HeartLoader from "@/components/HeartLoader";
@@ -11,11 +11,8 @@ import toast from "react-hot-toast";
 
 function Index() {
   const [isLoading, setIsLoading] = useState(false);
-  const emailRef = useRef<HTMLInputElement>(null);
-  const [email, setEmail] = useState("");
 
   const setUser = useUserStore((state) => state.setUser);
-  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -25,7 +22,7 @@ function Index() {
 
     try {
       const response = await signIn({
-        email: formData.get("email") as string,
+        username: formData.get("username") as string,
         password: formData.get("password") as string,
       });
 
@@ -34,20 +31,6 @@ function Index() {
       toast.error(err?.response?.data?.message ?? "Something went wrong");
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const handleForgotPassword = async () => {
-    if (!email) {
-      emailRef.current?.focus();
-      return;
-    }
-
-    try {
-      await forgotPassword(email);
-      navigate("/forgot-password");
-    } catch {
-      toast.error("Failed to send reset email");
     }
   };
 
@@ -78,12 +61,11 @@ function Index() {
           className="w-full max-w-[450px] flex flex-col items-center gap-4"
         >
           <Input
-            name="email"
-            type="email"
-            placeholder="Email"
+            name="username"
+            type="text"
+            placeholder="Username"
             className="w-full"
-            ref={emailRef}
-            onChange={(e) => setEmail(e.target.value)}
+            autoComplete="username"
             required
           />
 
@@ -92,18 +74,16 @@ function Index() {
             type="password"
             placeholder="Password"
             className="w-full"
+            autoComplete="current-password"
             required
           />
 
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.95 }}
-            type="button"
-            onClick={handleForgotPassword}
+          <Link
+            to="/forgot-password"
             className="text-red-primary text-sm hover:underline self-end"
           >
             Forgot Password?
-          </motion.button>
+          </Link>
 
           <motion.button
             whileHover={{ scale: 1.02 }}

@@ -134,12 +134,16 @@ function ProfileSetting() {
     });
   };
 
-  // Image handling
+  // Image handling (max 5 total = 1 profile + 4 additional, IV.2)
   const handleImageChange = (event) => {
     const file = event.target.files[0];
     if (!file) return;
 
-    // Validate file type and size
+    if (selectedImages.length >= 4) {
+      toast.error("Maximum 5 photos total (1 profile + 4 additional). Remove one to add another.");
+      return;
+    }
+
     const validTypes = ["image/jpeg", "image/png", "image/webp"];
     if (!validTypes.includes(file.type)) {
       toast.error("Please select only image files (JPEG, PNG, WebP)");
@@ -147,7 +151,6 @@ function ProfileSetting() {
     }
 
     if (file.size > 5 * 1024 * 1024) {
-      // 5MB limit
       toast.error("Image size must be less than 5MB");
       return;
     }
@@ -377,7 +380,7 @@ function ProfileSetting() {
             ))}
             <span className="text-sm text-gray-500 ml-2">({rating || 0})</span>
           </div>
-          import LocationPicker from "@/components/LocationPicker"; ...
+
           <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
             {user?.first_name} {user?.last_name}
           </h1>

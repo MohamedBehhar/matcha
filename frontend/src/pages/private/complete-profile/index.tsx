@@ -370,7 +370,10 @@ const Step6 = ({
   );
 };
 
-// Step 7: Additional Photos
+// Max 5 pictures total = 1 profile + 4 additional (IV.2)
+const MAX_ADDITIONAL_PHOTOS = 4;
+
+// Step 7: Additional Photos (max 4 so total with profile = 5)
 const Step7 = ({
   photos,
   setPhotos,
@@ -380,10 +383,10 @@ const Step7 = ({
 }) => {
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-    const remainingSlots = 5 - photos.length;
+    const remainingSlots = MAX_ADDITIONAL_PHOTOS - photos.length;
     const newFiles = files.slice(0, remainingSlots);
-    
-    const validFiles = newFiles.filter(file => {
+
+    const validFiles = newFiles.filter((file) => {
       if (file.size > 5 * 1024 * 1024) {
         toast.error(`${file.name} is too large (max 5MB)`);
         return false;
@@ -394,11 +397,11 @@ const Step7 = ({
       }
       return true;
     });
-    
+
     setPhotos([...photos, ...validFiles]);
-    
+
     if (files.length > remainingSlots) {
-      toast.error(`You can only upload ${remainingSlots} more photo(s)`);
+      toast.error(`You can only add ${remainingSlots} more photo(s) (max 5 total including profile picture)`);
     }
   };
 
@@ -411,9 +414,9 @@ const Step7 = ({
     <AnimatedStep>
       <div className="flex flex-col items-center gap-6 w-full max-w-3xl">
         <p className="text-gray-500 text-center">
-          Add up to 4 more photos to showcase your personality!
+          Add up to 4 more photos (5 total including your profile picture).
         </p>
-        
+
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4 w-full">
           {photos.map((photo, index) => (
             <div key={index} className="relative group aspect-square">
@@ -434,13 +437,13 @@ const Step7 = ({
               </div>
             </div>
           ))}
-          
-          {photos.length < 5 && (
+
+          {photos.length < MAX_ADDITIONAL_PHOTOS && (
             <label className="aspect-square rounded-lg border-2 border-dashed border-gray-300 flex flex-col items-center justify-center cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors">
               <RiImageAddLine size={40} className="text-gray-400 mb-2" />
               <span className="text-gray-500">Add Photo</span>
               <span className="text-xs text-gray-400 mt-1">
-                {5 - photos.length} remaining
+                {MAX_ADDITIONAL_PHOTOS - photos.length} remaining
               </span>
               <input
                 type="file"
@@ -452,10 +455,12 @@ const Step7 = ({
             </label>
           )}
         </div>
-        
+
         <div className="text-center text-sm text-gray-500">
           <p>Upload at least 2 photos for better matches!</p>
-          <p className="text-xs mt-1">({photos.length}/5 photos uploaded)</p>
+          <p className="text-xs mt-1">
+            ({photos.length}/{MAX_ADDITIONAL_PHOTOS} additional photos)
+          </p>
         </div>
       </div>
     </AnimatedStep>
