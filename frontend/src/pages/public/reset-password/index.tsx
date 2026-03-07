@@ -3,24 +3,34 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { resetPassword } from "@/api/methods/auth";
 import { useNavigate } from "react-router";
+import { error } from "console";
 
 function index() {
   const navigate = useNavigate();
+  const [errors, setErrors] = React.useState<string | null>(null);
   const handelResetPassword = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     const password = formData.get("password") as string;
+
+    if (!password || password.length < 6) {
+      setErrors("Password must be at least 6 characters long");
+      return;
+    }
     const confirm_password = formData.get("confirm_password") as string;
     if (password !== confirm_password) {
-      alert("Passwords do not match");
+      setErrors("Passwords do not match");
       return;
     }
     const token = window.location.pathname.split("/")[2];
     try {
       await resetPassword(password, token);
       navigate("/");
-    } catch (error) {
-      console.log(error);
+    } catch (error: any) {
+      setErrors(
+        error?.response?.data?.message ||
+          "An error occurred while resetting password"
+      );
     }
   };
 
@@ -48,6 +58,7 @@ function index() {
           Reset Password
         </Button>
       </form>
+      {errors && <p className="text-sm text-red-500">{errors}</p>}
     </div>
   );
 }

@@ -16,7 +16,7 @@ export function errorHandler(
 
   console.error("❌ Unexpected error:", err);
 
-  return res.status(500).json({
+  return res.status(400).json({
     error: "InternalServerError",
     message: "Something went wrong",
   });

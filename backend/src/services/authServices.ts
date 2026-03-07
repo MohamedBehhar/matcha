@@ -12,6 +12,7 @@ import { deleteKey, getKey, setKey } from "../utils/redis";
 import pool from "../db/db";
 import orm from "../lib/orm";
 import {
+  BadRequestError,
   ConflictError,
   ForbiddenError,
   NotFoundError,
@@ -506,7 +507,7 @@ class AuthServices {
       const user = await orm.findOne("users", { where: { email } });
       const strength = zxcvbn(password);
       if (strength.score < 3) {
-        throw new Error("Password is too weak. Please choose a stronger one.");
+        throw new BadRequestError("Password is too weak. Please choose a stronger one.");
       }
       const hashedPassword = await bcrypt.hash(password, 10);
       await orm.update("users", user.id, { password: hashedPassword });
