@@ -6,6 +6,7 @@ import {
   getNotifications,
   getNotificationsCount,
 } from "@/api/methods/notifications";
+import { getMsgsCount } from "@/api/methods/messages";
 
 import { FaPowerOff } from "react-icons/fa6";
 import { getUser } from "@/api/methods/user";
@@ -23,6 +24,7 @@ export default function Header() {
   const { user, setUser } = useUserStore();
   const [notifications, setNotifications] = useState([]);
   const [notificationsCount, setNotificationsCount] = useState(0);
+  const [messagesCount, setMessagesCount] = useState(0);
   const socket = useSocket();
 
   useEffect(() => {
@@ -55,6 +57,15 @@ export default function Header() {
     };
 
     fetchNotificationsData();
+    // Initial unread messages count
+    (async () => {
+      try {
+        const count = await getMsgsCount(String(user.id));
+        setMessagesCount(count.count ?? 0);
+      } catch (error) {
+        console.error("Failed to fetch messages count:", error);
+      }
+    })();
   }, [user.id]); // Runs only when user.id is available
 
   // Socket listeners
@@ -76,6 +87,17 @@ export default function Header() {
       fetchNotificationsCount();
     };
 
+    const handleReceiveMessage = async (msg: any) => {
+      // Optional: toast or subtle UI feedback
+      // toast(`New message from ${msg.sender_id}`);
+      try {
+        const count = await getMsgsCount(String(user.id));
+        setMessagesCount(count.count ?? 0);
+      } catch (error) {
+        console.error("Failed to update messages count:", error);
+      }
+    };
+
     socket.on("connected", (data: any) => {
       console.log(`Connected with socket ID: ${data.socketId}`);
       toast(`Connected as ${data.userId}`);
@@ -84,15 +106,17 @@ export default function Header() {
     socket.on("like", handleLike);
     socket.on("match", handleMatch);
     socket.on("notification", handleNotification);
-    socket.on("new_message", (msg: any) => {
-      alert(`New direct_message from ${msg.sender_id}: ${msg.content}`);
+    socket.on("receive_message", handleReceiveMessage);
+    socket.on("msgsRead", () => {
+      setMessagesCount(0);
     });
 
     return () => {
       socket.off("like", handleLike);
       socket.off("match", handleMatch);
       socket.off("notification", handleNotification);
-      socket.off("direct_message");
+        socket.off("receive_message", handleReceiveMessage);
+        socket.off("msgsRead");
     };
   }, [user.id]);
 
@@ -163,6 +187,12 @@ export default function Header() {
                             item.title === "Notifications" && (
                               <span className="absolute top-0 right-[-5px] d-flex items-center justify-center bg-red-500 text-white rounded-full px-1 aspect-square text-xs">
                                 <p>{notificationsCount}</p>
+                              </span>
+                            )}
+                          {messagesCount > 0 &&
+                            item.title === "Messages" && (
+                              <span className="absolute top-0 right-[-5px] d-flex items-center justify-center bg-blue-500 text-white rounded-full px-1 aspect-square text-xs">
+                                <p>{messagesCount}</p>
                               </span>
                             )}
                           {item.icon}

@@ -15,6 +15,7 @@ import {
   getFriends,
   getMessagesByConversationId,
 } from "@/api/methods/interactions";
+import { markAsRead } from "@/api/methods/messages";
 import Badge from "@/components/badge";
 
 function MessagesPage() {
@@ -87,6 +88,8 @@ function MessagesPage() {
       setSelectedMatch(
         matches.find((m) => m.conversation_id === conversation_id) || null
       );
+      // Mark all messages as read for this user when they open a conversation
+      await markAsRead(String(user.id));
     } catch (error) {
       console.error("Failed to fetch messages:", error);
       toast.error("Failed to load conversation");

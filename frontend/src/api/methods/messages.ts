@@ -38,7 +38,7 @@ const saveMsgs = async (body: any) => {
 
 const markAsRead = async (user_id: string) => {
   try {
-	const response = await instance.post(baseURL + `messages/mark-as-read/${user_id}`);
+	const response = await instance.put(baseURL + `messages/mark-as-read/${user_id}`);
 	return response.data;
   } catch (error) {
 	throw error;

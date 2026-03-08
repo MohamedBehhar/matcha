@@ -80,7 +80,9 @@ class UsersInteractionsServices {
       });
       await msgsServices.createSystemMessage(
         conversation.id,
-        "🎉 It's a match! Say hi 👋"
+        "🎉 It's a match! Say hi 👋",
+        user_id, // sender_id
+        liked_id // recipient_id
       );
       const sender = await userServices.getUsersById(user_id);
       const receiver = await userServices.getUsersById(liked_id);
@@ -308,7 +310,8 @@ class UsersInteractionsServices {
 
   /** IV.3: Sort by age, location, fame rating, common tags. Default: proximity then rating then shared tags. */
   private getMatchesOrderBy(sort?: string): string {
-    const base = "distance ASC NULLS LAST, rating DESC NULLS LAST, common_tags_count DESC NULLS LAST";
+    const base =
+      "distance ASC NULLS LAST, rating DESC NULLS LAST, common_tags_count DESC NULLS LAST";
     if (!sort) return base;
     switch (sort) {
       case "age_asc":

@@ -199,14 +199,18 @@ class MsgsServices {
       console.log("error", error);
     }
   }
-  public async createSystemMessage(conversation_id: number, content: string) {
-    return orm.create("messages", {
+  public async createSystemMessage(
+    conversation_id: number,
+    content: string,
+    sender_id: string,
+    recipient_id: string
+  ) {
+    await orm.create("messages", {
       conversation_id,
-      sender_id: null, // system message
+      sender_id,
+      recipient_id,
       content,
-      type: "system",
-      is_read: true,
-      created_at: new Date(),
+      type: "text",
     });
   }
 }
